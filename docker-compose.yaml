@@ -6,13 +6,15 @@ services:
     restart: always
     hostname: '${IP_ADDR}'
     ports:
-      - '80:80'
-      - '8443:443'
+      - '32080:80'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://${IP_ADDR}'
         prometheus_monitoring['enable'] = false
-        gitlab_rails['initial_root_password'] = 'IIIdevops123!'
+        gitlab_rails['initial_root_password'] = '${DEFAULT_PASSWORD}'
+        unicorn['worker_processes'] = 2
+        sidekiq['concurrency'] = 9
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = false
     volumes:
       - 'gitlab-config:/etc/gitlab'
       - 'gitlab-logs:/var/log/gitlab'
@@ -23,7 +25,7 @@ services:
     container_name: "gitlab-runner"
     restart: always
     environment:
-      - CI_SERVER_URL=http://gitlab/
+      - CI_SERVER_URL=http://gitlab:32080/
     extra_hosts:
       - "gitlab:${IP_ADDR}"
     volumes:
@@ -45,7 +47,7 @@ services:
     depends_on:
       - sq-database
     ports:
-      - '9000:9000'
+      - '31910:9000'
     environment:
       SONARQUBE_JDBC_USERNAME: postgres
       SONARQUBE_JDBC_PASSWORD: ${DB_PASSWORD}
