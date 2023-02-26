@@ -1,0 +1,7 @@
+1. docker-compose 部署 (O)
+2. redmine-db 寫入預設值
+    - redmine db 環境變數值確認 (O)
+    - redmine db 實際寫入確認 ()
+3. setup.sh 撰寫
+    - 確認啟動機制 ()
+    - 環境變數替換 ()

@@ -18,6 +18,10 @@ if ! command -v docker &>/dev/null; then
 #  sudo apt-get install docker-ce=5:19.03.14~3-0~ubuntu-focal docker-ce-cli=5:19.03.14~3-0~ubuntu-focal docker-compose-plugin containerd.io -y
 fi
 
+# Ensure container has permission to run redmine.config 
+chmod 775 redmine-configuration.yml
+
+
 docker compose up -d
 
 echo "[INFO] Waiting gitlab startup"
