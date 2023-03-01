@@ -7,12 +7,12 @@ services:
     restart: always
     hostname: "${IP_ADDR}"
     ports:
-      - "32080:32080"
+      - "${GITLAB_PORT}:${GITLAB_PORT}"
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://${IP_ADDR}:32080'
+        external_url 'http://${IP_ADDR}:${GITLAB_PORT}'
         prometheus_monitoring['enable'] = false
-        gitlab_rails['initial_root_password'] = '${DEFAULT_PASSWORD}'
+        gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
         unicorn['worker_processes'] = 2
         sidekiq['concurrency'] = 9
         gitlab_rails['gitlab_default_projects_features_container_registry'] = false
@@ -26,7 +26,7 @@ services:
     container_name: "gitlab-runner"
     restart: always
     environment:
-      - CI_SERVER_URL=http://gitlab:32080/
+      - CI_SERVER_URL=http://gitlab:${GITLAB_PORT}/
     extra_hosts:
       - "gitlab:${IP_ADDR}"
     volumes:
@@ -50,40 +50,39 @@ services:
     depends_on:
       - sq-database
     ports:
-      - "31910:9000"
+      - "${SQ_PORT}:9000"
     environment:
       SONARQUBE_JDBC_USERNAME: postgres
       SONARQUBE_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
       SONARQUBE_JDBC_URL: jdbc:postgresql://sq-database:5432/sonarqube
 
-  redmine:
-    # Not used two volumne mount and cp to tmp to correct path.
-    container_name: "redmine"
-    image: redmine:4.1.5
-    restart: always
-    ports:
-      - '${REDMINE_PORT}:3000'
-    volumes:
-      - ./redmine-configuration.yml:/usr/src/redmine/config/configuration.yml
-      - ./data/redmine:/usr/src/redmine/files
-    environment:
-      REDMINE_DB_POSTGRES: redmine-db
-      REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
-      REDMINE_DB_DATABASE: redmine_database
-      REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
-
-  redmine-db:
+  rm-database:
     image: postgres:12
-    container_name: "redmine-db"
-    ports:
-      - '32749:5432'
+    container_name: "redmine-database"
     volumes:
-      - ./data/redmine-db/data:/var/lib/postgresql/data
+      - redmine-db-data:/var/lib/postgresql/data
       - ./redmine.sql:/tmp/redmine.sql
       - ./redmine.sql.log:/tmp/redmine.sql.log
     environment:
       POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
       POSTGRES_DB: redmine_database
+
+  redmine:
+    container_name: "redmine"
+    image: redmine:4.1.5
+    depends_on:
+      - rm-database
+    restart: always
+    ports:
+      - "${REDMINE_PORT}:3000"
+    volumes:
+      - ./redmine-configuration.yml:/usr/src/redmine/config/configuration.yml
+      - redmine-files:/usr/src/redmine/files
+    environment:
+      REDMINE_DB_POSTGRES: rm-database
+      REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
+      REDMINE_DB_DATABASE: redmine_database
+      REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
 volumes:
   gitlab-data:
@@ -97,4 +96,10 @@ volumes:
     driver: local
 
   sonarqube-data:
+    driver: local
+
+  redmine-db-data:
+    driver: local
+
+  redmine-files:
     driver: local

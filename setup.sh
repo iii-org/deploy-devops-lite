@@ -18,10 +18,8 @@ if ! command -v docker &>/dev/null; then
 #  sudo apt-get install docker-ce=5:19.03.14~3-0~ubuntu-focal docker-ce-cli=5:19.03.14~3-0~ubuntu-focal docker-compose-plugin containerd.io -y
 fi
 
-# Ensure container has permission to run redmine.config 
-chmod 775 redmine-configuration.yml
-
 ## Generate redmine.sql
+# shellcheck disable=SC2046
 export $(grep -v '^#' .env | xargs)
 
 cp redmine.sql.tmpl redmine.sql
@@ -99,11 +97,12 @@ docker compose exec runner gitlab-runner register -n \
 echo "[INFO] Shared runner registered"
 echo "[INFO] Gitlab setup complete"
 
+echo "[INFO] Waiting redmine startup"
 
-# waiting for redmine start up 
+# shellcheck disable=SC2034
 for i in {1..300}; do
   set +e # Disable exit on error
-  STATUS_CODE="$(docker exec redmine curl -k -q --max-time 5 -w '%{http_code}' -o /dev/null http://localhost:3000)"
+  STATUS_CODE="$(docker compose exec redmine curl -s -k -q --max-time 5 -w '%{http_code}' -o /dev/null http://localhost:3000)"
   set -e # Enable exit on error
 
   if [ "$STATUS_CODE" -eq 200 ]; then
@@ -114,4 +113,4 @@ for i in {1..300}; do
   sleep 1
 done
 
-docker exec redmine-db psql -U postgres -d redmine_database -f /tmp/redmine.sql \
+docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql
