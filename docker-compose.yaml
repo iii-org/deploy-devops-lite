@@ -55,13 +55,14 @@ services:
 
   redmine:
     # Not used two volumne mount and cp to tmp to correct path.
+    container_name: "redmine"
     image: redmine:4.1.5
     restart: always
     ports:
-      - '32748:3000'
+      - '${REDMINE_PORT}:3000'
     volumes:
-      - redmine-configuration.yml:/usr/src/redmine/config/configuration.yml
-      - data/redmine:/usr/src/redmine/files
+      - ./redmine-configuration.yml:/usr/src/redmine/config/configuration.yml
+      - ./data/redmine:/usr/src/redmine/files
     environment:
       REDMINE_DB_POSTGRES: redmine-db
       REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
@@ -70,10 +71,13 @@ services:
 
   redmine-db:
     image: postgres:12
+    container_name: "redmine-db"
     ports:
       - '32749:5432'
     volumes:
-      - .data/redmine-db:/var/lib/postgresql/data
+      - ./data/redmine-db/data:/var/lib/postgresql/data
+      - ./redmine.sql:/tmp/redmine.sql
+      - ./redmine.sql.log:/tmp/redmine.sql.log
     environment:
       POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
       POSTGRES_DB: redmine_database
