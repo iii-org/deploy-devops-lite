@@ -18,6 +18,28 @@ if ! command -v docker &>/dev/null; then
 #  sudo apt-get install docker-ce=5:19.03.14~3-0~ubuntu-focal docker-ce-cli=5:19.03.14~3-0~ubuntu-focal docker-compose-plugin containerd.io -y
 fi
 
+# Ensure container has permission to run redmine.config 
+chmod 775 redmine-configuration.yml
+
+## Generate redmine.sql
+export $(grep -v '^#' .env | xargs)
+
+cp redmine.sql.tmpl redmine.sql
+touch redmine.sql.log
+
+salt=$(echo -n "$REDMINE_DB_PASSWORD" | md5sum | awk '{print $1}')
+hash_redmine_db_pwd=$(echo -n "$REDMINE_DB_PASSWORD" | sha1sum | awk '{print $1}')
+hashed_password=$(echo -n "$salt$hash_redmine_db_pwd" | sha1sum | awk '{print $1}')
+api_key=$(echo $RANDOM | md5sum | head -c 20)
+redmine_domain_name=$IP_ADDR":"$REDMINE_PORT
+
+sed -i "s|{{hashed_password}}|$hashed_password|g" redmine.sql
+sed -i "s|{{salt}}|$salt|g" redmine.sql
+sed -i "s|{{api_key}}|$api_key|g" redmine.sql
+sed -i "s|{{devops_domain_name}}|$redmine_domain_name|g" redmine.sql
+
+chmod 777 redmine.sql redmine.sql.log
+
 docker compose up -d
 
 echo "[INFO] Waiting gitlab startup"
@@ -76,3 +98,20 @@ docker compose exec runner gitlab-runner register -n \
 
 echo "[INFO] Shared runner registered"
 echo "[INFO] Gitlab setup complete"
+
+
+# waiting for redmine start up 
+for i in {1..300}; do
+  set +e # Disable exit on error
+  STATUS_CODE="$(docker exec redmine curl -k -q --max-time 5 -w '%{http_code}' -o /dev/null http://localhost:3000)"
+  set -e # Enable exit on error
+
+  if [ "$STATUS_CODE" -eq 200 ]; then
+    echo -e "\n[INFO] Redmine startup complete"
+    break
+  fi
+  echo -n "."
+  sleep 1
+done
+
+docker exec redmine-db psql -U postgres -d redmine_database -f /tmp/redmine.sql \
