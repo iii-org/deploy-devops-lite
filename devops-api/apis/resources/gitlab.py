@@ -874,6 +874,15 @@ class GitLab(object):
                 }
             util.write_json_file(f"{base_path}/{pj.id}/{date}.json", result)
 
+    def get_pipeline_console(self, project_id, job_id):
+        return self.__api_get(f"/projects/{project_id}/jobs/{job_id}/trace").content.decode("utf-8")
+
+    def retry_pipeline_job(self, project_id, job_id):
+        return self.__api_post(f"/projects/{project_id}/jobs/{job_id}/retry").json()
+
+    def stop_pipeline_job(self, project_id, job_id):
+        return self.__api_post(f"/projects/{project_id}/jobs/{job_id}/cancel").json()
+
 
 def single_file(
     file_path: str,
@@ -1715,3 +1724,22 @@ class GitlabSourceCodeV2(MethodResource):
             except Exception as e:
                 model.db.session.rollback()
                 return util.respond(401, "insert failed.", error=e)
+
+
+class GitlabPipelineJobConsole(Resource):
+    @jwt_required()
+    def get(self, repository_id, job_id):
+        return util.success(gitlab.get_pipeline_console(repository_id, job_id))
+
+
+class GitlabPipelineJobRetry(Resource):
+    @jwt_required()
+    def post(self, repository_id, job_id):
+        return util.success(gitlab.retry_pipeline_job(repository_id, job_id))
+
+
+class GitlabPipelineJobStop(Resource):
+    @jwt_required()
+    def post(self, repository_id, job_id):
+        return util.success(gitlab.stop_pipeline_job(repository_id, job_id))
+    

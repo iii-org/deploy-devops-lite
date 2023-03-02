@@ -375,6 +375,11 @@ add_resource(gitlab.GitlabSingleCommitV2, "public")
 api.add_resource(gitlab.GitlabSourceCodeV2, "/repositories/pipline")
 add_resource(gitlab.GitlabSourceCodeV2, "public")
 
+# GitLab pipeline
+api.add_resource(gitlab.GitlabPipelineJobConsole, "/projects/<repository_id>/jobs/<job_id>/console")
+api.add_resource(gitlab.GitlabPipelineJobRetry, "/projects/<repository_id>/jobs/<job_id>/retry")
+api.add_resource(gitlab.GitlabPipelineJobStop, "/projects/<repository_id>/jobs/<job_id>/stop")
+
 # User
 user_url(api, add_resource)
 
