@@ -2,6 +2,8 @@
 .initialized
 .redmine-sql-import.log
 environments.json
+redmine.sql
+redmine.sql.log
 
 ### VisualStudioCode template
 .vscode/*
