@@ -1,0 +1,611 @@
+[
+  {
+    "path": "/",
+    "name": "LandingPage",
+    "component": "layout",
+    "redirect": {
+      "name": "Dashboard"
+    },
+    "meta": {
+      "icon": "list",
+      "title": "Overview",
+      "roles": [
+        "QA"
+      ]
+    },
+    "hidden": true
+  },
+  {
+    "path": "/overview",
+    "component": "layout",
+    "name": "Dashboards",
+    "redirect": {
+      "name": "Dashboard"
+    },
+    "meta": {
+      "icon": "dashboard",
+      "title": "Overview",
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "dashboard",
+        "name": "Dashboard",
+        "component": "views/Overview/Dashboard/roles/admin",
+        "meta": {
+          "title": "Dashboard",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "projectList",
+        "name": "ProjectList",
+        "component": "views/Overview/ProjectList/ProjectListQA",
+        "meta": {
+          "title": "ProjectList",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/inbox",
+    "component": "layout",
+    "name": "Inboxs",
+    "redirect": {
+      "name": "Inbox"
+    },
+    "meta": {
+      "title": "Inbox",
+      "icon": "el-icon-message",
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/Inbox",
+        "name": "Inbox",
+        "meta": {
+          "title": "Inbox",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "message-console",
+        "name": "MessageConsole",
+        "hidden": true,
+        "component": "views/Inbox/MessageConsole",
+        "meta": {
+          "title": "MessageConsole",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/project/:projectName?",
+    "component": "layout",
+    "name": "Works",
+    "redirect": {
+      "name": "Milestone"
+    },
+    "meta": {
+      "title": "SingleProject",
+      "icon": "el-icon-data-analysis",
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "milestone",
+        "name": "Milstone",
+        "component": "views/Plan/Milestone",
+        "meta": {
+          "title": "Milestone",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "issues",
+        "component": "layout/components/parentBlank",
+        "name": "IssueLists",
+        "redirect": {
+          "name": "IssueList"
+        },
+        "meta": {
+          "title": "IssueList",
+          "roles": [
+            "QA"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "IssueList",
+            "hidden": true,
+            "component": "views/Project/IssueList",
+            "meta": {
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": ":issueId",
+            "name": "IssueDetail",
+            "hidden": true,
+            "component": "views/Project/IssueDetail",
+            "meta": {
+              "title": "IssueDetail",
+              "roles": [
+                "QA"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "track",
+        "name": "Track",
+        "component": "views/Project/TrackManagement",
+        "meta": {
+          "title": "ChangeManagement",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "exceptionManagement",
+        "name": "ExceptionManagement",
+        "component": "views/Project/ExceptionManagement",
+        "meta": {
+          "title": "FailManagement",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "traceabilityMatrix",
+        "name": "TraceabilityMatrix",
+        "component": "views/Plan/TraceabilityMatrix",
+        "meta": {
+          "title": "TraceabilityMatrix",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "projectSettings",
+        "component": "layout/components/parentBlank",
+        "name": "ProjectSettings",
+        "redirect": {
+          "name": "ProjectSetting"
+        },
+        "meta": {
+          "title": "ProjectSettings",
+          "roles": [
+            "QA"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "ProjectSetting",
+            "hidden": true,
+            "component": "views/Plan/Settings/roles/QA",
+            "meta": {
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": "participateProject/:userId",
+            "name": "ParticipateProject",
+            "hidden": true,
+            "component": "views/SystemSettings/AccountManage/components/ParticipateProject",
+            "meta": {
+              "title": "ParticipateProject",
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": "issueTransfer/:userId",
+            "name": "IssueTransfer",
+            "hidden": true,
+            "component": "views/Plan/Settings/components/ProjectIssueTransfer",
+            "meta": {
+              "title": "IssueTransfer",
+              "roles": [
+                "QA"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "path": "/test/:projectName?",
+    "name": "Test",
+    "component": "layout",
+    "redirect": {
+      "name": "TestFile"
+    },
+    "meta": {
+      "title": "TestReport",
+      "icon": "el-icon-finished",
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "testFile",
+        "name": "TestFile",
+        "component": "views/Test/TestFile",
+        "meta": {
+          "title": "TestFile",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/scan/:projectName?",
+    "component": "layout",
+    "name": "Scan",
+    "meta": {
+      "title": "AutoTesting",
+      "icon": "el-icon-circle-check",
+      "roles": [
+        "QA"
+      ]
+    },
+    "redirect": {
+      "name": "Postman"
+    },
+    "children": [
+      {
+        "path": "sonarqube",
+        "name": "Sonarqube",
+        "component": "views/Scan/SonarQube",
+        "meta": {
+          "title": "SonarQube",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": false
+      },
+      {
+        "path": "checkmarx",
+        "name": "Checkmarx",
+        "component": "views/Scan/Checkmarx",
+        "meta": {
+          "title": "CheckMarx",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "clair",
+        "name": "DockerImage",
+        "component": "views/Scan/DockerImage",
+        "meta": {
+          "title": "DockerImage",
+          "roles": [
+            "QA"
+          ]
+        }
+      },
+      {
+        "path": "sbom",
+        "name": "Sbom",
+        "component": "views/Scan/Sbom",
+        "meta": {
+          "title": "Sbom",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "zap",
+        "name": "Zap",
+        "component": "views/Scan/Zap",
+        "meta": {
+          "title": "Zap",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": false
+      },
+      {
+        "path": "cmas",
+        "name": "Cmas",
+        "component": "views/Scan/Cmas",
+        "meta": {
+          "title": "Cmas",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "webinspect",
+        "name": "Webinspects",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "Webinspect"
+        },
+        "meta": {
+          "title": "WebInspect",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": true,
+        "children": [
+          {
+            "path": "",
+            "name": "Webinspect",
+            "hidden": true,
+            "component": "views/Scan/WebInspect",
+            "meta": {
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": "report/:scanId",
+            "name": "WIEReportViewer",
+            "component": "views/Scan/WIEReportViewer",
+            "hidden": true,
+            "meta": {
+              "title": "WIEReportViewer",
+              "roles": [
+                "QA"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "postmans",
+        "name": "Postmans",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "Postman"
+        },
+        "meta": {
+          "title": "Postman",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": false,
+        "children": [
+          {
+            "path": "",
+            "name": "Postman",
+            "hidden": true,
+            "component": "views/Scan/Postman",
+            "meta": {
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": "devops/:id",
+            "name": "DevopsTestCase",
+            "hidden": true,
+            "component": "views/Scan/TestCaseDevOps",
+            "meta": {
+              "title": "FromDevops",
+              "roles": [
+                "QA"
+              ]
+            }
+          },
+          {
+            "path": "postman/:id",
+            "name": "PostmanTestCase",
+            "hidden": true,
+            "component": "views/Scan/TestCasePostman",
+            "meta": {
+              "title": "FromCollection",
+              "roles": [
+                "QA"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "sideex",
+        "name": "Sideex",
+        "component": "views/Scan/Sideex",
+        "meta": {
+          "title": "Sideex",
+          "roles": [
+            "QA"
+          ]
+        },
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "path": "/test-report",
+    "name": "TestReports",
+    "component": "layout",
+    "redirect": {
+      "name": "TestReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId",
+        "component": "views/Progress/Pipelines/components/TestReport",
+        "name": "TestReport",
+        "meta": {
+          "title": "TestReport",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/docker-report",
+    "name": "DockerReports",
+    "component": "layout",
+    "redirect": {
+      "name": "DockerReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId",
+        "component": "views/Scan/DockerReport",
+        "name": "DockerReport",
+        "meta": {
+          "title": "DockerReport",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/sbom-report",
+    "name": "SbomReports",
+    "component": "layout",
+    "redirect": {
+      "name": "SbomReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId/:sbomId",
+        "component": "views/Scan/Sbom/components/SbomReport",
+        "name": "SbomReport",
+        "meta": {
+          "title": "SbomReport",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/profile",
+    "component": "layout",
+    "name": "UserProfile",
+    "redirect": {
+      "name": "Profile"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/Profile",
+        "name": "Profile",
+        "meta": {
+          "title": "Profile",
+          "icon": "user",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/SystemVersion",
+    "component": "layout",
+    "name": "SystemVersions",
+    "redirect": {
+      "name": "SystemVersion"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "QA"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/SystemVersion",
+        "name": "SystemVersion",
+        "meta": {
+          "title": "System Version",
+          "icon": "user",
+          "roles": [
+            "QA"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "*",
+    "name": "ErrorPage",
+    "redirect": "/404",
+    "hidden": true
+  }
+]

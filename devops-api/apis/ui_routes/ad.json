@@ -1,0 +1,1150 @@
+[
+  {
+    "path": "/",
+    "name": "LandingPage",
+    "redirect": {
+      "name": "Dashboard"
+    },
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "hidden": true
+  },
+  {
+    "path": "/overview",
+    "component": "layout",
+    "name": "Overviews",
+    "redirect": {
+      "name": "Dashboard"
+    },
+    "meta": {
+      "icon": "dashboard",
+      "title": "Overview",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "dashboard",
+        "name": "Dashboard",
+        "component": "views/Overview/Dashboard/roles/admin",
+        "meta": {
+          "title": "Dashboard",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "projectList",
+        "name": "ProjectList",
+        "component": "views/Overview/ProjectList/ProjectListPM",
+        "meta": {
+          "title": "ProjectList",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/inbox",
+    "component": "layout",
+    "name": "Inboxs",
+    "redirect": {
+      "name": "Inbox"
+    },
+    "meta": {
+      "title": "Inbox",
+      "icon": "el-icon-message",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/Inbox",
+        "name": "Inbox",
+        "meta": {
+          "title": "Inbox",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "message-console",
+        "name": "MessageConsole",
+        "hidden": true,
+        "component": "views/Inbox/MessageConsole",
+        "meta": {
+          "title": "MessageConsole",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/plan/:projectName?",
+    "component": "layout",
+    "name": "Management",
+    "redirect": {
+      "name": "Overview"
+    },
+    "meta": {
+      "title": "ProjectManagement",
+      "icon": "el-icon-edit-outline",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "overview",
+        "name": "Overview",
+        "component": "views/Plan/Overview",
+        "meta": {
+          "title": "ProjectOverview",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "milestone",
+        "name": "Milestone",
+        "component": "views/Plan/Milestone",
+        "meta": {
+          "title": "Milestone",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "traceabilityMatrix",
+        "name": "TraceabilityMatrix",
+        "component": "views/Plan/TraceabilityMatrix",
+        "meta": {
+          "title": "TraceabilityMatrix",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "projectSettings",
+        "name": "ProjectSettings",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "ProjectSetting"
+        },
+        "meta": {
+          "title": "ProjectSettings",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "ProjectSetting",
+            "hidden": true,
+            "component": "views/Plan/Settings/index",
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "participateProject/:userId",
+            "name": "ParticipateProject",
+            "hidden": true,
+            "component": "views/SystemSettings/AccountManage/components/ParticipateProject",
+            "meta": {
+              "title": "ParticipateProject",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "advanceBranchSettings",
+            "name": "AdvanceBranchSettings",
+            "hidden": true,
+            "component": "views/Plan/Settings/components/AdvanceBranchSettings",
+            "meta": {
+              "title": "AdvanceBranchSettings",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "issueTransfer/:userId",
+            "name": "IssueTransfer",
+            "hidden": true,
+            "component": "views/Plan/Settings/ProjectIssueTransfer",
+            "meta": {
+              "title": "IssueTransfer",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "path": "/project/:projectName?",
+    "component": "layout",
+    "name": "Works",
+    "redirect": {
+      "name": "IssueBoards"
+    },
+    "meta": {
+      "title": "Works",
+      "icon": "el-icon-s-cooperation",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "whiteboard",
+        "name": "Whiteboard",
+        "component": "views/WhiteBoard",
+        "meta": {
+          "title": "Whiteboard",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "issueBoards",
+        "name": "IssueBoards",
+        "component": "views/Project/IssueBoards",
+        "meta": {
+          "title": "Kanban",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "issues",
+        "name": "IssueLists",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "IssueList"
+        },
+        "meta": {
+          "title": "IssueList",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "IssueList",
+            "hidden": true,
+            "component": "views/Project/IssueList",
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": ":issueId",
+            "name": "IssueDetail",
+            "hidden": true,
+            "component": "views/Project/IssueDetail",
+            "meta": {
+              "title": "IssueDetail",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "notes",
+        "name": "WikiList",
+        "component": "views/Project/Wiki",
+        "meta": {
+          "title": "WikiList",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "files",
+        "name": "FileList",
+        "component": "views/Project/Files",
+        "meta": {
+          "title": "FileList",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "roadmap",
+        "name": "ProjectRoadmap",
+        "component": "views/Project/Roadmap",
+        "meta": {
+          "title": "ProjectRoadmap",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "releaseVersion",
+        "name": "ReleaseVersions",
+        "redirect": {
+          "name": "ReleaseVersion"
+        },
+        "component": "layout/components/parentBlank",
+        "meta": {
+          "title": "ReleaseVersions",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "ReleaseVersion",
+            "component": "views/Project/ReleaseVersion",
+            "hidden": true,
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": ":issueTag",
+            "name": "ClosedIssueList",
+            "hidden": true,
+            "component": "views/Project/ReleaseVersion/ClosedIssueList",
+            "meta": {
+              "title": "IssueDetail",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "path": "/progress/:projectName?",
+    "component": "layout",
+    "name": "Progress",
+    "redirect": {
+      "name": "DevEnvironment"
+    },
+    "meta": {
+      "title": "DevProgress",
+      "icon": "el-icon-odometer",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "devBranch",
+        "name": "DevBranch",
+        "component": "views/Progress/DevBranch",
+        "meta": {
+          "title": "DevBranch",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "pipeline",
+        "name": "Pipeline",
+        "component": "views/Progress/Pipelines",
+        "meta": {
+          "title": "Pipelines",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "devEnvironment",
+        "name": "DevEnvironment",
+        "component": "views/Progress/DevEnvironment",
+        "meta": {
+          "title": "DevEnvironment",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/test/:projectName?",
+    "name": "Test",
+    "component": "layout",
+    "redirect": {
+      "name": "TestFile"
+    },
+    "meta": {
+      "title": "TestManagement",
+      "icon": "el-icon-finished",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "testFile",
+        "name": "TestFile",
+        "component": "views/Test/TestFile",
+        "meta": {
+          "title": "TestFile",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "testPlan",
+        "name": "TestPlan",
+        "component": "views/Test/TestPlan",
+        "meta": {
+          "title": "TestPlan",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/scan/:projectName?",
+    "component": "layout",
+    "name": "Scan",
+    "meta": {
+      "title": "AutoTesting",
+      "icon": "el-icon-circle-check",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "redirect": {
+      "name": "Postman"
+    },
+    "children": [
+      {
+        "path": "sonarqube",
+        "name": "Sonarqube",
+        "component": "views/Scan/SonarQube",
+        "meta": {
+          "title": "SonarQube",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": false
+      },
+      {
+        "path": "checkmarx",
+        "name": "Checkmarx",
+        "component": "views/Scan/Checkmarx",
+        "meta": {
+          "title": "CheckMarx",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "clair",
+        "name": "DockerImage",
+        "component": "views/Scan/DockerImage",
+        "meta": {
+          "title": "DockerImage",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "sbom",
+        "name": "Sbom",
+        "component": "views/Scan/Sbom",
+        "meta": {
+          "title": "Sbom",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "zap",
+        "name": "Zap",
+        "component": "views/Scan/Zap",
+        "meta": {
+          "title": "Zap",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": false
+      },
+      {
+        "path": "cmas",
+        "name": "Cmas",
+        "component": "views/Scan/Cmas",
+        "meta": {
+          "title": "Cmas",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": true
+      },
+      {
+        "path": "webinspect",
+        "name": "Webinspects",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "Webinspect"
+        },
+        "meta": {
+          "title": "WebInspect",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": true,
+        "children": [
+          {
+            "path": "",
+            "name": "Webinspect",
+            "hidden": true,
+            "component": "views/Scan/WebInspect",
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "report/:scanId",
+            "name": "WIEReportViewer",
+            "component": "views/Scan/WIEReportViewer",
+            "hidden": true,
+            "meta": {
+              "title": "WIEReportViewer",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "postmans",
+        "name": "Postmans",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "Postman"
+        },
+        "meta": {
+          "title": "Postman",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": false,
+        "children": [
+          {
+            "path": "",
+            "name": "Postman",
+            "hidden": true,
+            "component": "views/Scan/Postman",
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "devops/:id",
+            "name": "DevopsTestCase",
+            "hidden": true,
+            "component": "views/Scan/TestCaseDevOps",
+            "meta": {
+              "title": "FromDevops",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "postman/:id",
+            "name": "PostmanTestCase",
+            "hidden": true,
+            "component": "views/Scan/TestCasePostman",
+            "meta": {
+              "title": "FromCollection",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "sideex",
+        "name": "Sideex",
+        "component": "views/Scan/Sideex",
+        "meta": {
+          "title": "Sideex",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "path": "/systemResource",
+    "component": "layout",
+    "name": "SystemResource",
+    "redirect": {
+      "name": "PluginResource"
+    },
+    "meta": {
+      "title": "SystemResource",
+      "icon": "el-icon-pie-chart",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectName?/pluginResource",
+        "component": "layout/components/parentBlank",
+        "name": "PluginResources",
+        "redirect": {
+          "name": "PluginResource"
+        },
+        "meta": {
+          "title": "PluginResource",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "PluginResource",
+            "hidden": true,
+            "component": "views/SystemResource/PluginResource",
+            "meta": {
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "harbor",
+            "hidden": true,
+            "component": "layout/components/parentBlank",
+            "name": "Harbors",
+            "redirect": {
+              "name": "Harbor"
+            },
+            "meta": {
+              "title": "Harbor",
+              "roles": [
+                "Administrator"
+              ]
+            },
+            "children": [
+              {
+                "path": "",
+                "name": "Harbor",
+                "hidden": true,
+                "component": "views/SystemResource/Harbor/ResourceHarbor",
+                "meta": {
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": ":rName/artifacts",
+                "name": "Artifacts",
+                "hidden": true,
+                "component": "views/SystemResource/Harbor/components/ProjectArtifacts",
+                "meta": {
+                  "title": "Artifacts",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "podsLists",
+                "hidden": true,
+                "component": "layout/components/parentBlank",
+                "name": "PodsLists",
+                "redirect": {
+                  "name": "PodsList"
+                },
+                "meta": {
+                  "title": "PodsLists",
+                  "roles": [
+                    "Administrator"
+                  ]
+                },
+                "children": [
+                  {
+                    "path": "",
+                    "name": "PodsList",
+                    "hidden": true,
+                    "component": "views/SystemResource/PluginResource/components/PodsList",
+                    "meta": {
+                      "roles": [
+                        "Administrator"
+                      ]
+                    }
+                  },
+                  {
+                    "path": "podExecuteShell",
+                    "name": "PodExecuteShell",
+                    "hidden": true,
+                    "component": "views/SystemResource/PluginResource/components/PodsList/components/PodExecuteShell",
+                    "meta": {
+                      "title": "PodExecuteShell",
+                      "roles": [
+                        "Administrator"
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "path": "serviceList",
+                "name": "ServiceList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/ServiceList",
+                "meta": {
+                  "title": "ServiceList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "secretList",
+                "name": "SecretList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/SecretList",
+                "meta": {
+                  "title": "SecretList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "configmapsList",
+                "name": "ConfigMapsList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/ConfigMapsList",
+                "meta": {
+                  "title": "ConfigMapsList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "deploymentList",
+                "name": "DeploymentList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/DeploymentList",
+                "meta": {
+                  "title": "DeploymentList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "ingressesList",
+                "name": "IngressesList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/IngressesList",
+                "meta": {
+                  "title": "IngressesList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              },
+              {
+                "path": "appsList",
+                "name": "AppsList",
+                "hidden": true,
+                "component": "views/SystemResource/PluginResource/components/AppsList",
+                "meta": {
+                  "title": "AppsList",
+                  "roles": [
+                    "Administrator"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "serviceMonitoring",
+        "name": "ServiceMonitoring",
+        "component": "views/SystemResource/ServiceMonitoring",
+        "meta": {
+          "title": "ServiceMonitoring",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/activities/:projectName?",
+    "component": "layout",
+    "name": "Activities",
+    "redirect": {
+      "name": "Deploys"
+    },
+    "meta": {
+      "title": "Activities",
+      "icon": "el-icon-s-order",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "deploy",
+        "name": "Deploys",
+        "component": "layout/components/parentBlank",
+        "redirect": {
+          "name": "Deploy"
+        },
+        "meta": {
+          "title": "Deploy",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        "children": [
+          {
+            "path": "",
+            "name": "Deploy",
+            "component": "views/Project/Deploy",
+            "meta": {
+              "title": "Deploy",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          },
+          {
+            "path": "applicationSetting/:applicationId?",
+            "name": "ApplicationSetting",
+            "hidden": true,
+            "component": "views/Project/Deploy/components/ApplicationSetting",
+            "meta": {
+              "title": "ApplicationSetting",
+              "roles": [
+                "Administrator"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "template-manage",
+        "name": "TemplateManage",
+        "component": "views/Activities/TemplateManage",
+        "meta": {
+          "title": "TemplateManage",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "project-activities",
+        "name": "ProjectActivities",
+        "component": "views/Activities/ProjectActivities",
+        "meta": {
+          "title": "ProjectActivities",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/systemSettings",
+    "component": "layout",
+    "name": "Admin",
+    "redirect": {
+      "name": "AccountManage"
+    },
+    "meta": {
+      "title": "Admin",
+      "icon": "el-icon-setting",
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "accountManage",
+        "component": "views/SystemSettings/AccountManage",
+        "name": "AccountManage",
+        "meta": {
+          "title": "AccountManage",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "systemActivities",
+        "name": "SystemActivities",
+        "component": "views/SystemSettings/SystemActivities",
+        "meta": {
+          "title": "SystemActivities",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "systemArguments",
+        "name": "SystemArguments",
+        "component": "views/SystemSettings/SystemArguments",
+        "meta": {
+          "title": "SystemArguments",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "systemDeploySettings",
+        "name": "SystemDeploySettings",
+        "component": "views/SystemSettings/SystemDeploySettings",
+        "meta": {
+          "title": "SystemDeploySettings",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "subAdminProjects",
+        "name": "SubAdminProjects",
+        "component": "views/SystemSettings/SubAdminProjects",
+        "meta": {
+          "title": "ProjectSettingsQA",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      },
+      {
+        "path": "systemPluginManage",
+        "name": "SystemPluginManage",
+        "component": "views/SystemSettings/SystemPluginManage",
+        "meta": {
+          "title": "SystemPluginManage",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/test-report",
+    "name": "TestReports",
+    "component": "layout",
+    "redirect": {
+      "name": "TestReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId",
+        "component": "views/Progress/Pipelines/components/TestReport",
+        "name": "TestReport",
+        "meta": {
+          "title": "TestReport",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/docker-report",
+    "name": "DockerReports",
+    "component": "layout",
+    "redirect": {
+      "name": "DockerReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId",
+        "component": "views/Scan/DockerReport",
+        "name": "DockerReport",
+        "meta": {
+          "title": "DockerReport",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/sbom-report",
+    "name": "SbomReports",
+    "component": "layout",
+    "redirect": {
+      "name": "SbomReport"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": ":projectId/:commitBranch/:commitId/:sbomId",
+        "component": "views/Scan/Sbom/components/SbomReport",
+        "name": "SbomReport",
+        "meta": {
+          "title": "SbomReport",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/profile",
+    "component": "layout",
+    "name": "UserProfile",
+    "redirect": {
+      "name": "Profile"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/Profile",
+        "name": "Profile",
+        "meta": {
+          "title": "Profile",
+          "icon": "user",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "/SystemVersion",
+    "component": "layout",
+    "name": "SystemVersions",
+    "redirect": {
+      "name": "SystemVersion"
+    },
+    "hidden": true,
+    "meta": {
+      "roles": [
+        "Administrator"
+      ]
+    },
+    "children": [
+      {
+        "path": "",
+        "component": "views/SystemVersion",
+        "name": "SystemVersion",
+        "meta": {
+          "title": "System Version",
+          "icon": "user",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "path": "*",
+    "name": "ErrorPage",
+    "redirect": "/404",
+    "hidden": true
+  }
+]

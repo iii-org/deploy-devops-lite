@@ -1,0 +1,14 @@
+{
+    "secret": [
+        "checkmarx",
+        "harbor",
+        "nexus",
+        "rancher",
+        "sonarqube",
+        "webinspect"
+    ],
+    "registry": [
+        "harbor-local",
+        "pipeline-docker-registry"
+    ]
+}
