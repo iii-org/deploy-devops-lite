@@ -61,6 +61,7 @@ function _prepare() {
 
   cp redmine.sql.tmpl redmine.sql
   touch redmine.sql.log
+  touch environments.json
 
   REDMINE_SALT=$(echo -n "$REDMINE_DB_PASSWORD" | md5sum | awk '{print $1}')
   REDMINE_HASHED_DB_PASSWORD=$(echo -n "$REDMINE_DB_PASSWORD" | sha1sum | awk '{print $1}')
