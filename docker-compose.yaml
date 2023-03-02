@@ -89,7 +89,7 @@ services:
     ports:
       - "${III_PORT}:10009"
     volumes:
-      - ./environments.json:environments.json
+      - ./environments.json:/usr/src/app/environments.json
       - iii-log:/usr/src/app/logs
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:${III_DB_PASSWORD}@iii-database:5432/devopsdb
