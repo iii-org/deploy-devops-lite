@@ -77,6 +77,7 @@ function _prepare() {
   chmod 777 redmine.sql redmine.sql.log
 
   cecho INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
+  cecho WARN "Your ip address is currently set to: $IP_ADDR, if you want to change it, please modify .env file first"
 }
 
 _command_check
