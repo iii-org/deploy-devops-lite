@@ -27,8 +27,6 @@ services:
     restart: always
     environment:
       - CI_SERVER_URL=http://gitlab:${GITLAB_PORT}/
-    extra_hosts:
-      - "gitlab:${IP_ADDR}"
     volumes:
       - runner-config:/etc/gitlab-runner
       - /var/run/docker.sock:/var/run/docker.sock
@@ -90,7 +88,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${III_PORT}:10009"
-    volumnes:
+    volumes:
       - ./environments.json:environments.json
       - iii-log:/usr/src/app/logs
     environment:
