@@ -84,6 +84,46 @@ services:
       REDMINE_DB_DATABASE: redmine_database
       REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
+  iii:
+    build:
+      context: ./devops-api/
+      dockerfile: Dockerfile
+    ports:
+      - "${III_PORT}:10009"
+    volumnes:
+      - ./environments.json:environments.json
+      - iii-log:/usr/src/app/logs
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql://postgres:${III_DB_PASSWORD}@iii-database:5432/devopsdb
+      SQLALCHEMY_TRACK_MODIFICATIONS: false
+      WTF_CSRF_CHECK_DEFAULT: false
+      JSON_AS_ASCII: false
+      REDMINE_INTERNAL_BASE_URL: http://redmine:3000
+      REDMINE_EXTERNAL_BASE_URL: http://${IP_ADDR}:${REDMINE_PORT}
+      REDMINE_ADMIN_ACCOUNT: admin
+      REDMINE_ADMIN_PASSWORD: ${REDMINE_DB_PASSWORD}
+      GITLAB_BASE_URL: http://gitlab:${GITLAB_PORT}
+      GITLAB_ADMIN_ACCOUNT: root
+      GITLAB_ADMIN_PASSWORD: ${GITLAB_ROOT_PASSWORD}
+      SONARQUBE_INTERNAL_BASE_URL: http://sonarqube:9000/api
+      SONARQUBE_EXTERNAL_BASE_URL: http://${IP_ADDR}:${SQ_PORT}
+      ADMIN_INIT_LOGIN: ${III_ADMIN_LOGIN}
+      ADMIN_INIT_EMAIL: ${III_ADMIN_EMAIL}
+      ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
+      DEPLOYER_NODE_IP: ${IP_ADDR}
+
+
+  iii-database:
+    image: postgres:12
+    container_name: "iii-database"
+    ports:
+      - "${III_DB_PORT}:5432"
+    volumes:
+      - iii-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${III_DB_PASSWORD}
+      POSTGRES_DB: devopsdb
+
 volumes:
   gitlab-data:
     driver: local
@@ -102,4 +142,10 @@ volumes:
     driver: local
 
   redmine-files:
+    driver: local
+
+  iii-log:
+    driver: local
+
+  iii-db-data:
     driver: local

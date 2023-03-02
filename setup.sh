@@ -120,11 +120,11 @@ docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/red
 echo "[INFO] Waiting sonarqube startup"
 chk_key='API_SERVER'
 
-cmd_msg=$(curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/generate' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
+cmd_msg=$(curl --request POST "http://localhost:$SQ_PORT/api/user_tokens/generate" -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
 if echo "$cmd_msg" | grep -q 'already exists'; then
-    curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/revoke' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"'
+    curl --request POST "http://localhost:$SQ_PORT/api/user_tokens/revoke" -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"'
     sleep 1
-    cmd_msg=$(curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/generate' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
+    cmd_msg=$(curl --request POST "http://localhost:$SQ_PORT/api/user_tokens/generate" -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
 fi
 
 key=$(echo "$cmd_msg" | jq -r '.name')
@@ -137,7 +137,7 @@ echo $sonarqube_admin_token
 sleep 3
 
 # Find default_template
-cmd_msg=$(curl --request GET 'http://localhost:$SQ_PORT/api/permissions/search_templates' -H 'Authorization: Basic YWRtaW46YWRtaW4=')
+cmd_msg=$(curl --request GET "http://localhost:$SQ_PORT/api/permissions/search_templates" -H 'Authorization: Basic YWRtaW46YWRtaW4=')
 if ! echo "$cmd_msg" | grep -q 'templateId'; then
     echo "get default_template Error : $cmd_msg"
     exit 1
