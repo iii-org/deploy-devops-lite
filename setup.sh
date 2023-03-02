@@ -323,7 +323,6 @@ EOF
 }
 
 function post_script() {
-  set -x
   local POST_RESPONSE
   POST_RESPONSE="$(docker compose exec runner curl -s -k \
     --request POST --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
@@ -356,6 +355,8 @@ function post_script() {
     cecho ERROR "Setting Gitlab CICD variable failed, response: \n$POST_RESPONSE"
     exit 1
   fi
+
+  cecho INFO "Post script finished!"
 }
 
 setup_gitlab
