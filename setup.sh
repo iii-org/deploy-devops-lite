@@ -87,7 +87,7 @@ if [ -e environments.json ]; then
   # If environments.json not empty, means setup already done
   if [ -s environments.json ]; then
     cecho WARN "environments.json exist, skip setup..."
-    cecho WARN "If you want to re-setup, please remove environments.json first"
+    cecho WARN "If you want to re-setup, please remove environments.json first\n  rm environments.json"
     cecho WARN "Assume you want to start up the services, start up services now..."
     docker compose up -d
     cecho INFO "Done! Exiting setup script..."
