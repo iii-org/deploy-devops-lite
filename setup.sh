@@ -114,3 +114,61 @@ for i in {1..300}; do
 done
 
 docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql
+
+
+## Sonarqube 
+echo "[INFO] Waiting sonarqube startup"
+chk_key='API_SERVER'
+
+cmd_msg=$(curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/generate' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
+if echo "$cmd_msg" | grep -q 'already exists'; then
+    curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/revoke' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"'
+    sleep 1
+    cmd_msg=$(curl --request POST 'http://localhost:$SQ_PORT/api/user_tokens/generate' -H 'Authorization: Basic YWRtaW46YWRtaW4=' --form 'name="API_SERVER"' --form 'login="admin"')
+fi
+
+key=$(echo "$cmd_msg" | jq -r '.name')
+if [ "$key" = "$chk_key" ]; then
+    sonarqube_admin_token=$(echo "$cmd_msg" | jq -r '.token')
+fi
+echo $sonarqube_admin_token
+
+# Wait 3 Secs
+sleep 3
+
+# Find default_template
+cmd_msg=$(curl --request GET 'http://localhost:$SQ_PORT/api/permissions/search_templates' -H 'Authorization: Basic YWRtaW46YWRtaW4=')
+if ! echo "$cmd_msg" | grep -q 'templateId'; then
+    echo "get default_template Error : $cmd_msg"
+    exit 1
+fi
+templateId=$(echo "$cmd_msg" | jq -r '.defaultTemplates[0].templateId')
+echo "get default_template ID : $templateId"
+
+# Setting default sonarqube group template permission ( admin, codeviewer, issueadmin, securityhotspotadmin, scan, user ) 
+permission_str='admin,codeviewer,issueadmin,securityhotspotadmin,scan,user'
+for permission in $(echo "$permission_str" | tr ',' ' '); do
+    cmd_msg=$(curl --request POST "http://localhost:$SQ_PORT/api/permissions/add_group_to_template" \
+        --form 'templateId="'$templateId'"' --form 'groupName="sonar-administrators"' --form 'permission="'$permission'"' -H 'Authorization: Basic YWRtaW46YWRtaW4=')
+    if [ "$cmd_msg" != "" ]; then
+        echo "Add group sonar-administrators $permission permission Error : $cmd_msg"
+    else
+        echo "Add group sonar-administrators $permission permission OK!"
+    fi
+    
+    cmd_msg=$(curl --request POST "http://localhost:$SQ_PORT/api/permissions/remove_group_from_template" \
+        --form 'templateId="'$templateId'"' --form 'groupName="sonar-users"' --form 'permission="'$permission'"' -H 'Authorization: Basic YWRtaW46YWRtaW4=')
+    if [ "$cmd_msg" != "" ]; then
+        echo "Remove group sonar-users $permission permission Error : $cmd_msg"
+    else
+        echo "Remove group sonar-users $permission permission OK!"
+    fi
+done
+
+# Update admin password
+cmd_msg=$(curl --request POST "http://localhost:$SQ_PORT/api/users/change_password" \
+        --form 'login="admin"' --form 'password="'$SQ_AM_PASSWORD'"' --form 'previousPassword="admin"' -H 'Authorization: Basic YWRtaW46YWRtaW4=')
+if [ -n "$cmd_msg" ]; then
+  echo "update admin password Error : $cmd_msg \n"
+  exit 1
+fi
