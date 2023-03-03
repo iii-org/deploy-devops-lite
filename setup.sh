@@ -14,6 +14,9 @@ function cecho() {
   # If level is info, use light green color and print to stdout
   if [ "$level" = "info" ]; then
     echo -e "\033[1;32m[INFO]\033[0m $*"
+  # If level is notice, use blue color and print to stdout
+  elif [ "$level" = "notice" ]; then
+    echo -e "\033[1;96m[NOTICE]\033[0m $*"
   # If level is warn, use yellow color and print to stdout
   elif [ "$level" = "warn" ]; then
     echo -e "\033[1;33m[WARN]\033[0m $*"
@@ -30,11 +33,6 @@ function _command_check() {
     cecho INFO "If you want to re-run initialize, please remove .initialized file first"
     return
   fi
-
-  sudo sysctl -w vm.max_map_count=524288
-  sudo sysctl -w fs.file-max=131072
-  ulimit -n 131072
-  ulimit -u 8192
 
   # If docker not installed
   if ! command -v docker &>/dev/null; then
@@ -57,6 +55,42 @@ function _command_check() {
 }
 
 function _prepare() {
+  cecho INFO "Checking sonarqube requirements"
+  # Check vm.max_map_count is greater than or equal to 524288
+  if [ "$(sysctl -n vm.max_map_count)" -lt 524288 ]; then
+    cecho NOTICE "vm.max_map_count is less than 524288"
+    cecho NOTICE "Executing command to set vm.max_map_count up to 524288..."
+    sudo sysctl -w vm.max_map_count=524288
+
+    cecho INFO "Persisting vm.max_map_count to /etc/sysctl.d/99-sonarqube.conf"
+    echo "vm.max_map_count=524288" | sudo tee -a /etc/sysctl.d/99-sonarqube.conf
+  fi
+
+  # Check fs.file-max is greater than or equal to 131072
+  if [ "$(sysctl -n fs.file-max)" -lt 131072 ]; then
+    cecho NOTICE "fs.file-max is less than 131072"
+    cecho NOTICE "Executing command to set fs.file-max up to 131072..."
+    sudo sysctl -w fs.file-max=131072
+
+    cecho INFO "Persisting fs.file-max to /etc/sysctl.d/99-sonarqube.conf"
+    echo "fs.file-max=131072" | sudo tee -a /etc/sysctl.d/99-sonarqube.conf
+  fi
+
+  # Check at least 131072 file descriptors are available
+  if [ "$(ulimit -n)" -lt 131072 ]; then
+    cecho NOTICE "ulimit -n is less than 131072"
+    cecho NOTICE "Executing command to set ulimit -n up to 131072..."
+    ulimit -n 131072
+  fi
+
+  # Check at least 8192 threads are available
+  if [ "$(ulimit -u)" -lt 8192 ]; then
+    cecho NOTICE "ulimit -u is less than 8192"
+    cecho NOTICE "Executing command to set ulimit -u up to 8192..."
+    ulimit -u 8192
+  fi
+
+  cecho NOTICE "Sonarqube requirements check complete"
   cecho INFO "Generating redmine.sql"
 
   cp redmine.sql.tmpl redmine.sql
@@ -77,7 +111,7 @@ function _prepare() {
   chmod 777 redmine.sql redmine.sql.log
 
   cecho INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
-  cecho WARN "Your ip address is currently set to: $IP_ADDR, if you want to change it, please modify .env file first"
+  cecho WARN "Your ip address is currently set to: \e[7;49;92m$IP_ADDR\e[0m, if you want to change it, please modify .env file first"
 }
 
 _command_check
@@ -86,9 +120,10 @@ _command_check
 if [ -e environments.json ]; then
   # If environments.json not empty, means setup already done
   if [ -s environments.json ]; then
-    cecho WARN "environments.json exist, skip setup..."
-    cecho WARN "If you want to re-setup, please remove environments.json first\n  rm environments.json"
-    cecho WARN "Assume you want to start up the services, start up services now..."
+    cecho NOTICE "environments.json exist, skip setup..."
+    cecho NOTICE "If you want to re-setup, please remove environments.json first"
+    cecho NOTICE "Use \e[7;40;96mrm environments.json\e[0m to remove environments.json"
+    cecho NOTICE "Assume you want to start up the services, start up services now..."
     docker compose up -d
     cecho INFO "Done! Exiting setup script..."
     exit 0
@@ -171,7 +206,7 @@ function setup_gitlab() {
     --access-level="not_protected"
 
   cecho INFO "Gitlab shared runner registered"
-  cecho INFO "Gitlab setup complete"
+  cecho NOTICE "Gitlab setup complete"
 }
 
 function setup_redmine() {
@@ -195,7 +230,7 @@ function setup_redmine() {
   cecho INFO "Importing redmine database..."
   docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>.redmine-sql-import.log
   cecho INFO "Redmine database imported, check the file .redmine-sql-import.log for more details"
-  cecho INFO "Redmine setup complete"
+  cecho NOTICE "Redmine setup complete"
 }
 
 function setup_sonarqube() {
@@ -309,7 +344,7 @@ function setup_sonarqube() {
     exit 1
   fi
 
-  cecho INFO "Sonarqube setup complete"
+  cecho NOTICE "Sonarqube setup complete"
 }
 
 function generate_environment_json() {
@@ -324,7 +359,7 @@ function generate_environment_json() {
 }
 EOF
 
-  cecho INFO "environments.json generated!"
+  cecho NOTICE "environments.json generated!"
 }
 
 function post_script() {
@@ -361,7 +396,7 @@ function post_script() {
     exit 1
   fi
 
-  cecho INFO "Post script finished!"
+  cecho NOTICE "Post script finished!"
 }
 
 setup_gitlab
