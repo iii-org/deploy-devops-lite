@@ -32,11 +32,7 @@ from resources.redis import (
 
 
 template_replace_dict = {
-    # "registry": config.get("HARBOR_EXTERNAL_BASE_URL").replace("https://", ""),
-    # "PLUGIN_MIRROR": config.get("HARBOR_EXTERNAL_BASE_URL"),
-    # "harbor.host": config.get("HARBOR_EXTERNAL_BASE_URL").replace("https://", ""),
     "git.host": config.get("GITLAB_BASE_URL").replace("http://", ""),
-    "kube.ingress.base_domain": config.get("INGRESS_EXTERNAL_BASE"),
 }
 
 gitlab_private_token = config.get("GITLAB_PRIVATE_TOKEN")
@@ -98,10 +94,10 @@ def __tm_get_pipe_yamlfile_name(pj, tag_name=None, branch_name=None, commit_id=N
     elif commit_id is not None:
         ref = commit_id
     for item in pj.repository_tree(ref=ref):
-        if item["path"] == ".rancher-pipeline.yml":
-            pipe_yaml_file_name = ".rancher-pipeline.yml"
-        elif item["path"] == ".rancher-pipeline.yaml":
-            pipe_yaml_file_name = ".rancher-pipeline.yaml"
+        if item["path"] == ".gitlab-ci.yml":
+            pipe_yaml_file_name = ".gitlab-ci.yml"
+        elif item["path"] == ".gitlab-ci.yaml":
+            pipe_yaml_file_name = ".gitlab-ci.yaml"
     return pipe_yaml_file_name
 
 
@@ -418,43 +414,43 @@ def tm_use_template_push_into_pj(template_repository_id, user_repository_id, tag
         ]
     )
     pipe_json = None
-    with open(f"{TEMPLATE_FOLDER_NAME}/{pj.path}/{pipe_yaml_file_name}") as file:
-        pipe_json = yaml.safe_load(file)
-        for stage in pipe_json["stages"]:
-            if "steps" in stage:
-                for step in stage["steps"]:
-                    for fun_key, fun_value in step.items():
-                        # Replace System parameters, like harbor.host, registry.
-                        if fun_key == "applyAppConfig":
-                            for ans_key in fun_value["answers"].keys():
-                                if ans_key in template_replace_dict:
-                                    fun_value["answers"][ans_key] = template_replace_dict[ans_key]
-                                # Replace by pipeline_settings.json default value
-                                if "arguments" in pip_set_json:
-                                    for argument in pip_set_json["arguments"]:
-                                        if "default_value" in argument and argument["key"] == ans_key:
-                                            fun_value["answers"][ans_key] = argument["default_value"]
-                                # Replace by user input parameter.
-                                if arguments is not None and ans_key in arguments:
-                                    if type(arguments) is str:
-                                        arguments = ast.literal_eval(arguments)
-                                    for arg_key, arg_value in arguments.items():
-                                        if arg_key is not None and ans_key == arg_key:
-                                            fun_value["answers"][ans_key] = arg_value
+    # with open(f"{TEMPLATE_FOLDER_NAME}/{pj.path}/{pipe_yaml_file_name}") as file:
+    #     pipe_json = yaml.safe_load(file)
+    #     for stage in pipe_json["stages"]:
+    #         if "steps" in stage:
+    #             for step in stage["steps"]:
+    #                 for fun_key, fun_value in step.items():
+    #                     # Replace System parameters, like harbor.host, registry.
+    #                     if fun_key == "applyAppConfig":
+    #                         for ans_key in fun_value["answers"].keys():
+    #                             if ans_key in template_replace_dict:
+    #                                 fun_value["answers"][ans_key] = template_replace_dict[ans_key]
+    #                             # Replace by pipeline_settings.json default value
+    #                             if "arguments" in pip_set_json:
+    #                                 for argument in pip_set_json["arguments"]:
+    #                                     if "default_value" in argument and argument["key"] == ans_key:
+    #                                         fun_value["answers"][ans_key] = argument["default_value"]
+    #                             # Replace by user input parameter.
+    #                             if arguments is not None and ans_key in arguments:
+    #                                 if type(arguments) is str:
+    #                                     arguments = ast.literal_eval(arguments)
+    #                                 for arg_key, arg_value in arguments.items():
+    #                                     if arg_key is not None and ans_key == arg_key:
+    #                                         fun_value["answers"][ans_key] = arg_value
 
-                            # Add volume uuid in DB and Web answer.
-                            if fun_value.get("answers", {}).get("volumeMounts.uuid") is not None:
-                                fun_value["answers"]["volumeMounts.uuid"] = uuids
+    #                         # Add volume uuid in DB and Web answer.
+    #                         if fun_value.get("answers", {}).get("volumeMounts.uuid") is not None:
+    #                             fun_value["answers"]["volumeMounts.uuid"] = uuids
 
-                        elif fun_key == "envFrom":
-                            pass
-                        else:
-                            for parm_key in fun_value.keys():
-                                if parm_key in template_replace_dict:
-                                    fun_value[parm_key] = template_replace_dict[parm_key]
-            stage = __update_stage_when_plugin_disable(stage)
-    with open(f"{TEMPLATE_FOLDER_NAME}/{pj.path}/{pipe_yaml_file_name}", "w") as file:
-        yaml.dump(pipe_json, file, sort_keys=False)
+    #                     elif fun_key == "envFrom":
+    #                         pass
+    #                     else:
+    #                         for parm_key in fun_value.keys():
+    #                             if parm_key in template_replace_dict:
+    #                                 fun_value[parm_key] = template_replace_dict[parm_key]
+    #         stage = __update_stage_when_plugin_disable(stage)
+    # with open(f"{TEMPLATE_FOLDER_NAME}/{pj.path}/{pipe_yaml_file_name}", "w") as file:
+    #     yaml.dump(pipe_json, file, sort_keys=False)
     set_git_username_config(f"{TEMPLATE_FOLDER_NAME}/{pj.path}")
     tm_git_commit_push(pj.path, secret_pj_http_url, TEMPLATE_FOLDER_NAME, "範本 commit", force=force)
 
@@ -687,7 +683,7 @@ def tm_update_pipline_branches(user_account, repository_id, data, default=True, 
             branch=default_branch,
             author_email="system@iiidevops.org.tw",
             author_name="iiidevops",
-            commit_message=f"{user_account} 編輯 {default_branch} 分支 .rancher-pipeline.yaml",
+            commit_message=f"{user_account} 編輯 {default_branch} 分支 .gitlab-ci.yaml",
         )
         # if not run or default or (run and default_branch not in need_running_branches):
         # pipeline.stop_and_delete_pipeline(repository_id, next_run, branch=default_branch)
@@ -746,7 +742,7 @@ def sync_branch(
             branch=br_name,
             author_email="system@iiidevops.org.tw",
             author_name="iiidevops",
-            commit_message=f"{user_account} 編輯 {br_name} 分支 .rancher-pipeline.yaml",
+            commit_message=f"{user_account} 編輯 {br_name} 分支 .gitlab-ci.yaml",
         )
         if not_run:
             pipeline.stop_and_delete_pipeline(repository_id, next_run, branch=br_name)
@@ -779,7 +775,7 @@ def initial_rancher_pipline_info(repository_id):
 
 def update_nonexist_key_rancher_file(repository_id: int):
     """
-    更新 iiidevops 鍵值不存在的 .rancher-pipeline.yml 檔案
+    更新 iiidevops 鍵值不存在的 .gitlab-ci.yml 檔案
 
     :param repository_id:
     :return:
@@ -901,7 +897,7 @@ def update_pj_rancher_pipline(repository_id):
             branch=br.name,
             author_email="system@iiidevops.org.tw",
             author_name="iiidevops",
-            commit_message=f'Add "iiidevops" in branch {br.name} .rancher-pipeline.yml.',
+            commit_message=f'Add "iiidevops" in branch {br.name} .gitlab-ci.yml.',
         )
         pipeline.stop_and_delete_pipeline(repository_id, next_run)
 
@@ -958,7 +954,7 @@ def update_pj_plugin_status(plugin_name, disable):
                     branch=br.name,
                     author_email="system@iiidevops.org.tw",
                     author_name="iiidevops",
-                    commit_message=f"UI 編輯 .rancher-pipeline.yaml {process} {plugin_name}.",
+                    commit_message=f"UI 編輯 .gitlab-ci.yaml {process} {plugin_name}.",
                 )
                 # pipeline.stop_and_delete_pipeline(repository_id, next_run)
 

@@ -129,13 +129,10 @@ class Redmine:
     def __refresh_key(self):
         protocol = "https" if config.get("REDMINE_INTERNAL_BASE_URL")[:5] == "https" else "http"
         host = config.get("REDMINE_INTERNAL_BASE_URL")[len(protocol + "://") :]
+        redmine_pwd = quote_plus(config.get('REDMINE_ADMIN_PASSWORD'))
         if self.operator_id is None:
             # get redmine_key
-            url = (
-                f"{protocol}://{config.get('REDMINE_ADMIN_ACCOUNT')}"
-                f":{quote_plus(config.get('REDMINE_ADMIN_PASSWORD'))}"
-                f"@{host}/users/current.json"
-            )
+            url = f"{protocol}://{config.get('REDMINE_ADMIN_ACCOUNT')}:{redmine_pwd}@{host}/users/current.json"
             self.key_generated = time.time()
         else:
             url = (

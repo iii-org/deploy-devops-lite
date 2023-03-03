@@ -274,82 +274,89 @@ def create_project(user_id, args):
         args["parent_plan_project_id"] = parent_plan_project_id
 
     # 使用 multi-thread 建立各專案
-    services = ["redmine", "gitlab", "harbor", "sonarqube"]
-    targets = {
-        "redmine": redmine.rm_create_project,
-        "gitlab": gitlab.gl_create_project,
-        "sonarqube": sonarqube.sq_create_project,
-    }
-    service_args = {
-        "redmine": (args,),
-        "gitlab": (args,),
-        "sonarqube": (args["name"], args.get("display")),
-    }
-    helper = util.ServiceBatchOpHelper(services, targets, service_args)
-    helper.run()
+    redmine_pj_id = redmine.rm_create_project(args)["project"]["id"]
+    output = gitlab.gl_create_project(args)
+    gitlab_pj_id = output["id"]
+    gitlab_pj_name = output["name"]
+    gitlab_pj_ssh_url = output["ssh_url_to_repo"]
+    gitlab_pj_http_url = output["http_url_to_repo"]
+    sonarqube.sq_create_project(args["name"], args.get("display"))
+    # services = ["redmine", "gitlab", "sonarqube"]
+    # targets = {
+    #     "redmine": redmine.rm_create_project,
+    #     "gitlab": gitlab.gl_create_project,
+    #     "sonarqube": sonarqube.sq_create_project,
+    # }
+    # service_args = {
+    #     "redmine": (args,),
+    #     "gitlab": (args,),
+    #     "sonarqube": (args["name"], args.get("display")),
+    # }
+    # helper = util.ServiceBatchOpHelper(services, targets, service_args)
+    # helper.run()
 
     # 先取出已成功的專案建立 id，以便之後可能的回溯需求
-    redmine_pj_id = None
-    gitlab_pj_id = None
-    gitlab_pj_name = None
-    gitlab_pj_ssh_url = None
-    gitlab_pj_http_url = None
+    # redmine_pj_id = None
+    # gitlab_pj_id = None
+    # gitlab_pj_name = None
+    # gitlab_pj_ssh_url = None
+    # gitlab_pj_http_url = None
     project_name = args["name"]
 
-    for service in services:
-        if helper.errors[service] is None:
-            output = helper.outputs[service]
-            if service == "redmine":
-                redmine_pj_id = output["project"]["id"]
-            elif service == "gitlab":
-                gitlab_pj_id = output["id"]
-                gitlab_pj_name = output["name"]
-                gitlab_pj_ssh_url = output["ssh_url_to_repo"]
-                gitlab_pj_http_url = output["http_url_to_repo"]
+    # for service in services:
+    #     if helper.errors[service] is None:
+    #         output = helper.outputs[service]
+    #         if service == "redmine":
+    #             redmine_pj_id = output["project"]["id"]
+    #         elif service == "gitlab":
+    #             gitlab_pj_id = output["id"]
+    #             gitlab_pj_name = output["name"]
+    #             gitlab_pj_ssh_url = output["ssh_url_to_repo"]
+    #             gitlab_pj_http_url = output["http_url_to_repo"]
 
-    # 如果不是全部都成功，rollback
-    if any(helper.errors.values()):
-        for service in services:
-            if helper.errors[service] is None:
-                if service == "redmine":
-                    redmine.rm_delete_project(redmine_pj_id)
-                elif service == "gitlab":
-                    gitlab.gl_delete_project(gitlab_pj_id)
-                elif service == "sonarqube":
-                    sonarqube.sq_delete_project(project_name)
+    # # 如果不是全部都成功，rollback
+    # if any(helper.errors.values()):
+    #     for service in services:
+    #         if helper.errors[service] is None:
+    #             if service == "redmine":
+    #                 redmine.rm_delete_project(redmine_pj_id)
+    #             elif service == "gitlab":
+    #                 gitlab.gl_delete_project(gitlab_pj_id)
+    #             elif service == "sonarqube":
+    #                 sonarqube.sq_delete_project(project_name)
 
-        # 丟出服務序列在最前的錯誤
-        for service in services:
-            e = helper.errors[service]
-            if e is not None:
-                if service == "redmine":
-                    status_code = e.status_code
-                    resp = e.unpack_response()
-                    if status_code == 422 and "errors" in resp:
-                        if len(resp["errors"]) > 0:
-                            if resp["errors"][0] == "Identifier has already been taken":
-                                raise DevOpsError(
-                                    status_code,
-                                    "Redmine already used this identifier.",
-                                    error=apiError.identifier_has_been_taken(args["name"]),
-                                )
-                    raise e
-                elif service == "gitlab":
-                    status_code = e.status_code
-                    gitlab_json = e.unpack_response()
-                    if status_code == 400:
-                        try:
-                            if gitlab_json["message"]["name"][0] == "has already been taken":
-                                raise DevOpsError(
-                                    status_code,
-                                    {"gitlab": gitlab_json},
-                                    error=apiError.identifier_has_been_taken(args["name"]),
-                                )
-                        except (KeyError, IndexError):
-                            pass
-                    raise e
-                else:
-                    raise e
+    #     # 丟出服務序列在最前的錯誤
+    #     for service in services:
+    #         e = helper.errors[service]
+    #         if e is not None:
+    #             if service == "redmine":
+    #                 status_code = e.status_code
+    #                 resp = e.unpack_response()
+    #                 if status_code == 422 and "errors" in resp:
+    #                     if len(resp["errors"]) > 0:
+    #                         if resp["errors"][0] == "Identifier has already been taken":
+    #                             raise DevOpsError(
+    #                                 status_code,
+    #                                 "Redmine already used this identifier.",
+    #                                 error=apiError.identifier_has_been_taken(args["name"]),
+    #                             )
+    #                 raise e
+    #             elif service == "gitlab":
+    #                 status_code = e.status_code
+    #                 gitlab_json = e.unpack_response()
+    #                 if status_code == 400:
+    #                     try:
+    #                         if gitlab_json["message"]["name"][0] == "has already been taken":
+    #                             raise DevOpsError(
+    #                                 status_code,
+    #                                 {"gitlab": gitlab_json},
+    #                                 error=apiError.identifier_has_been_taken(args["name"]),
+    #                             )
+    #                     except (KeyError, IndexError):
+    #                         pass
+    #                 raise e
+    #             else:
+    #                 raise e
     try:
         project_id = None
         uuids = uuid.uuid1().hex
@@ -445,7 +452,6 @@ def create_project(user_id, args):
             "project_id": project_id,
             "plan_project_id": redmine_pj_id,
             "git_repository_id": gitlab_pj_id,
-            # "harbor_project_id": harbor_pj_id,
             "description": args["description"],
             "project_url": f'http://{config.get("DEPLOYMENT_NAME")}/#/plan/{project_name}/overview',
         }

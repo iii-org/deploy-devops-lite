@@ -90,8 +90,8 @@ services:
       - "${III_PORT}:10009"
     restart: on-failure
     volumes:
-      - ./environments.json:/usr/src/app/environments.json
-      - iii-log:/usr/src/app/logs
+      - ./environments.json:/environments.json
+      - iii-log:/logs
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:${III_DB_PASSWORD}@iii-database:5432/devopsdb
       SQLALCHEMY_TRACK_MODIFICATIONS: false
@@ -111,6 +111,7 @@ services:
       ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
       DEPLOYER_NODE_IP: ${IP_ADDR}
       REDIS_BASE_URL: redis:6379
+      JWT_SECRET_KEY: x4QkyoxjiT7oQmVnv3_i
 
   iii-database:
     image: postgres:12
@@ -121,10 +122,11 @@ services:
       - iii-db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${III_DB_PASSWORD}
-      # POSTGRES_DB: devopsdb
 
   redis:
     image: redis:6.2.6
+    ports:
+      - "31999:6379"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
