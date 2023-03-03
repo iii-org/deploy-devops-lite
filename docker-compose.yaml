@@ -88,6 +88,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${III_PORT}:10009"
+    restart: on-failure
     volumes:
       - ./environments.json:/usr/src/app/environments.json
       - iii-log:/usr/src/app/logs
@@ -109,7 +110,7 @@ services:
       ADMIN_INIT_EMAIL: ${III_ADMIN_EMAIL}
       ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
       DEPLOYER_NODE_IP: ${IP_ADDR}
-
+      REDIS_BASE_URL: redis:6379
 
   iii-database:
     image: postgres:12
@@ -120,7 +121,14 @@ services:
       - iii-db-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${III_DB_PASSWORD}
-      POSTGRES_DB: devopsdb
+      # POSTGRES_DB: devopsdb
+
+  redis:
+    image: redis:6.2.6
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
 
 volumes:
   gitlab-data:

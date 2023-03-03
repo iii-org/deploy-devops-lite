@@ -22,7 +22,7 @@ from flask_apispec.extension import FlaskApiSpec
 from flask_cors import CORS
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource, Api, reqparse
-from flask_socketio import SocketIO
+# from flask_socketio import SocketIO
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy_utils import database_exists, create_database
 from werkzeug.routing import IntegerConverter
@@ -148,17 +148,17 @@ app.config["MAX_CONTENT_LENGTH"] = 100 * 1000 * 1000
 api = Api(app, errors=apiError.custom_errors)
 CORS(app)
 
-if config.get("DEBUG") is False:
-    socketio = SocketIO(
-        app,
-        message_queue=f'redis://{config.get("REDIS_BASE_URL")}',
-        cors_allowed_origins="*",
-        logger=False,
-        engineio_logger=False,
-        timeout=60000,
-    )
-else:
-    socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, timeout=60000)
+# if config.get("DEBUG") is False:
+#     socketio = SocketIO(
+#         app,
+#         message_queue=f'redis://{config.get("REDIS_BASE_URL")}',
+#         cors_allowed_origins="*",
+#         logger=False,
+#         engineio_logger=False,
+#         timeout=60000,
+#     )
+# else:
+#     socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True, timeout=60000)
 
 
 class SignedIntConverter(IntegerConverter):
@@ -396,8 +396,8 @@ api.add_resource(pipeline.PipelinePhaseYaml, "/pipelines/<repository_id>/branch/
 api.add_resource(pipeline.PipelineYaml, "/pipelines/<repository_id>/branch/<branch_name>/generate_ci_yaml")
 
 # Websocket
-socketio.on_namespace(system_parameter.SyncTemplateWebsocketLog("/sync_template/websocket/logs"))
-socketio.on_namespace(issue.IssueSocket("/issues/websocket"))
+# socketio.on_namespace(system_parameter.SyncTemplateWebsocketLog("/sync_template/websocket/logs"))
+# socketio.on_namespace(issue.IssueSocket("/issues/websocket"))
 
 # issue
 issue_url(api, add_resource)
@@ -677,7 +677,7 @@ api.add_resource(system_parameter.ParameterGithubVerifyExecuteStatus, "/system_p
 lock_url(api, add_resource)
 
 # message
-notification_message_url(api, add_resource, socketio)
+# notification_message_url(api, add_resource, socketio)
 
 # routine job
 api.add_resource(routine_job.DoJobByMonth, "/routine_job/by_month")
@@ -737,4 +737,5 @@ def start_prod():
 
 if __name__ == "__main__":
     start_prod()
-    socketio.run(app, host="0.0.0.0", port=10009, debug=config.get("DEBUG"), use_reloader=config.get("USE_RELOADER"))
+    app.run(host="0.0.0.0", port=10009, debug=True)
+    # socketio.run(app, host="0.0.0.0", port=10009, debug=config.get("DEBUG"), use_reloader=config.get("USE_RELOADER"))

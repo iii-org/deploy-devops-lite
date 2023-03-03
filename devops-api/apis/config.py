@@ -11,7 +11,7 @@ FIXED = {
     "USE_RELOADER": False,
     "DEFAULT_TRACE_ORDER": ["Epic", "Feature", "Test Plan"],
     "DOCUMENT_LEVEL": "public",
-    "REDIS_BASE_URL": "devops-redis-service:6379",
+    # "REDIS_BASE_URL": "devops-redis-service:6379",
 }
 
 in_file = {}
