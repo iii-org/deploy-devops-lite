@@ -475,11 +475,11 @@ def delete_issue_extensions(issue_id):
 
 
 def delete_issue_excalidraw_conn(issue_id: int, delete_current: bool = False) -> None:
-    if delete_current:
-        from resources.excalidraw import delete_excalidraw
+    # if delete_current:
+    #     from resources.excalidraw import delete_excalidraw
 
-        main_excalidraw_issue_conn = model.ExcalidrawIssueRelation.query.filter_by(issue_id=issue_id).first()
-        delete_excalidraw(main_excalidraw_issue_conn.excalidraw_id)
+    #     main_excalidraw_issue_conn = model.ExcalidrawIssueRelation.query.filter_by(issue_id=issue_id).first()
+    #     delete_excalidraw(main_excalidraw_issue_conn.excalidraw_id)
     _, id_list = get_all_sons_ids(str(issue_id))
     id_list = [int(id) for id in id_list]
     model.ExcalidrawIssueRelation.query.filter(model.ExcalidrawIssueRelation.issue_id.in_(id_list)).delete()

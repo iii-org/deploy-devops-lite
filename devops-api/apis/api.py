@@ -397,7 +397,7 @@ api.add_resource(pipeline.PipelineYaml, "/pipelines/<repository_id>/branch/<bran
 
 # Websocket
 # socketio.on_namespace(system_parameter.SyncTemplateWebsocketLog("/sync_template/websocket/logs"))
-# socketio.on_namespace(issue.IssueSocket("/issues/websocket"))
+socketio.on_namespace(issue.IssueSocket("/issues/websocket"))
 
 # issue
 issue_url(api, add_resource)
