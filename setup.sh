@@ -155,7 +155,6 @@ prepare_check() {
     exit 1
   fi
 
-  colored_echo INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
   colored_echo INFO "Your ip address is currently set to: \e[97;104m$IP_ADDR\e[0m, if you want to change it, please modify \e[97m.env\e[0m file"
   colored_echo INFO "Sleeping 5 seconds, press Ctrl+C to cancel"
   sleep 5
@@ -181,7 +180,7 @@ prepare_check() {
 
   chmod 777 redmine.sql redmine.sql.log
 
-  colored_echo INFO "Done! redmine.sql generated"
+  colored_echo INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
 }
 
 lsb_dist="$(get_distribution)"
