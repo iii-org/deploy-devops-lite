@@ -19,7 +19,13 @@ PM = Role(3, "Project Manager")
 ADMIN = Role(5, "Administrator")
 BOT = Role(6, "Project BOT")
 QA = Role(7, "QA")
-ALL_ROLES = [RD, PM, ADMIN, BOT, QA]
+ALL_ROLES = [
+    # RD, 
+    PM, 
+    ADMIN, 
+    BOT,
+    # QA
+]
 
 
 def is_role(role):

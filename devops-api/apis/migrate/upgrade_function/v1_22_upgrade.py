@@ -14,9 +14,9 @@ def insert_default_value_in_lock():
 
 
 def insert_default_value_in_system_parameter():
-    mail_setting = redmine.rm_get_mail_setting()
-    email_address = redmine.rm_get_or_set_emission_email_address(None)
-    mail_setting["emission_email_address"] = email_address["message"]
+    # mail_setting = redmine.rm_get_mail_setting()
+    # email_address = redmine.rm_get_or_set_emission_email_address(None)
+    # mail_setting["emission_email_address"] = email_address["message"]
 
     data_list = [
         {
@@ -55,7 +55,7 @@ def insert_default_value_in_system_parameter():
             "value": {"gitlab_domain_connection": False},
             "active": True,
         },
-        {"name": "mail_config", "value": mail_setting, "active": False},
+        # {"name": "mail_config", "value": mail_setting, "active": False},
         {
             "name": "rancher_app_revision_limit",
             "value": {"limit_nums": 3000},

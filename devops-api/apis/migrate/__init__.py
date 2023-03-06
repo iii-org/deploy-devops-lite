@@ -10,37 +10,10 @@ from resources.router import update_plugin_hidden
 # Each time you add a migration, add a version code here.
 
 VERSIONS = [
-    "1.22.0.1",
-    "1.22.0.2",
-    "1.22.0.3",
-    "1.22.0.4",
-    "1.22.0.5",
-    "1.23.0.1",
-    "1.23.0.2",
-    "1.24.0.1",
-    "1.24.0.2",
-    "1.25.0.1",
-    "1.25.0.3",
-    "1.25.0.4",
-    "1.25.0.5",
-    "1.25.0.6",
-    "1.25.0.7",
-    "1.26.0.1",
-    "1.26.0.2",
+    "0.0.0.0"
 ]
 ONLY_UPDATE_DB_MODELS = [
-    "1.22.0.1",
-    "1.22.0.2",
-    "1.22.0.3",
-    "1.23.0.2",
-    "1.24.0.1",
-    "1.24.0.2",
-    "1.25.0.3",
-    "1.25.0.4",
-    "1.25.0.5",
-    "1.25.0.6",
-    "1.25.0.7",
-    "1.26.0.1",
+    "0.0.0.0"
 ]
 
 
@@ -50,22 +23,7 @@ def upgrade(version):
     just in case multi pods will call it several times.
     ex. Insert data need to check data has already existed or not.
     """
-    if version in ONLY_UPDATE_DB_MODELS:
-        alembic_upgrade()
-    elif version == "1.22.0.4":
-        recreate_ui_route()
-    elif version == "1.22.0.5":
-        if SystemParameter.query.filter_by(name="upload_file_size").first() is None:
-            row = SystemParameter(name="upload_file_size", value={"upload_file_size": 5}, active=True)
-            db.session.add(row)
-            db.session.commit()
-    elif version == "1.23.0.1":
-        recreate_ui_route()
-    elif version == "1.25.0.1":
-        model.NotificationMessage.query.filter_by(alert_service_id=303, close=False).delete()
-        db.session.commit()
-    elif version == "1.26.0.2":
-        recreate_ui_route()
+    pass
 
 
 def recreate_ui_route():
@@ -78,7 +36,7 @@ def recreate_ui_route():
 
 def init():
     latest_api_version, deploy_version = VERSIONS[-1], config.get("DEPLOY_VERSION")
-    logger.info(f"Creat NexusVersion, api_version={latest_api_version}, deploy_version={deploy_version}")
+    logger.info(f"Create NexusVersion, api_version={latest_api_version}, deploy_version={deploy_version}")
     new = model.NexusVersion(api_version=latest_api_version, deploy_version=deploy_version)
     db.session.add(new)
     db.session.commit()

@@ -1,3 +1,15 @@
+import uuid
+import model
+
+def set_deployment_uuid():
+    my_uuid = uuid.uuid1()
+    row = model.NexusVersion.query.first()
+    row.deployment_uuid = my_uuid
+    model.db.session.commit()
+    return my_uuid
+
+
+
 '''
 import uuid
 
@@ -78,14 +90,6 @@ def _login():
         with_token=False,
     )
     version_center_token = res.json().get("data", {}).get("access_token", None)
-
-
-def set_deployment_uuid():
-    my_uuid = uuid.uuid1()
-    row = model.NexusVersion.query.first()
-    row.deployment_uuid = my_uuid
-    model.db.session.commit()
-    return my_uuid
 
 
 def has_devops_update():
