@@ -2,8 +2,9 @@
 
 set -eu
 
-# shellcheck disable=SC2046
-export $(grep -v '^#' .env | xargs)
+set -a
+. .env
+set +a
 
 colored_echo() {
   level=$1
@@ -169,7 +170,6 @@ prepare_check() {
   REDMINE_HASHED_PASSWORD=$(echo -n "$REDMINE_SALT$REDMINE_HASHED_DB_PASSWORD" | sha1sum | awk '{print $1}')
   REDMINE_API_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
 
-  # REDMINE_API_KEY=$(echo $RANDOM | md5sum | head -c 20)
   REDMINE_DOMAIN_NAME=$IP_ADDR":"$REDMINE_PORT
 
   sed -i "s|{{hashed_password}}|$REDMINE_HASHED_PASSWORD|g" redmine.sql
@@ -177,7 +177,7 @@ prepare_check() {
   sed -i "s|{{api_key}}|$REDMINE_API_KEY|g" redmine.sql
   sed -i "s|{{devops_domain_name}}|$REDMINE_DOMAIN_NAME|g" redmine.sql
 
-  chmod 777 redmine.sql redmine.sql.log
+  chmod 777 redmine.sql
 
   colored_echo INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
 }
@@ -244,7 +244,6 @@ setup_gitlab() {
 
   # shellcheck disable=SC2002
   GITLAB_INIT_ACCESS_TOKEN="$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w "${1:-20}" | head -n 1)" # Should 20 chars long
-  # GITLAB_INIT_ACCESS_TOKEN=$(echo $RANDOM | md5sum | head -c 20)
   GITLAB_INIT_RESPONSE="$(docker compose exec gitlab gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$GITLAB_INIT_ACCESS_TOKEN'); token.save!")"
 
   # If success, no output
@@ -304,8 +303,8 @@ setup_redmine() {
   done
 
   colored_echo INFO "Importing redmine database..."
-  docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>redmine-sql-import.log
-  colored_echo INFO "Redmine database imported, check the file redmine-sql-import.log for more details"
+  docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>.redmine-sql-import.log
+  colored_echo INFO "Redmine database imported, check the file \e[97m.redmine-sql-import.log\e[0m for more details"
   colored_echo NOTICE "Redmine setup complete"
 }
 
@@ -426,13 +425,14 @@ setup_sonarqube() {
 generate_environment_json() {
   colored_echo INFO "Generating environments.json..."
   JWT_SECRET_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
+
   # Using heredoc to generate environments.json
   cat <<EOF >environments.json
 {
 	"GITLAB_PRIVATE_TOKEN": "$GITLAB_INIT_ACCESS_TOKEN",
+	"JWT_SECRET_KEY": "$JWT_SECRET_KEY",
 	"REDMINE_API_KEY": "$REDMINE_API_KEY",
-	"SONARQUBE_ADMIN_TOKEN": "$SONARQUBE_ADMIN_TOKEN",
-  "JWT_SECRET_KEY": "$JWT_SECRET_KEY"
+	"SONARQUBE_ADMIN_TOKEN": "$SONARQUBE_ADMIN_TOKEN"
 }
 EOF
 
