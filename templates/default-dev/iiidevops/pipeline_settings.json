@@ -1,0 +1,6 @@
+{
+  "name": "Default",
+  "description": " <a class='el-link el-link--primary' href='https://github.com/iiidevops-templates/default-dev/blob/master/README.md' target='_blank'>簡易網頁說明</a><hr /><ul>  <li><strong>v1.19</strong>:增加自動計算原始碼行數功能</li>  <li><strong>v1.18</strong>:調整 Web DB chart 支援掛載 NFS Volume 參數</li>  <li><strong>v1.17</strong>:增加掃描 docker Image 功能, Web chart 支援掛載 Volume</li></ul>",
+  "arguments": [
+  ]
+}

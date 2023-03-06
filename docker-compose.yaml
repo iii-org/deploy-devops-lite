@@ -111,7 +111,6 @@ services:
       ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
       DEPLOYER_NODE_IP: ${IP_ADDR}
       REDIS_BASE_URL: redis:6379
-      JWT_SECRET_KEY: x4QkyoxjiT7oQmVnv3_i
 
   iii-database:
     image: postgres:12

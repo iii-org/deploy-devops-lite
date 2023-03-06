@@ -162,7 +162,6 @@ prepare_check() {
   colored_echo INFO "Generating redmine.sql"
 
   cp redmine.sql.tmpl redmine.sql
-  touch redmine.sql.log
   touch environments.json
 
   REDMINE_SALT=$(echo -n "$REDMINE_DB_PASSWORD" | md5sum | awk '{print $1}')
@@ -170,7 +169,7 @@ prepare_check() {
   REDMINE_HASHED_PASSWORD=$(echo -n "$REDMINE_SALT$REDMINE_HASHED_DB_PASSWORD" | sha1sum | awk '{print $1}')
   REDMINE_API_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
 
-  #  REDMINE_API_KEY=$(echo $RANDOM | md5sum | head -c 20)
+  # REDMINE_API_KEY=$(echo $RANDOM | md5sum | head -c 20)
   REDMINE_DOMAIN_NAME=$IP_ADDR":"$REDMINE_PORT
 
   sed -i "s|{{hashed_password}}|$REDMINE_HASHED_PASSWORD|g" redmine.sql
@@ -245,6 +244,7 @@ setup_gitlab() {
 
   # shellcheck disable=SC2002
   GITLAB_INIT_ACCESS_TOKEN="$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w "${1:-20}" | head -n 1)" # Should 20 chars long
+  # GITLAB_INIT_ACCESS_TOKEN=$(echo $RANDOM | md5sum | head -c 20)
   GITLAB_INIT_RESPONSE="$(docker compose exec gitlab gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$GITLAB_INIT_ACCESS_TOKEN'); token.save!")"
 
   # If success, no output
@@ -304,8 +304,8 @@ setup_redmine() {
   done
 
   colored_echo INFO "Importing redmine database..."
-  docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>.redmine-sql-import.log
-  colored_echo INFO "Redmine database imported, check the file .redmine-sql-import.log for more details"
+  docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>redmine-sql-import.log
+  colored_echo INFO "Redmine database imported, check the file redmine-sql-import.log for more details"
   colored_echo NOTICE "Redmine setup complete"
 }
 
@@ -425,13 +425,14 @@ setup_sonarqube() {
 
 generate_environment_json() {
   colored_echo INFO "Generating environments.json..."
-
+  JWT_SECRET_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
   # Using heredoc to generate environments.json
   cat <<EOF >environments.json
 {
 	"GITLAB_PRIVATE_TOKEN": "$GITLAB_INIT_ACCESS_TOKEN",
 	"REDMINE_API_KEY": "$REDMINE_API_KEY",
-	"SONARQUBE_ADMIN_TOKEN": "$SONARQUBE_ADMIN_TOKEN"
+	"SONARQUBE_ADMIN_TOKEN": "$SONARQUBE_ADMIN_TOKEN",
+  "JWT_SECRET_KEY": "$JWT_SECRET_KEY"
 }
 EOF
 
@@ -468,6 +469,21 @@ post_script() {
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
 
   if [ "$key" != "SONAR_HOST_URL" ]; then
+    colored_echo ERROR "Setting Gitlab CICD variable failed, response: \n$POST_RESPONSE"
+    exit 1
+  fi
+
+  API_ORIGIN="http://$IP_ADDR:$III_PORT"
+  POST_RESPONSE="$(docker compose exec runner curl -s -k \
+    --request POST --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
+    "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
+    --form 'key=API_ORIGIN' \
+    --form 'value="'"$API_ORIGIN"'"' \
+    --form 'protected=true')"
+
+  key=$(echo "$POST_RESPONSE" | jq -r '.key')
+
+  if [ "$key" != "API_ORIGIN" ]; then
     colored_echo ERROR "Setting Gitlab CICD variable failed, response: \n$POST_RESPONSE"
     exit 1
   fi
