@@ -256,6 +256,9 @@ setup_gitlab() {
     --access-level="not_protected"
 
   INFO "Gitlab shared runner registered"
+
+  "${bin_dir:?}"/add_gitlab_template.sh "$GITLAB_INIT_ACCESS_TOKEN"
+
   NOTICE "Gitlab setup complete"
 }
 
