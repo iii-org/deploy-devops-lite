@@ -874,15 +874,60 @@ class GitLab(object):
                 }
             util.write_json_file(f"{base_path}/{pj.id}/{date}.json", result)
 
-    def get_pipeline_console(self, project_id, job_id):
-        return self.__api_get(f"/projects/{project_id}/jobs/{job_id}/trace").content.decode("utf-8")
+    # pipeline
+    def gl_list_pipelines(self, repo_id: int, limit: int, start: int, sort: str = "desc", with_pagination: bool = False) -> list[dict[str, Any]]:
+        params={
+            "per_page": limit,
+            "sort": sort
+        }
+        ret = self.__api_get(f"/projects/{repo_id}/pipelines", params=params)
+        results = ret.json()
+        if not with_pagination:
+            return results
 
-    def retry_pipeline_job(self, project_id, job_id):
-        return self.__api_post(f"/projects/{project_id}/jobs/{job_id}/retry").json()
+        headers = ret.headers
+        pagination = {
+            "total": headers.get("X-Total"),
+            "current": headers.get("X-Page"),
+            "prev": headers.get("X-Per-Page"),
+            "next": headers.get("X-Next-Page"),
+            "pages": headers.get("X-Total-Pages"),
+            "per_page": limit,
 
-    def stop_pipeline_job(self, project_id, job_id):
-        return self.__api_post(f"/projects/{project_id}/jobs/{job_id}/cancel").json()
+        }
+        return results, pagination
 
+    def gl_get_pipeline_console(self, repo_id: int, job_id: int):
+        return self.__api_get(f"/projects/{repo_id}/jobs/{job_id}/trace").content.decode("utf-8")
+
+    def gl_rerun_pipeline_job(self, repo_id: int, job_id: int):
+        return self.__api_post(f"/projects/{repo_id}/jobs/{job_id}/retry").json()
+
+    def gl_stop_pipeline_job(self, repo_id: int, job_id: int):
+        return self.__api_post(f"/projects/{repo_id}/jobs/{job_id}/cancel").json()
+
+    def gl_pipeline_jobs(self, repo_id: int, pipeline_id: int) -> dict[str, Any]:
+        return self.__api_get(f"/projects/{repo_id}/pipelines/{pipeline_id}/jobs").json()
+
+    def get_pipeline_jobs_status(self, repo_id: int, pipeline_id: int, with_commit_msg: bool = False) -> dict[str, int]:
+        jobs = self.gl_pipeline_jobs(repo_id, pipeline_id)
+        total = len(jobs)
+        success = len([job for job in jobs if job["status"] == "success"])
+        ret = {
+            "status": {
+                "total": total,
+                "success": success
+            }     
+        }
+        if with_commit_msg:
+            commit_message = jobs[0]["commit"]["title"]
+            ret.update({
+                "commit_message": commit_message
+            })
+        return ret
+
+        
+        
 
 def single_file(
     file_path: str,
@@ -1726,20 +1771,20 @@ class GitlabSourceCodeV2(MethodResource):
                 return util.respond(401, "insert failed.", error=e)
 
 
-class GitlabPipelineJobConsole(Resource):
-    @jwt_required()
-    def get(self, repository_id, job_id):
-        return util.success(gitlab.get_pipeline_console(repository_id, job_id))
+# class GitlabPipelineJobConsole(Resource):
+#     @jwt_required()
+#     def get(self, repository_id, job_id):
+#         return util.success(gitlab.get_pipeline_console(repository_id, job_id))
 
 
-class GitlabPipelineJobRetry(Resource):
-    @jwt_required()
-    def post(self, repository_id, job_id):
-        return util.success(gitlab.retry_pipeline_job(repository_id, job_id))
+# class GitlabPipelineJobRetry(Resource):
+#     @jwt_required()
+#     def post(self, repository_id, job_id):
+#         return util.success(gitlab.retry_pipeline_job(repository_id, job_id))
 
 
-class GitlabPipelineJobStop(Resource):
-    @jwt_required()
-    def post(self, repository_id, job_id):
-        return util.success(gitlab.stop_pipeline_job(repository_id, job_id))
+# class GitlabPipelineJobStop(Resource):
+#     @jwt_required()
+#     def post(self, repository_id, job_id):
+#         return util.success(gitlab.gl_stop_pipeline_job(repository_id, job_id))
     

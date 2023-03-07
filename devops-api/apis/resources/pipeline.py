@@ -14,6 +14,7 @@ from model import  db   #  remove ProjectPluginRelation ,PipelineLogsCache, Proj
 from nexus import nx_get_project_plugin_relation
 from resources import role
 from .gitlab import GitLab, commit_id_to_url
+from typing import Union
 
 # from .rancher import rancher
 from os import listdir, makedirs
@@ -22,33 +23,64 @@ from shutil import rmtree
 gitlab = GitLab()
 
 
-def __rancher_pagination(rancher_output):
-    def __url_get_marker(url):
-        key_name = "marker"
-        for param in url.split("?", 1)[1].split("&"):
-            if key_name in param:
-                return __marker_get_id(param.split("=")[1])
+def pipeline_exec_action(git_repository_id: int, args: dict[str, Union[int, str]]) -> None:
+    """
+    :param args: must provide: action[rerun, stop] & pipelines_exec_run(job_id)
+    """
+    action, job_id = args["action"], args["pipelines_exec_run"]
+    if action == "rerun":
+        gitlab.gl_rerun_pipeline_job(git_repository_id, job_id)
+    elif action == "stop":
+        gitlab.gl_stop_pipeline_job(git_repository_id, job_id)
 
-    def __marker_get_id(marker):
-        return int(marker.split("-")[3])
 
-    pagination = {
-        "total": rancher_output["pagination"]["total"],
-        "limit": rancher_output["pagination"]["limit"],
-        "start": 0,
-        "first": 0,
-        "next": 0,
-        "last": 0,
+def pipeline_exec_list(git_repository_id: int, limit: int = 10, start: int = 0):
+    """ The list sort in descending order
+    :param limit: how many data per page
+    :param start: start from 
+    """
+    pipelines_info, pagination = gitlab.gl_list_pipelines(git_repository_id, limit, start, with_pagination=True)
+    ret = []
+    for pipeline_info in pipelines_info:
+        sha = pipeline_info["sha"]
+        gitlab.get_pipeline_jobs_status(git_repository_id, pipeline_info["id"])
+        pipeline_info["commit_id"] = sha[:7]
+        pipeline_info["commit_url"] = f'{pipeline_info["web_url"].split("-")[0]}-/commit/{sha}'
+        pipeline_info.update(gitlab.get_pipeline_jobs_status(git_repository_id, pipeline_info["id"], with_commit_msg=True))
+        ret.append(pipeline_info)
+    return {
+        "pagination": pagination,
+        "pipe_execs": ret
     }
-    if "marker" in rancher_output["pagination"]:
-        pagination["start"] = __marker_get_id(rancher_output["pagination"]["marker"])
-    if "first" in rancher_output["pagination"]:
-        pagination["first"] = __url_get_marker(rancher_output["pagination"]["first"])
-    if "next" in rancher_output["pagination"]:
-        pagination["next"] = __url_get_marker(rancher_output["pagination"]["next"])
-    if "last" in rancher_output["pagination"]:
-        pagination["last"] = __url_get_marker(rancher_output["pagination"]["last"])
-    return pagination
+
+
+# def __rancher_pagination(rancher_output):
+#     def __url_get_marker(url):
+#         key_name = "marker"
+#         for param in url.split("?", 1)[1].split("&"):
+#             if key_name in param:
+#                 return __marker_get_id(param.split("=")[1])
+
+#     def __marker_get_id(marker):
+#         return int(marker.split("-")[3])
+
+#     pagination = {
+#         "total": rancher_output["pagination"]["total"],
+#         "limit": rancher_output["pagination"]["limit"],
+#         "start": 0,
+#         "first": 0,
+#         "next": 0,
+#         "last": 0,
+#     }
+#     if "marker" in rancher_output["pagination"]:
+#         pagination["start"] = __marker_get_id(rancher_output["pagination"]["marker"])
+#     if "first" in rancher_output["pagination"]:
+#         pagination["first"] = __url_get_marker(rancher_output["pagination"]["first"])
+#     if "next" in rancher_output["pagination"]:
+#         pagination["next"] = __url_get_marker(rancher_output["pagination"]["next"])
+#     if "last" in rancher_output["pagination"]:
+#         pagination["last"] = __url_get_marker(rancher_output["pagination"]["last"])
+#     return pagination
 
 
 # def pipeline_action(repository_id, args):
@@ -331,9 +363,9 @@ class PipelineExec(Resource):
         parser.add_argument("limit", type=int, location="args")
         parser.add_argument("start", type=int, location="args")
         args = parser.parse_args()
-        # output_array = pipeline_exec_list(repository_id, args)
+        # output_array = pipeline_exec_list(repository_id, args["limit"], args["start"])
         # return util.success(output_array)
-        return util.success()
+        return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
 
 
 class PipelineExecAction(Resource):
@@ -343,8 +375,8 @@ class PipelineExecAction(Resource):
         parser.add_argument("pipelines_exec_run", type=int, required=True)
         parser.add_argument("action", type=str, required=True)
         args = parser.parse_args()
-        # return pipeline_exec_action(repository_id, args)
-        return util.success()
+        return pipeline_exec_action(repository_id, args)
+        # return util.success()
 
 
 class PipelineExecLogs(Resource):

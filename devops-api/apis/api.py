@@ -365,20 +365,11 @@ add_resource(gitlab.GitProjectIdFromURLV2, "public")
 api.add_resource(gitlab.GitProjectURLFromId, "/repositories/url")
 api.add_resource(gitlab.GitProjectURLFromIdV2, "/v2/repositories/url")
 add_resource(gitlab.GitProjectURLFromIdV2, "public")
-# api.add_resource(gitlab.GitlabDomainConnection, "/repositories/is_ip", "/repositories/connection")
-# api.add_resource(gitlab.GitlabDomainStatus, "/repositories/connection/status")
-# api.add_resource(gitlab.GitlabDomainStatusV2, "/v2/repositories/connection/status")
-# add_resource(gitlab.GitlabDomainStatusV2, "public")
 api.add_resource(gitlab.GitlabSingleCommit, "/repositories/<repo_id>/<commit_id>")
 api.add_resource(gitlab.GitlabSingleCommitV2, "/v2/repositories/<repo_id>/<commit_id>")
 add_resource(gitlab.GitlabSingleCommitV2, "public")
 api.add_resource(gitlab.GitlabSourceCodeV2, "/repositories/pipline")
 add_resource(gitlab.GitlabSourceCodeV2, "public")
-
-# GitLab pipeline
-api.add_resource(gitlab.GitlabPipelineJobConsole, "/projects/<repository_id>/jobs/<job_id>/console")
-api.add_resource(gitlab.GitlabPipelineJobRetry, "/projects/<repository_id>/jobs/<job_id>/retry")
-api.add_resource(gitlab.GitlabPipelineJobStop, "/projects/<repository_id>/jobs/<job_id>/stop")
 
 # User
 user_url(api, add_resource)
@@ -387,13 +378,15 @@ user_url(api, add_resource)
 api.add_resource(role.RoleList, "/user/role/list")
 
 # pipeline
-api.add_resource(pipeline.Pipeline, "/pipelines/<repository_id>/pipelines")
-api.add_resource(pipeline.PipelineExec, "/pipelines/<repository_id>/pipelines_exec")
-api.add_resource(pipeline.PipelineConfig, "/pipelines/<repository_id>/config")
 api.add_resource(pipeline.PipelineExecAction, "/pipelines/<repository_id>/pipelines_exec/action")
-api.add_resource(pipeline.PipelineExecLogs, "/pipelines/logs")
-api.add_resource(pipeline.PipelinePhaseYaml, "/pipelines/<repository_id>/branch/<branch_name>/phase_yaml")
-api.add_resource(pipeline.PipelineYaml, "/pipelines/<repository_id>/branch/<branch_name>/generate_ci_yaml")
+api.add_resource(pipeline.PipelineExec, "/pipelines/<repository_id>/pipelines_exec")
+
+
+api.add_resource(pipeline.Pipeline, "/pipelines/<repository_id>/pipelines")
+api.add_resource(pipeline.PipelineConfig, "/pipelines/<repository_id>/config")
+# api.add_resource(pipeline.PipelineExecLogs, "/pipelines/logs")
+# api.add_resource(pipeline.PipelinePhaseYaml, "/pipelines/<repository_id>/branch/<branch_name>/phase_yaml")
+# api.add_resource(pipeline.PipelineYaml, "/pipelines/<repository_id>/branch/<branch_name>/generate_ci_yaml")
 
 # Websocket
 # socketio.on_namespace(system_parameter.SyncTemplateWebsocketLog("/sync_template/websocket/logs"))
@@ -738,4 +731,4 @@ def start_prod():
 if __name__ == "__main__":
     start_prod()
     # app.run(host="0.0.0.0", port=10010)
-    socketio.run(app, host="0.0.0.0", port=10009)
+    socketio.run(app, host="0.0.0.0", port=10011)
