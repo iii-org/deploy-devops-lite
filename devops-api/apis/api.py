@@ -1,11 +1,3 @@
-"""
-Strat_pod
-1. build persistence jwt token
-2. create namespace secret (change to save in db?)
-
-"""
-
-
 import os
 import sys
 import threading
@@ -380,16 +372,17 @@ api.add_resource(role.RoleList, "/user/role/list")
 # pipeline
 api.add_resource(pipeline.PipelineExecAction, "/pipelines/<repository_id>/pipelines_exec/action")
 api.add_resource(pipeline.PipelineExec, "/pipelines/<repository_id>/pipelines_exec")
+api.add_resource(pipeline.PipelineConfig, "/pipelines/<repository_id>/config")
 
 
 api.add_resource(pipeline.Pipeline, "/pipelines/<repository_id>/pipelines")
-api.add_resource(pipeline.PipelineConfig, "/pipelines/<repository_id>/config")
 # api.add_resource(pipeline.PipelineExecLogs, "/pipelines/logs")
 # api.add_resource(pipeline.PipelinePhaseYaml, "/pipelines/<repository_id>/branch/<branch_name>/phase_yaml")
 # api.add_resource(pipeline.PipelineYaml, "/pipelines/<repository_id>/branch/<branch_name>/generate_ci_yaml")
 
 # Websocket
 # socketio.on_namespace(system_parameter.SyncTemplateWebsocketLog("/sync_template/websocket/logs"))
+socketio.on_namespace(pipeline.PipelineWebsocketLog("/pipeline/websocket/logs"))
 socketio.on_namespace(issue.IssueSocket("/issues/websocket"))
 
 # issue

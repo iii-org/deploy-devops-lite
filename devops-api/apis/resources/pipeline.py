@@ -10,11 +10,13 @@ from flask import send_file
 
 import resources.apiError as apiError
 import util as util
-from model import  db   #  remove ProjectPluginRelation ,PipelineLogsCache, Project
+import websocket
+from flask_socketio import emit, disconnect
+from model import db   #  remove ProjectPluginRelation ,PipelineLogsCache, Project
 from nexus import nx_get_project_plugin_relation
 from resources import role
 from .gitlab import GitLab, commit_id_to_url
-from typing import Union
+from typing import Union, Any
 
 # from .rancher import rancher
 from os import listdir, makedirs
@@ -34,7 +36,7 @@ def pipeline_exec_action(git_repository_id: int, args: dict[str, Union[int, str]
         gitlab.gl_stop_pipeline_job(git_repository_id, job_id)
 
 
-def pipeline_exec_list(git_repository_id: int, limit: int = 10, start: int = 0):
+def pipeline_exec_list(git_repository_id: int, limit: int = 10, start: int = 0) -> dict[str, Any]:
     """ The list sort in descending order
     :param limit: how many data per page
     :param start: start from 
@@ -53,6 +55,83 @@ def pipeline_exec_list(git_repository_id: int, limit: int = 10, start: int = 0):
         "pipe_execs": ret
     }
 
+
+def get_pipeline_job_status(repo_id: int, pipeline_id: int) -> list[dict[str, Any]]:
+    jobs = gitlab.gl_pipeline_jobs(repo_id, pipeline_id)
+    return [{
+        "stage_id": job["id"],
+        "name": job["name"],
+        "state": job["status"].capitalize()
+    } for job in jobs]
+
+
+def get_pipe_log_websocket(data):
+    repo_id, job_id = data["repository_id"], data["stage_id"]
+    ret = gitlab.gl_get_pipeline_console(repo_id, job_id)
+    success_end_word = "Job succeeded"
+    failure_end_word = "ERROR: Job failed"
+    if success_end_word in ret or failure_end_word in ret:
+        ret = ""
+    emit(
+        "pipeline_log",
+        {
+            "data": ret
+            "repository_id": repo_id,
+            "repo_id", job_id
+        }
+    )
+    # self.token = self.__generate_token()
+    # headersandtoken = "Authorization: Bearer {0}".format(self.token)
+    # self.rc_get_project_id()
+    # url = ("wss://{0}/{1}/project/{2}/pipelineExecutions/" "{3}-{4}/log?stage={5}&step={6}").format(
+    #     config.get("RANCHER_IP_PORT"),
+    #     config.get("RANCHER_API_VERSION"),
+    #     self.project_id,
+    #     data["ci_pipeline_id"],
+    #     data["pipelines_exec_run"],
+    #     data["stage_index"],
+    #     data["step_index"],
+    # )
+    # result = None
+    # try:
+    #     ws_start_time = time.time()
+    #     gitlab.gl_get_pipeline_console(repo_id, pipeline_id)
+    #     # ws = websocket.create_connection(url, header=[headersandtoken], sslopt={"cert_reqs": ssl.CERT_NONE})
+    #     i = 0
+    #     while True:
+            
+    #         emit(
+    #             "pipeline_log",
+    #             {
+    #                 "data": result,
+    #                 "ci_pipeline_id": data["ci_pipeline_id"],
+    #                 "pipelines_exec_run": data["pipelines_exec_run"],
+    #                 "stage_index": data["stage_index"],
+    #                 "step_index": data["step_index"],
+    #             },
+    #         )
+    #         # print(f"result: {result}")
+    #         ws_end_time = time.time() - ws_start_time
+    #         if result == "" or ws_end_time >= 600 or i >= 100:
+    #             emit(
+    #                 "pipeline_log",
+    #                 {
+    #                     "data": "",
+    #                     "ci_pipeline_id": data["ci_pipeline_id"],
+    #                     "pipelines_exec_run": data["pipelines_exec_run"],
+    #                     "stage_index": data["stage_index"],
+    #                     "step_index": data["step_index"],
+    #                 },
+    #             )
+    #             ws.close()
+    #             print(f"result: {result}, ws_end_time: {ws_end_time}, i: {i}")
+    #             break
+    #         else:
+    #             i += 1
+    # except:
+    #     if ws is not None:
+    #         ws.close()
+    #     disconnect()
 
 # def __rancher_pagination(rancher_output):
 #     def __url_get_marker(url):
@@ -131,9 +210,7 @@ def pipeline_exec_list(repository_id, args):
     return out
 
 
-def pipeline_config(repository_id, args):
-    relation = nx_get_project_plugin_relation(repo_id=repository_id)
-    return rancher.rc_get_pipeline_config(relation.ci_pipeline_id, args["pipelines_exec_run"])
+
 
 
 def pipeline_exec_logs(args):
@@ -365,7 +442,8 @@ class PipelineExec(Resource):
         args = parser.parse_args()
         # output_array = pipeline_exec_list(repository_id, args["limit"], args["start"])
         # return util.success(output_array)
-        return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
+        return util.success(gitlab.gl_get_pipeline_console(args["limit"], args["start"]))
+        # return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
 
 
 class PipelineExecAction(Resource):
@@ -378,6 +456,17 @@ class PipelineExecAction(Resource):
         return pipeline_exec_action(repository_id, args)
         # return util.success()
 
+
+class PipelineConfig(Resource):
+    @jwt_required()
+    def get(self, repository_id):
+        parser = reqparse.RequestParser()
+        parser.add_argument("pipelines_exec_run", type=int, required=True, location="args")
+        args = parser.parse_args()
+        return get_pipeline_job_status(repository_id, args["pipelines_exec_run"])
+    
+
+# ----------------------------------------------------------------------------------------------------------------------------
 
 class PipelineExecLogs(Resource):
     @jwt_required()
@@ -408,15 +497,6 @@ class PipelinePhaseYaml(Resource):
     def get(self, repository_id, branch_name):
         return get_phase_yaml(repository_id, branch_name)
 
-
-class PipelineConfig(Resource):
-    @jwt_required()
-    def get(self, repository_id):
-        parser = reqparse.RequestParser()
-        parser.add_argument("pipelines_exec_run", type=int, required=True, location="args")
-        args = parser.parse_args()
-        # return pipeline_config(repository_id, args)
-        return util.success()
 
 
 class Pipeline(Resource):
@@ -465,3 +545,15 @@ class PipelineFile(Resource):
         parser.add_argument("file_name", type=str, required=True, location="args")
         args = parser.parse_args()
         return util.success(delete_pipeline_file(project_name, args["folder_name"], args["file_name"]))
+
+
+class PipelineWebsocketLog:
+    def on_connect(self):
+        print("connect")
+
+    def on_disconnect(self):
+        print("Client disconnected")
+
+    def on_get_pipe_log(self, data):
+        print("get_pipe_log")
+        get_pipe_log_websocket(data)

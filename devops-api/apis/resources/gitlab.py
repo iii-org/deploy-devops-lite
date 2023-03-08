@@ -901,10 +901,10 @@ class GitLab(object):
         return self.__api_get(f"/projects/{repo_id}/jobs/{job_id}/trace").content.decode("utf-8")
 
     def gl_rerun_pipeline_job(self, repo_id: int, job_id: int):
-        return self.__api_post(f"/projects/{repo_id}/jobs/{job_id}/retry").json()
+        return self.__api_post(f"/projects/{repo_id}/pipelines/{job_id}/retry").json()
 
     def gl_stop_pipeline_job(self, repo_id: int, job_id: int):
-        return self.__api_post(f"/projects/{repo_id}/jobs/{job_id}/cancel").json()
+        return self.__api_post(f"/projects/{repo_id}/pipelines/{job_id}/cancel").json()
 
     def gl_pipeline_jobs(self, repo_id: int, pipeline_id: int) -> dict[str, Any]:
         return self.__api_get(f"/projects/{repo_id}/pipelines/{pipeline_id}/jobs").json()
