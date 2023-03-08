@@ -892,11 +892,11 @@ class GitLab(object):
 
         headers = ret.headers
         pagination = {
-            "total": headers.get("X-Total"),
-            "current": headers.get("X-Page"),
-            "prev": headers.get("X-Per-Page"),
-            "next": headers.get("X-Next-Page"),
-            "pages": headers.get("X-Total-Pages"),
+            "total": int(headers.get("X-Total")),
+            "current": int(headers.get("X-Page")),
+            "prev": int(headers.get("X-Per-Page")),
+            "next": int(headers.get("X-Next-Page")),
+            "pages": int(headers.get("X-Total-Pages")),
             "per_page": limit,
 
         }
