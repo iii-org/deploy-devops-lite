@@ -60,7 +60,6 @@ services:
     volumes:
       - redmine-db-data:/var/lib/postgresql/data
       - ./redmine.sql:/tmp/redmine.sql
-      - ./redmine.sql.log:/tmp/redmine.sql.log
     environment:
       POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
       POSTGRES_DB: redmine_database
