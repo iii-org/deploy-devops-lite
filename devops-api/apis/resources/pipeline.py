@@ -440,10 +440,7 @@ class PipelineExec(Resource):
         parser.add_argument("limit", type=int, location="args")
         parser.add_argument("start", type=int, location="args")
         args = parser.parse_args()
-        # output_array = pipeline_exec_list(repository_id, args["limit"], args["start"])
-        # return util.success(output_array)
-        return util.success(gitlab.gl_get_pipeline_console(args["limit"], args["start"]))
-        # return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
+        return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
 
 
 class PipelineExecAction(Resource):
