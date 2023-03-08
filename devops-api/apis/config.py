@@ -10,7 +10,8 @@ FIXED = {
     "DEBUG": False,
     "USE_RELOADER": False,
     "DEFAULT_TRACE_ORDER": ["Epic", "Feature", "Test Plan"],
-    "DOCUMENT_LEVEL": "public"
+    "DOCUMENT_LEVEL": "public",
+    "VERSION_CENTER_BASE_URL": "http://version-center.iiidevops.org"
 }
 
 in_file = {}

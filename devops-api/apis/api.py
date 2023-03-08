@@ -272,6 +272,7 @@ def initialize(db_uri):
     migrate.init()
     my_uuid = devops_version.set_deployment_uuid()
     logger.logger.info(f"Deployment UUID set as {my_uuid}.")
+    devops_version.login()
     logger.logger.info("Server initialized.")
 
 

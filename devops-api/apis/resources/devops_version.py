@@ -1,5 +1,11 @@
 import uuid
 import model
+from resources import role, apiError
+from resources.apiError import DevOpsError
+import config
+import model
+import util
+
 
 def set_deployment_uuid():
     my_uuid = uuid.uuid1()
@@ -7,6 +13,52 @@ def set_deployment_uuid():
     row.deployment_uuid = my_uuid
     model.db.session.commit()
     return my_uuid
+
+
+def __get_token():
+    global version_center_token
+    if version_center_token is None:
+        login()
+    return version_center_token
+
+
+def login():
+    global version_center_token
+    dp_uuid = model.NexusVersion.query.one().deployment_uuid
+    res = __api_post(
+        "/login",
+        params={"uuid": dp_uuid, "name": config.get("DEPLOYMENT_NAME") or config.get("DEPLOYER_NODE_IP")},
+        with_token=False,
+    )
+    version_center_token = res.json().get("data", {}).get("access_token", None)
+
+
+def __api_request(method, path, headers=None, params=None, data=None, with_token=True, retry=False):
+    if headers is None:
+        headers = {}
+    if params is None:
+        params = {}
+    if with_token:
+        headers["Authorization"] = f"Bearer {__get_token()}"
+
+    url = f'{config.get("VERSION_CENTER_BASE_URL")}{path}'
+    output = util.api_request(method, url, headers, params, data)
+
+    # Token expire
+    if output.status_code == 401 and not retry:
+        login()
+        return __api_request(method, path, headers, params, data, True, True)
+
+    if int(output.status_code / 100) != 2:
+        raise DevOpsError(
+            output.status_code,
+            "Got non-2xx response from Version center.",
+            error=apiError.error_3rd_party_api("Version Center", output),
+        )
+    return output
+
+def __api_post(path, params=None, headers=None, data=None, with_token=True):
+    return __api_request("POST", path, headers=headers, data=data, params=params, with_token=with_token)
 
 
 
@@ -36,7 +88,7 @@ version_center_token = None
 def __get_token():
     global version_center_token
     if version_center_token is None:
-        _login()
+        login()
     return version_center_token
 
 
@@ -53,7 +105,7 @@ def __api_request(method, path, headers=None, params=None, data=None, with_token
 
     # Token expire
     if output.status_code == 401 and not retry:
-        _login()
+        login()
         return __api_request(method, path, headers, params, data, True, True)
 
     if int(output.status_code / 100) != 2:
@@ -81,7 +133,7 @@ def __api_delete(path, params=None, headers=None, with_token=True):
     return __api_request("DELETE", path, params=params, headers=headers, with_token=with_token)
 
 
-def _login():
+def login():
     global version_center_token
     dp_uuid = model.NexusVersion.query.one().deployment_uuid
     res = __api_post(
