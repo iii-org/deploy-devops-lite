@@ -12,8 +12,8 @@ prepare-variable-debug:
 
 build-and-scaner-sonarqube:
   stage: build-and-scan
-  image:
-    name: jesus28713/0308_java_gradle:latest
+  image: 
+    name: harbor-dev3.iiidevops.org/library/java_8_gradle_5.6:2.0
     entrypoint: [ "" ]
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
