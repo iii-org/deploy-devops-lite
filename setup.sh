@@ -174,7 +174,7 @@ if [ -e environments.json ]; then
     NOTICE "If you want to re-setup, please remove environments.json first"
     NOTICE "Use \e[7;40;96mrm environments.json\e[0m to remove environments.json"
     NOTICE "Assume you want to start up the services, start up services now..."
-    docker compose up -d
+    docker compose up --build --no-deps -d
     INFO "Done! Exiting setup script..."
     exit 0
   fi
@@ -190,14 +190,14 @@ if [ "$(docker compose ps | wc -l)" -gt 1 ]; then
     docker compose down -v
   else
     INFO "Skip teardown, up all services now..."
-    docker compose up -d
+    docker compose up --build --no-deps -d
     INFO "Done! Exiting setup script..."
     exit 0
   fi
 fi
 
 prepare_check
-docker compose up -d
+docker compose up --build --no-deps -d
 
 setup_gitlab() {
   INFO "Waiting gitlab startup"

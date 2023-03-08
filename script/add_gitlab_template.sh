@@ -126,7 +126,6 @@ gitlab_create_project() {
 gitlab_delete_project() {
   id_or_path="$(gitlab_get_id_or_path "$1")"
 
-  set -x
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
       --request DELETE "http://gitlab:$GITLAB_PORT/api/v4/projects/$id_or_path" \
@@ -134,7 +133,6 @@ gitlab_delete_project() {
   )
 
   gitlab_parse_error "$GITLAB_RESPONSE"
-  set +x
 }
 
 usage() {
