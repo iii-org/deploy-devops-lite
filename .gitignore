@@ -1,6 +1,7 @@
 .idea
 .initialized
 .redmine-sql-import.log
+.executed_to_runner.log
 environments.json
 redmine.sql
 redmine.sql.log

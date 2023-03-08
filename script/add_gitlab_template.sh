@@ -56,6 +56,20 @@ gitlab_get_group_id() {
 
   gitlab_parse_error "$GITLAB_RESPONSE"
 
+  # TODO: Fix if empty array
+  echo "$GITLAB_RESPONSE" | jq -r '.[0].id'
+}
+
+gitlab_get_project_id() {
+  GITLAB_RESPONSE=$(
+    $GITLAB_RUNNER curl -s -k \
+      --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
+      --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
+  )
+
+  gitlab_parse_error "$GITLAB_RESPONSE"
+
+  # TODO: Fix if empty array
   echo "$GITLAB_RESPONSE" | jq -r '.[0].id'
 }
 
@@ -152,14 +166,14 @@ main() {
     if grep -q \"$MSG\" ~/.git-credentials; then \
       echo \"$MSG\" >>~/.git-credentials; \
     fi; \
+  else \
+    echo \"$MSG\" >>~/.git-credentials; \
   fi"
 
   $GITLAB_RUNNER git config --global credential.helper store
 
   gitlab_create_group "local-templates"
   gitlab_create_group "$GITHUB_TEMPLATE_USER"
-
-  gitlab_create_project "$GITHUB_TEMPLATE_USER" "$(gitlab_get_group_id "$GITHUB_TEMPLATE_USER")"
 
   response_json="$(gitlab_get_group_projects "$GITHUB_TEMPLATE_USER")"
 
@@ -172,7 +186,51 @@ main() {
     done
   done
 
-  # TODO: Add projects to cloud gitlab
+  # For each directory in template directory
+  for _dir in templates/*; do
+    if [ -d "$_dir" ]; then
+      RUNNER_COMMANDS=""
+
+      # Get directory name
+      dir_name="$(basename "$_dir")"
+      RUNNER_COMMANDS+="cd /templates/$dir_name; "
+
+      # Create project by directory name
+      gitlab_create_project "$dir_name" "$(gitlab_get_group_id "$GITHUB_TEMPLATE_USER")"
+
+      # cd to directory and check if .git folder exist
+      cd "$_dir" || ERROR "Cannot cd to $_dir"
+      RUNNER_COMMANDS+="git config --global user.name \"Administrator\"; "
+      RUNNER_COMMANDS+="git config --global user.email \"admin@example.com\"; "
+
+      if [ ! -d .git ]; then
+        # If not exist, init git
+        RUNNER_COMMANDS+="git init; "
+        RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+        RUNNER_COMMANDS+="git add .; "
+        RUNNER_COMMANDS+="git commit -m \"Initial commit\"; "
+        RUNNER_COMMANDS+="git push -u origin master; "
+      else
+        # If exist, change remote url
+        RUNNER_COMMANDS+="git remote rename origin old-origin; "
+        RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+        RUNNER_COMMANDS+="git push -u origin --all; "
+        RUNNER_COMMANDS+="git push -u origin --tags; "
+      fi
+
+      echo "[RUNNER] $RUNNER_COMMANDS" >>"$project_dir"/.executed_to_runner.log
+
+      # Execute commands in runner
+      $GITLAB_RUNNER sh -c "$RUNNER_COMMANDS" >>"$project_dir"/.executed_to_runner.log
+
+      INFO "Imported template: $dir_name to $GITHUB_TEMPLATE_USER completed!"
+
+      # Return to root directory
+      cd "$project_dir" || ERROR "Cannot cd to $project_dir"
+    fi
+  done
+
+  INFO "Import templates done!"
 }
 
 # If no arguments passed, print help
