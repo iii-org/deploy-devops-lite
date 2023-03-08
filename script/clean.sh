@@ -16,9 +16,11 @@ sleep 5
 docker compose down -v
 if [ -f .initialized ]; then
   rm .initialized
+  INFO "Environment initialized flag removed"
 fi
 if [ -f environments.json ]; then
   rm environments.json
+  INFO "Environment config file removed"
 fi
 
 NOTICE "Environment cleaned up, please run \e[96msetup.sh\e[0m to re-initialize the environment."
