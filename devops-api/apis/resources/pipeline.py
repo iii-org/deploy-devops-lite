@@ -11,7 +11,7 @@ from flask import send_file
 import resources.apiError as apiError
 import util as util
 import websocket
-from flask_socketio import emit, disconnect
+from flask_socketio import emit, disconnect, Namespace
 from model import db   #  remove ProjectPluginRelation ,PipelineLogsCache, Project
 from nexus import nx_get_project_plugin_relation
 from resources import role
@@ -75,9 +75,9 @@ def get_pipe_log_websocket(data):
     emit(
         "pipeline_log",
         {
-            "data": ret
+            "data": ret,
             "repository_id": repo_id,
-            "repo_id", job_id
+            "repo_id": job_id
         }
     )
     # self.token = self.__generate_token()
@@ -547,7 +547,7 @@ class PipelineFile(Resource):
         return util.success(delete_pipeline_file(project_name, args["folder_name"], args["file_name"]))
 
 
-class PipelineWebsocketLog:
+class PipelineWebsocketLog(Namespace):
     def on_connect(self):
         print("connect")
 
