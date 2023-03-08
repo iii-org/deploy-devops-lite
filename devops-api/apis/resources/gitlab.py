@@ -874,9 +874,14 @@ class GitLab(object):
                 }
             util.write_json_file(f"{base_path}/{pj.id}/{date}.json", result)
 
+    def __gl_start_convert_page(self, start: int, limit: int):
+        page = (start // limit) + 1
+        return page
+
     # pipeline
     def gl_list_pipelines(self, repo_id: int, limit: int, start: int, sort: str = "desc", with_pagination: bool = False) -> list[dict[str, Any]]:
         params={
+            "page": self.__gl_start_convert_page(start, limit),
             "per_page": limit,
             "sort": sort
         }

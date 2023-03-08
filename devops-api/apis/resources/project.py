@@ -862,53 +862,23 @@ def get_test_summary(project_id):
     def not_found_ret_message(plugin):
         return f"The latest scan is not Found in the {plugin} server"
 
-    # newman ..
-    if not plugins.get_plugin_config("postman")["disabled"]:
-        row = (
-            model.TestResults.query.filter_by(project_id=project_id)
-            .order_by(desc(model.TestResults.id))
-            .limit(1)
-            .first()
-        )
-        if row is not None:
-            total = row.total
-            if total is None:
-                total = fail = passed = 0
-            else:
-                fail = row.fail
-                passed = total - fail
-            ret["postman"] = {
+    # sonarqube ..
+    # if not plugins.get_plugin_config("sonarqube")["disabled"]:
+    items = sonarqube.sq_get_current_measures(project_name)
+    if items != []:
+        sonar_result = {"result": {item["metric"]: item["value"] for item in items if item["metric"] != "run_at"}}
+
+        sonar_result.update(
+            {
                 "message": "success",
                 "status": 1,
-                "id": row.id,
-                "result": {
-                    "passed": passed,
-                    "failed": fail,
-                    "total": total,
-                },
-                "run_at": str(row.run_at) if row.run_at is not None else None,
+                "run_at": items[-1]["value"] if items[-1]["metric"] == "run_at" else None,
             }
-        else:
-            not_found_ret["message"] = not_found_ret_message("postman")
-            ret["postman"] = not_found_ret.copy()
-
-    # sonarqube ..
-    if not plugins.get_plugin_config("sonarqube")["disabled"]:
-        items = sonarqube.sq_get_current_measures(project_name)
-        if items != []:
-            sonar_result = {"result": {item["metric"]: item["value"] for item in items if item["metric"] != "run_at"}}
-
-            sonar_result.update(
-                {
-                    "message": "success",
-                    "status": 1,
-                    "run_at": items[-1]["value"] if items[-1]["metric"] == "run_at" else None,
-                }
-            )
-            ret["sonarqube"] = sonar_result
-        else:
-            not_found_ret["message"] = not_found_ret_message("sonarqube")
-            ret["sonarqube"] = not_found_ret.copy()
+        )
+        ret["sonarqube"] = sonar_result
+    else:
+        not_found_ret["message"] = not_found_ret_message("sonarqube")
+        ret["sonarqube"] = not_found_ret.copy()
 
     return util.success({"test_results": ret})
 
