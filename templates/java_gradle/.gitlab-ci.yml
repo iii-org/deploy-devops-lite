@@ -1,0 +1,8 @@
+stages:
+  - build 
+build-and-sonarqube:
+  stage: build
+  image: harbor-dev3.iiidevops.org/java8-gradle5-offline/master
+  script: 
+    - cd app && chmod -R 777 .
+    - ./gradlew build jacocoTestReport  sonarqube -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN} -Dsonar.log.level=DEBUG

@@ -1,0 +1,90 @@
+{
+  "time": 1620813167428,
+  "version": {
+    "sideex": [
+      3,
+      5,
+      3
+    ],
+    "format": [
+      2,
+      0,
+      0
+    ]
+  },
+  "suites": [
+    {
+      "title": "springboot-maven-testsite",
+      "enableOnPlaying": true,
+      "cases": [
+        {
+          "title": "Untitled Test Case 5",
+          "enableOnPlaying": true,
+          "networkSpeed": 10.11,
+          "records": [
+            {
+              "name": "open",
+              "target": {
+                "usedIndex": 0,
+                "options": [
+                  {
+                    "type": "other",
+                    "value": "${target_url}"
+                  }
+                ],
+                "tac": ""
+              },
+              "value": {
+                "usedIndex": 0,
+                "options": [
+                  {
+                    "type": "other",
+                    "value": "${target_url}"
+                  }
+                ],
+                "tac": ""
+              },
+              "pwt": {
+                "pbw": 0,
+                "paw": 0,
+                "prw": 0,
+                "pdw": 0
+              },
+              "comment": false
+            },
+            {
+              "name": "setViewportSize",
+              "target": {
+                "usedIndex": 0,
+                "options": [
+                  {
+                    "type": "other",
+                    "value": ""
+                  }
+                ],
+                "tac": ""
+              },
+              "value": {
+                "usedIndex": 0,
+                "options": [
+                  {
+                    "type": "other",
+                    "value": "1036,718"
+                  }
+                ],
+                "tac": ""
+              },
+              "pwt": {
+                "pbw": 0,
+                "paw": 0,
+                "prw": 0,
+                "pdw": 0
+              },
+              "comment": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
