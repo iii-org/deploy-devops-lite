@@ -731,4 +731,4 @@ def start_prod():
 if __name__ == "__main__":
     start_prod()
     # app.run(host="0.0.0.0", port=10010)
-    socketio.run(app, host="0.0.0.0", port=10011)
+    socketio.run(app, host="0.0.0.0", port=10009)

@@ -7,7 +7,7 @@ prepare-variable-debug:
   before_script:
     - apk add --update curl && rm -rf /var/cache/apk/*
   script:
-    - curl --location -s --request POST {{API_ORIGIN}}/project/issues_commit_by_name --form 'project_name="'"$CI_PROJECT_NAME"'"'
+    - curl --location -s --request POST "${API_ORIGIN}/project/issues_commit_by_name" --form 'project_name="'"$CI_PROJECT_NAME"'"'
   allow_failure: true
 
 scaner-sonarqube:
