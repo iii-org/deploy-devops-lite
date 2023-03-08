@@ -438,8 +438,8 @@ class PipelineExec(Resource):
     @jwt_required()
     def get(self, repository_id):
         parser = reqparse.RequestParser()
-        parser.add_argument("limit", type=int, location="args")
-        parser.add_argument("start", type=int, location="args")
+        parser.add_argument("limit", default=10, type=int, location="args")
+        parser.add_argument("start", default=0, type=int, location="args")
         args = parser.parse_args()
         return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
 
