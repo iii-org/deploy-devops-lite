@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -143,7 +143,10 @@ prepare_check() {
   REDMINE_SALT=$(echo -n "$REDMINE_DB_PASSWORD" | md5sum | awk '{print $1}')
   REDMINE_HASHED_DB_PASSWORD=$(echo -n "$REDMINE_DB_PASSWORD" | sha1sum | awk '{print $1}')
   REDMINE_HASHED_PASSWORD=$(echo -n "$REDMINE_SALT$REDMINE_HASHED_DB_PASSWORD" | sha1sum | awk '{print $1}')
-  REDMINE_API_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
+  REDMINE_API_KEY="$(
+    tr </dev/urandom -dc 'a-f0-9' | head -c 20
+    echo
+  )"
 
   REDMINE_DOMAIN_NAME=$IP_ADDR":"$REDMINE_PORT
 
@@ -217,8 +220,10 @@ setup_gitlab() {
     sleep 1
   done
 
-  # shellcheck disable=SC2002
-  GITLAB_INIT_ACCESS_TOKEN="$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w "${1:-20}" | head -n 1)" # Should 20 chars long
+  GITLAB_INIT_ACCESS_TOKEN="$(
+    tr </dev/urandom -dc '[:alpha:]' | head -c 20
+    echo
+  )" # Should 20 chars long
   GITLAB_INIT_RESPONSE="$(docker compose exec gitlab gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$GITLAB_INIT_ACCESS_TOKEN'); token.save!")"
 
   # If success, no output
@@ -402,7 +407,10 @@ setup_sonarqube() {
 
 generate_environment_json() {
   INFO "Generating environments.json..."
-  JWT_SECRET_KEY="$(tr -dc 'a-f0-9' </dev/urandom | fold -w 20 | head -n 1)"
+  JWT_SECRET_KEY="$(
+    tr </dev/urandom -cd 'a-f0-9' | head -c 20
+    echo
+  )"
 
   # Using heredoc to generate environments.json
   cat <<EOF >environments.json
@@ -474,5 +482,3 @@ setup_redmine
 setup_sonarqube
 post_script
 generate_environment_json
-
-INFO "Setup script finished!"

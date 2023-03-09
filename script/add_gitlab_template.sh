@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -200,6 +200,7 @@ main() {
 
       # cd to directory and check if .git folder exist
       cd "$_dir" || ERROR "Cannot cd to $_dir"
+
       RUNNER_COMMANDS+="git config --global user.name \"Administrator\"; "
       RUNNER_COMMANDS+="git config --global user.email \"admin@example.com\"; "
 
@@ -211,9 +212,15 @@ main() {
         RUNNER_COMMANDS+="git commit -m \"Initial commit\"; "
         RUNNER_COMMANDS+="git push -u origin master; "
       else
-        # If exist, change remote url
-        RUNNER_COMMANDS+="git remote rename origin old-origin; "
-        RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+        # If git remote url is $GITLAB_URL, skip
+        if [ "$(git remote get-url origin)" = "http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git" ]; then
+          INFO "Git remote \e[97m$dir_name\e[0m already set, skip change remote url"
+        else
+          # If exist, change remote url
+          RUNNER_COMMANDS+="git remote rename origin old-origin; "
+          RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+        fi
+
         RUNNER_COMMANDS+="git push -u origin --all; "
         RUNNER_COMMANDS+="git push -u origin --tags; "
       fi

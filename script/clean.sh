@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -22,5 +22,13 @@ if [ -f environments.json ]; then
   rm environments.json
   INFO "Environment config file removed"
 fi
+
+# For folders in templates, remove all .git folders
+for template_dir in templates/*; do
+  if [ -d "$template_dir" ]; then
+    INFO "Cleaning up \e[97m$template_dir\e[0m .git info"
+    find "$template_dir" -name .git -type d -prune -exec rm -rf {} \;
+  fi
+done
 
 NOTICE "Environment cleaned up, please run \e[96msetup.sh\e[0m to re-initialize the environment."

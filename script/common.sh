@@ -47,6 +47,52 @@ url_decode() {
   printf '%b' "${url_encoded//%/\\x}"
 }
 
+print_exit() {
+  local return_value=$?
+  if [ "$return_value" -eq 130 ]; then
+    # Catch SIGINT (Ctrl+C) by trap_ctrlc
+    exit 130
+  elif [ "$return_value" -eq 0 ]; then
+    NOTICE "Script executed successfully"
+  else
+    ERROR "Exit with code $return_value, please check the error message above"
+    exit "$return_value"
+  fi
+}
+
+bash_traceback() {
+  if [[ ! $- =~ "e" ]]; then
+    return
+  fi
+
+  # Modified from https://gist.github.com/Asher256/4c68119705ffa11adb7446f297a7beae
+  local return_value=$?
+  set +o xtrace
+  local bash_command=${BASH_COMMAND}
+  ERROR "In ${BASH_SOURCE[1]}:${BASH_LINENO[0]}"
+  ERROR "\\t\e[97m${bash_command}\e[0m exited with status $return_value"
+
+  if [ ${#FUNCNAME[@]} -gt 2 ]; then
+    # Print out the stack trace described by $function_stack
+    ERROR "Traceback of ${BASH_SOURCE[1]} (most recent call last):"
+    for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
+      local funcname="${FUNCNAME[$i]}"
+      [ "$i" -eq "0" ] && funcname=$bash_command
+      ERROR "  ${BASH_SOURCE[$i + 1]}:${BASH_LINENO[$i]}\\t$funcname"
+    done
+  fi
+}
+
+trap_ctrlc() {
+  NOTICE "Script interrupted by Ctrl+C (SIGINT)"
+  exit 130
+}
+
+set -E
+trap trap_ctrlc INT
+trap bash_traceback ERR
+trap print_exit EXIT
+
 bin_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 project_dir="$(cd "$(dirname "$bin_dir")" && pwd)"
 
