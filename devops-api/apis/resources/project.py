@@ -503,13 +503,7 @@ def create_bot(project_id):
     user_id = u["user_id"]
     project_add_member(project_id, user_id)
     git_user_id = u["repository_user_id"]
-    git_access_token = gitlab.gl_create_access_token(git_user_id)
-    sonar_access_token = sonarqube.sq_create_access_token(login)
 
-    # Add bot secrets to rancher
-    # create_kubernetes_namespace_secret(project_id, "gitlab-bot", {"git-token": git_access_token})
-    # create_kubernetes_namespace_secret(project_id, "sonar-bot", {"sonar-token": sonar_access_token})
-    # create_kubernetes_namespace_secret(project_id, "nexus-bot", {"username": login, "password": password})
 
 
 @record_activity(ActionType.UPDATE_PROJECT)
@@ -551,7 +545,7 @@ def pm_update_project(project_id, args):
     nexus.nx_update_project(project_id, args)
 
     # 如果有disable, 調整專案在gitlab archive狀態
-    if args.get("disabled"):
+    if args.get("disabled") is not None:
         disabled = args["disabled"]
         gitlab.gl_archive_project(plugin_relation.git_repository_id, disabled)
 

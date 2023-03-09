@@ -10,6 +10,7 @@ from flask import send_file
 
 import resources.apiError as apiError
 import util as util
+import time
 import websocket
 from flask_socketio import emit, disconnect, Namespace
 from model import db   #  remove ProjectPluginRelation ,PipelineLogsCache, Project
@@ -59,28 +60,52 @@ def pipeline_exec_list(git_repository_id: int, limit: int = 10, start: int = 0) 
 
 def get_pipeline_job_status(repo_id: int, pipeline_id: int) -> list[dict[str, Any]]:
     jobs = gitlab.gl_pipeline_jobs(repo_id, pipeline_id)
-    return [{
+    ret = [{
         "stage_id": job["id"],
         "name": job["name"],
-        "state": job["status"].capitalize()
+        "state": job["status"].capitalize(),
+        
     } for job in jobs]
+    return sorted(ret, key=lambda r: r['stage_id'])
 
 
 def get_pipe_log_websocket(data):
     repo_id, job_id = data["repository_id"], data["stage_id"]
-    ret = gitlab.gl_get_pipeline_console(repo_id, job_id)
+    ws_start_time = time.time()
     success_end_word = "Job succeeded"
     failure_end_word = "ERROR: Job failed"
-    if success_end_word in ret or failure_end_word in ret:
-        ret = ""
-    emit(
-        "pipeline_log",
-        {
-            "data": ret,
-            "repository_id": repo_id,
-            "repo_id": job_id
-        }
-    )
+    i, first_time = 0, True
+    while True:
+        ret = gitlab.gl_get_pipeline_console(repo_id, job_id)
+        ws_end_time = time.time() - ws_start_time
+
+        if success_end_word in ret or failure_end_word in ret:
+            if first_time:
+                first_time = False
+            else:
+                ret = ""
+        
+        if ret == "" or ws_end_time >= 600 or i >= 100:
+            emit(
+                "pipeline_log",
+                {
+                    "data": "",
+                    "repository_id": repo_id,
+                    "repo_id": job_id
+                }
+            )
+            break
+
+        emit(
+            "pipeline_log",
+            {
+                "data": ret,
+                "repository_id": repo_id,
+                "repo_id": job_id
+            }
+        )   
+        i += 1
+    
     # self.token = self.__generate_token()
     # headersandtoken = "Authorization: Bearer {0}".format(self.token)
     # self.rc_get_project_id()
