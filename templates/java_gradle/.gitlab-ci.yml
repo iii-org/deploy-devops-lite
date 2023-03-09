@@ -1,6 +1,6 @@
 stages:
   - prepare
-  - build-and-scan
+  - scaner
 
 prepare-variable-debug:
   stage: prepare
@@ -10,8 +10,8 @@ prepare-variable-debug:
     - curl --location -s --request POST "${API_ORIGIN}/project/issues_commit_by_name" --form 'project_name="'"$CI_PROJECT_NAME"'"'
   allow_failure: true
 
-build-and-scaner-sonarqube:
-  stage: build-and-scan
+scaner-sonarqube:
+  stage: scaner
   image: 
     name: iiiorg/sonarqube-runner:gradle-jdk11-1.1.0
     entrypoint: [ "" ]
