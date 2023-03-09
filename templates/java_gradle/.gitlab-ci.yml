@@ -31,5 +31,11 @@ build-and-scaner-sonarqube:
     - echo -e "Properties is \n'$(cat sonar-project.properties)'"
   script:
     - cd app && chmod -R 777 .
-    - ./gradlew build jacocoTestReport  sonarqube -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN} -Dsonar.log.level=DEBUG
+    - ./gradlew build jacocoTestReport sonarqube 
+      -Dsonar.host.url=$SONAR_HOST_URL 
+      -Dsonar.login=$SONAR_TOKEN 
+      -Dsonar.log.level=DEBUG 
+      -Dsonar.projectKey=$CI_PROJECT_NAME 
+      -Dsonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA 
+      -Dsonar.scm.disabled=true
   allow_failure: true
