@@ -168,14 +168,21 @@ usage() {
 }
 
 main() {
-  MSG="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@$GITLAB_URL"
+  local output_log="$project_dir"/.executed_to_runner.log
+  local gitlab_instance_credentials
+
+  if [ -f "$output_log" ]; then
+    rm "$output_log"
+  fi
+
+  gitlab_instance_credentials="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@$GITLAB_URL"
 
   $GITLAB_RUNNER sh -c "if [ -f ~/.git-credentials ]; then \
-    if grep -q \"$MSG\" ~/.git-credentials; then \
-      echo \"$MSG\" >>~/.git-credentials; \
+    if grep -q \"$gitlab_instance_credentials\" ~/.git-credentials; then \
+      echo \"$gitlab_instance_credentials\" >>~/.git-credentials; \
     fi; \
   else \
-    echo \"$MSG\" >>~/.git-credentials; \
+    echo \"$gitlab_instance_credentials\" >>~/.git-credentials; \
   fi"
 
   $GITLAB_RUNNER git config --global credential.helper store
@@ -233,10 +240,10 @@ main() {
         RUNNER_COMMANDS+="git push -u origin --tags; "
       fi
 
-      echo "[RUNNER] $RUNNER_COMMANDS" >>"$project_dir"/.executed_to_runner.log
+      echo "[RUNNER] $RUNNER_COMMANDS" >>"$output_log"
 
       # Execute commands in runner
-      $GITLAB_RUNNER sh -c "$RUNNER_COMMANDS" >>"$project_dir"/.executed_to_runner.log
+      $GITLAB_RUNNER sh -c "$RUNNER_COMMANDS" >>"$output_log"
 
       INFO "Imported template: $dir_name to $GITHUB_TEMPLATE_USER completed!"
 
