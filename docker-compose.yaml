@@ -22,7 +22,7 @@ services:
       - "gitlab-data:/var/opt/gitlab"
 
   runner:
-    image: gitlab/gitlab-runner:latest
+    image: gitlab/gitlab-runner:alpine-v15.8.2
     container_name: "gitlab-runner"
     restart: always
     environment:
