@@ -74,7 +74,7 @@ def get_pipe_log_websocket(data):
     ws_start_time = time.time()
     success_end_word = "Job succeeded"
     failure_end_word = "ERROR: Job failed"
-    i, first_time = 0, True
+    i, last_index, first_time = 0, 0, True
     while True:
         ret = gitlab.gl_get_pipeline_console(repo_id, job_id)
         ws_end_time = time.time() - ws_start_time
@@ -95,7 +95,11 @@ def get_pipe_log_websocket(data):
                 }
             )
             break
-
+        
+        # Calculate last_index, next time emit from last_index.
+        ret_list = ret.split("/n")
+        ret = "/n".join(ret_list[last_index:])
+        last_index = len(ret_list)
         emit(
             "pipeline_log",
             {
@@ -466,7 +470,8 @@ class PipelineExec(Resource):
         parser.add_argument("limit", default=10, type=int, location="args")
         parser.add_argument("start", default=0, type=int, location="args")
         args = parser.parse_args()
-        return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
+        # return util.success(pipeline_exec_list(repository_id, args["limit"], args["start"]))
+        return util.success(gitlab.gl_get_pipeline_console(repository_id, args["limit"]))
 
 
 class PipelineExecAction(Resource):
