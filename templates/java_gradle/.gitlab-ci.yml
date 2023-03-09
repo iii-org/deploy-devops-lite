@@ -22,13 +22,6 @@ build-and-scaner-sonarqube:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
-  before_script:
-    - echo "SonarQube URL is '$SONAR_HOST_URL'"
-    - echo "Setting up SonarQube Scanner..."
-    - echo "sonar.projectKey=$CI_PROJECT_NAME" > sonar-project.properties
-    - echo "sonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA" >> sonar-project.properties
-    - echo "sonar.scm.disabled=true" >> sonar-project.properties
-    - echo -e "Properties is \n'$(cat sonar-project.properties)'"
   script:
     - cd app && chmod -R 777 .
     - ./gradlew build jacocoTestReport sonarqube 
