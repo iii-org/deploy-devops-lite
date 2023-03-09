@@ -11,12 +11,6 @@ GITLAB_URL=gitlab:${GITLAB_PORT}
 GITLAB_INIT_TOKEN=""
 GITLAB_RUNNER="docker compose exec runner"
 
-# Check if GitLab is running
-if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
-  ERROR "GitLab is not running, please run \e[97m${project_dir:?}/setup.sh\e[0m to start project"
-  exit 1
-fi
-
 gitlab_parse_error() {
   message_check="$(echo "$1" | jq -r 'if type == "object" then .message elif type == "array" then "" else .[] end')"
 
@@ -164,12 +158,18 @@ usage() {
   echo
   echo "Options:"
   echo "  -h,  --help    print this help"
-  exit 21
+  exit 0
 }
 
 main() {
-  local output_log="$project_dir"/.executed_to_runner.log
+  local output_log="${project_dir:?}"/.executed_to_runner.log
   local gitlab_instance_credentials
+
+  # Check if GitLab is running
+  if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
+    ERROR "GitLab is not running, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
+    exit 1
+  fi
 
   if [ -f "$output_log" ]; then
     rm "$output_log"
@@ -186,6 +186,7 @@ main() {
   fi"
 
   $GITLAB_RUNNER git config --global credential.helper store
+  $GITLAB_RUNNER git config --global init.defaultBranch master
   $GITLAB_RUNNER git config --global --add safe.directory '*'
 
   gitlab_create_group "local-templates"
