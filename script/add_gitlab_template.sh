@@ -216,6 +216,18 @@ main() {
       # cd to directory and check if .git folder exist
       cd "$_dir" || ERROR "Cannot cd to $_dir"
 
+      # Check if there are files not owned by user id 1000
+      if [ "$(find . -not -user 1000 | wc -l)" -gt 0 ]; then
+        ERROR "These files are not owned by user id 1000"
+        find "$(pwd)" -not -user 1000 >&2
+
+        ERROR "Running auto fix: \e[97msudo chown -R 1000:1000 .\e[0m"
+        read -r -t 5 -p "Press any key to continue or press Ctrl+C to abort, auto fix will start in 5 seconds..." || true
+        sudo chown -R 1000:1000 .
+
+        INFO "Auto fix done"
+      fi
+
       RUNNER_COMMANDS+="git config --global user.name \"Administrator\"; "
       RUNNER_COMMANDS+="git config --global user.email \"admin@example.com\"; "
 
