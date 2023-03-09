@@ -116,12 +116,20 @@ gitlab_create_group() {
 }
 
 gitlab_create_project() {
+  local default_jobs_enabled="true"
+
+  # Check if $3 is set
+  if [ -n "$3" ]; then
+    default_jobs_enabled="$3"
+  fi
+
+  # Deprecated: Use builds_access_level instead of jobs_enabled
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
       --request POST "http://gitlab:$GITLAB_PORT/api/v4/projects" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json" \
-      --data '{"name": "'"$1"'", "namespace_id": "'"$2"'", "visibility": "public"}'
+      --data '{"name": "'"$1"'", "namespace_id": "'"$2"'", "visibility": "public", "jobs_enabled": "'"$default_jobs_enabled"'"}'
   )
 
   if [[ "$GITLAB_RESPONSE" =~ "has already been taken" ]]; then
@@ -196,7 +204,7 @@ main() {
       RUNNER_COMMANDS+="cd /templates/$dir_name; "
 
       # Create project by directory name
-      gitlab_create_project "$dir_name" "$(gitlab_get_group_id "$GITHUB_TEMPLATE_USER")"
+      gitlab_create_project "$dir_name" "$(gitlab_get_group_id "$GITHUB_TEMPLATE_USER")" "false"
 
       # cd to directory and check if .git folder exist
       cd "$_dir" || ERROR "Cannot cd to $_dir"
