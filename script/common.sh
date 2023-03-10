@@ -47,6 +47,26 @@ url_decode() {
   printf '%b' "${url_encoded//%/\\x}"
 }
 
+check_docker_in_rootless() {
+  local response
+  response="$(docker info -f '{{json .SecurityOptions}}' 2>&1)"
+
+  # Check if docker is running in rootless mode
+  if echo "$response" | grep -q "rootless"; then
+    # Rootless mode
+    echo "true"
+  else
+    # If response contains "permission denied"
+    if echo "$response" | grep -q "permission denied"; then
+      # Root mode
+      echo "false"
+    else
+      # Unknown mode
+      FAILED "Failed to check if docker is running in rootless mode"
+    fi
+  fi
+}
+
 print_exit() {
   local return_value=$?
   if [ "$return_value" -eq 130 ]; then

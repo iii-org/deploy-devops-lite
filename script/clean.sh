@@ -24,10 +24,16 @@ if [ -f environments.json ]; then
 fi
 
 # For folders in templates, remove all .git folders
+INFO "Removing .git folders in templates"
 for template_dir in templates/*; do
   if [ -d "$template_dir" ]; then
-    INFO "Cleaning up \e[97m$template_dir\e[0m .git info"
-    find "$template_dir" -name .git -type d -prune -exec rm -rf {} \;
+    if [ "$(check_docker_in_rootless)" == "true" ]; then
+      find "$template_dir" -name .git -type d -prune \
+        -exec rm -rf {} \; -exec echo -e "  -> removed \e[97m{}\e[0m" \;
+    else
+      find "$template_dir" -name .git -type d -prune \
+        -exec sudo rm -rf {} \; -exec echo -e "  -> removed \e[97m{}\e[0m" \;
+    fi
   fi
 done
 
