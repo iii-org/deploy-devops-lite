@@ -35,6 +35,7 @@ services:
   sq-database:
     image: docker.io/bitnami/postgresql:15
     container_name: "sonarqube-database"
+    restart: always
     volumes:
       - sonarqube-data:/bitnami/postgresql
     environment:
@@ -58,6 +59,7 @@ services:
   rm-database:
     image: postgres:12
     container_name: "redmine-database"
+    restart: always
     volumes:
       - redmine-db-data:/var/lib/postgresql/data
       - ./redmine.sql:/tmp/redmine.sql
@@ -115,6 +117,7 @@ services:
   iii-database:
     image: postgres:12
     container_name: "iii-database"
+    restart: always
     ports:
       - "${III_DB_PORT}:5432"
     volumes:
@@ -124,12 +127,13 @@ services:
 
   redis:
     image: redis:6.2.6
+    container_name: "redis"
+    restart: always
     ports:
       - "31999:6379"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
-
 
 volumes:
   gitlab-data:
