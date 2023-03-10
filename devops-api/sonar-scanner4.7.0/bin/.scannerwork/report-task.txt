@@ -1,6 +1,0 @@
-projectKey=son
-serverUrl=http://sonarqube-dev.iiidevops.org
-serverVersion=8.9.6.50800
-dashboardUrl=http://sonarqube-dev.iiidevops.org/dashboard?id=son
-ceTaskId=AYTvvDQdeePX-vIFtCST
-ceTaskUrl=http://sonarqube-dev.iiidevops.org/api/ce/task?id=AYTvvDQdeePX-vIFtCST

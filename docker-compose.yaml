@@ -85,9 +85,10 @@ services:
       REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
   iii:
-    build:
-      context: ./devops-api/
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./devops-api/
+    #   dockerfile: Dockerfile
+    image: iiiorg/devops-lite-api:0.0.1
     ports:
       - "${III_PORT}:10009"
     restart: on-failure
