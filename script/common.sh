@@ -130,7 +130,6 @@ env_file="${project_dir}"/.env
 # If .env file not exists, copy from .env.example
 if [ ! -f "$env_file" ]; then
   cp "$env_file".example "$env_file"
-  "${bin_dir}"/generate_env.sh all
 fi
 
 # Load .env file

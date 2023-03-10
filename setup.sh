@@ -5,6 +5,7 @@ set -euo pipefail
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/script/common.sh
+"${bin_dir:?}"/generate_env.sh all
 
 get_distribution() {
   # Copy from https://get.docker.com/
