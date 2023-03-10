@@ -158,7 +158,7 @@ usage() {
   echo
   echo "Options:"
   echo "  -h,  --help    print this help"
-  exit 0
+  exit 21
 }
 
 main() {

@@ -49,6 +49,11 @@ url_decode() {
 
 check_docker_in_rootless() {
   local response
+
+  if ! command_exists docker; then
+    FAILED "Docker not found, please install docker first"
+  fi
+
   response="$(docker info -f '{{json .SecurityOptions}}' 2>&1)"
 
   # Check if docker is running in rootless mode
@@ -72,6 +77,9 @@ print_exit() {
   if [ "$return_value" -eq 130 ]; then
     # Catch SIGINT (Ctrl+C) by trap_ctrlc
     exit 130
+  elif [ "$return_value" -eq 21 ]; then
+    # Catch exit 21 by usage
+    exit 21
   elif [ "$return_value" -eq 0 ]; then
     NOTICE "Script executed successfully"
   else
@@ -122,6 +130,7 @@ env_file="${project_dir}"/.env
 # If .env file not exists, copy from .env.example
 if [ ! -f "$env_file" ]; then
   cp "$env_file".example "$env_file"
+  "${project_dir}"/generate_env.sh all
 fi
 
 # Load .env file
