@@ -1,6 +1,11 @@
-### For all using `common.sh`:
+### `common.sh`:
 
-- `source common.sh` will change the directory to project root.
+- `source common.sh`
+    - Change directory to project root.
+    - Source all `.env` from project root.
+    - Provided variables:
+        - `bin_dir`: The directory of this script.
+        - `project_dir`: The project root directory.
 
 ### For using `clean.sh`:
 
