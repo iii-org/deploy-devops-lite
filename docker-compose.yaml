@@ -85,9 +85,6 @@ services:
       REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
   iii:
-    # build:
-    #   context: ./devops-api/
-    #   dockerfile: Dockerfile
     image: iiiorg/devops-lite-api:0.0.1
     ports:
       - "${III_PORT}:10009"
@@ -114,6 +111,15 @@ services:
       ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
       DEPLOYER_NODE_IP: ${IP_ADDR}
       REDIS_BASE_URL: redis:6379
+
+  iii-ui:
+    image: iiiorg/devops-lite-ui:0.0.1
+    ports:
+      - "80:80"
+    volumes:
+      - iii-ui-data:/opt/nfs
+    environment:
+      API_URL: http://iii:10009/
 
   iii-database:
     image: postgres:12
@@ -160,4 +166,7 @@ volumes:
     driver: local
 
   iii-db-data:
+    driver: local
+
+  iii-ui-data:
     driver: local
