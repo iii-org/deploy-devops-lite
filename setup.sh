@@ -286,7 +286,7 @@ setup_redmine() {
   done
 
   INFO "Importing redmine database..."
-  docker compose exec rm-database psql -U postgres -d redmine_database -f /tmp/redmine.sql &>.redmine-sql-import.log
+  docker compose exec redmine-db psql -U postgres -d redmine_database -f /tmp/redmine.sql &>.redmine-sql-import.log
   INFO "Redmine database imported, check the file \e[97m.redmine-sql-import.log\e[0m for more details"
   NOTICE "Redmine setup complete"
 }
