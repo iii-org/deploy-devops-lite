@@ -54,6 +54,10 @@ command_check() {
 
     BIN="$(dirname "$(command -v dockerd-rootless.sh)")"
 
+    # Set cap_net_bind_service capability to allow binding to privileged ports (e.g. 80, 443)
+    sudo setcap cap_net_bind_service=+ep "${BIN}/rootlesskit"
+	systemctl --user restart docker
+
     export PATH=$BIN:$PATH
     echo "export PATH=$BIN:$PATH" >>~/.bashrc
     export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/docker.sock
