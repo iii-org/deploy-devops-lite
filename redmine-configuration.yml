@@ -1,0 +1,31 @@
+default:
+  attachments_storage_path: null
+  autologin_cookie_name: null
+  autologin_cookie_path: null
+  autologin_cookie_secure: null
+  database_cipher_key: null
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      address: smtp.yourmail.server
+      authentication: :plain
+      domain: smtp.yourmail.server
+      enable_starttls_auto: true
+      password:
+      port: '587'
+      user_name:
+  minimagick_font_path: null
+  scm_bazaar_command: null
+  scm_bazaar_path_regexp: null
+  scm_cvs_command: null
+  scm_cvs_path_regexp: null
+  scm_filesystem_path_regexp: null
+  scm_git_command: null
+  scm_git_path_regexp: null
+  scm_mercurial_command: null
+  scm_mercurial_path_regexp: null
+  scm_stderr_log_file: null
+  scm_subversion_command: null
+  scm_subversion_path_regexp: null
+development: null
+production: null
