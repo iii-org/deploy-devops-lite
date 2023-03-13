@@ -29,7 +29,7 @@ services:
       - CI_SERVER_URL=http://gitlab:${GITLAB_PORT}/
     volumes:
       - runner-config:/etc/gitlab-runner
-      - ${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
       - ./templates:/templates
 
   sonarqube-db:

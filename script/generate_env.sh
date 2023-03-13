@@ -276,10 +276,10 @@ check_password() {
   if [ -z "$answer" ] || [ "$answer" = "{{PASSWORD}}" ] || [ "${#answer}" -lt 8 ] || [ "${#answer}" -gt 20 ]; then
     valid=false
   else
-    if [[ "$answer" != *[[:lower:]]* ]] && [[ "$answer" != *[[:upper:]]* ]] && [[ "$answer" != *[[:digit:]]* ]] && [[ "$answer" != *[[:punct:]]* ]]; then
-      valid=false
-    else
+    if [[ "$answer" =~ [[:lower:]] && "$answer" =~ [[:upper:]] && "$answer" =~ [[:digit:]] && "$answer" =~ [[:punct:]] ]]; then
       valid=true
+    else
+      valid=false
     fi
   fi
 
@@ -352,7 +352,7 @@ question_iii_password() {
   fi
 
   for password in "${password_list[@]}"; do
-    if [ -z "${!password:-}" ] || [ "${!password}" = "{{PASSWORD}}" ] || [ "$password" != "$III_ADMIN_PASSWORD" ]; then
+    if [ -z "${!password:-}" ] || [ "${!password}" == "{{PASSWORD}}" ] || [ "${!password}" != "$III_ADMIN_PASSWORD" ]; then
       write_back_data "$password" "$III_ADMIN_PASSWORD" true
     fi
   done
