@@ -6,6 +6,7 @@ environments.json
 redmine.sql
 
 .env
+.env.bak
 
 ### VisualStudioCode template
 .vscode/*
