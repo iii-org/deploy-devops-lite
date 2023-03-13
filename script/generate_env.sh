@@ -148,9 +148,14 @@ question_docker_sock() {
       fi
     fi
 
-    # If not found, set the default answer
-    answer="/run/user/$(id -u)/docker.sock"
-    valid=true
+    # If not found, prompt user to enter
+    WARN "Docker socket not found, please enter the docker socket file manually"
+    read -r answer
+    if [ -S "$answer" ]; then
+      valid=true
+    else
+      WARN "Invalid docker socket, should be a socket file"
+    fi
   done
 
   write_back_data "DOCKER_SOCKET" "$answer"
