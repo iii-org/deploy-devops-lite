@@ -6,8 +6,6 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/common.sh
 
-env | grep "PASSWORD"
-
 FORCE=false
 RUNNING_QUESTIONS=()
 ALL_QUESTION=(
