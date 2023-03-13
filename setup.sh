@@ -78,6 +78,7 @@ command_check() {
 
     # Set docker socket location, should auto detect
     "${bin_dir:?}"/generate_env.sh docker_sock
+    source "$base_dir"/script/common.sh
 
     INFO "Install docker done! Running docker in rootless mode!"
   fi
@@ -178,6 +179,7 @@ command_check
 
 # Check .env set in correct format
 "${bin_dir:?}"/generate_env.sh all
+source "$base_dir"/script/common.sh
 
 # If command_check complete, check if docker socket is set
 if [ -S "$DOCKER_SOCKET" ]; then
@@ -185,6 +187,7 @@ if [ -S "$DOCKER_SOCKET" ]; then
 else
   # If docker socket not set, auto detect
   "${bin_dir:?}"/generate_env.sh docker_sock
+  source "$base_dir"/script/common.sh
 fi
 
 # If environments.json exist, do not run setup
