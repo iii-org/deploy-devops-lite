@@ -76,6 +76,9 @@ command_check() {
       fi
     done
 
+    # Set docker socket location, should auto detect
+    "${bin_dir:?}"/generate_env.sh docker_sock
+
     INFO "Install docker done! Running docker in rootless mode!"
   fi
 
@@ -172,6 +175,17 @@ if [ "$lsb_dist" != "ubuntu" ] && [ "$lsb_dist" != "debian" ]; then
 fi
 
 command_check
+
+# Check .env set in correct format
+"${bin_dir:?}"/generate_env.sh all
+
+# If command_check complete, check if docker socket is set
+if [ -S "$DOCKER_SOCKET" ]; then
+  INFO "Docker is set to \e[97m$DOCKER_SOCKET\e[0m, continue setup..."
+else
+  # If docker socket not set, auto detect
+  "${bin_dir:?}"/generate_env.sh docker_sock
+fi
 
 # If environments.json exist, do not run setup
 if [ -e environments.json ]; then

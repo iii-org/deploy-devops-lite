@@ -6,10 +6,11 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/common.sh
 
+env | grep "PASSWORD"
+
 FORCE=false
 RUNNING_QUESTIONS=()
 ALL_QUESTION=(
-  "docker_sock"
   "ip_addr"
   "iii_login"
   "iii_email"
@@ -57,13 +58,43 @@ write_back_data() {
     INFO "$key not found in .env file, adding it"
     echo "$key='$value'" >>"$env_file"
   fi
-  # Write back to .env file, replace the old key
-  sed -i "s#$key=.*#$key='$value'#g" "$env_file"
+
+  # Check if value contains double quote
+  if [[ "$value" == *\"* ]]; then
+    # From " to \"
+    value="${value//\"/\\\\\"}"
+  fi
+
+  # Escape back quote
+  value="${value//\`/\\\`}"
+
+  # Write back to .env file, replace the old key, using awk to escape special characters
+  awk -v key="$key" -v value="$value" 'BEGIN { FS=OFS="=\"" }
+    { for(i=3; i<=NF; i++)
+      {
+        $2 = $2"=\""$i
+      }
+    }
+    $1 == key {
+      $2 = value"\""
+    }
+    NF {
+      if ($1 ~ /^#/) {
+        NF = 1
+      }
+      else {
+        NF = 2
+      }
+    } 1' "$env_file" >"$env_file.tmp"
+
   if [ "${value_sensitive}" = false ]; then
     INFO "\e[97m$key\e[0m set to \e[97m$value\e[0m"
   else
     INFO "\e[97m$key\e[0m set to \e[97m********\e[0m"
   fi
+
+  # Replace the old file, we don't need the tmp file anymore
+  mv "$env_file.tmp" "$env_file"
 }
 
 question_ip_addr() {
@@ -203,7 +234,7 @@ question_iii_email() {
   local rule=""
   rule+="^[a-zA-Z0-9!#$%&'*+/=?^_\`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_\`{|}~-]+)*"
   rule+="@"
-  rule+="[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+  rule+="[a-zA-Z0-9]([a-zA-Z0-9.-]?[a-zA-Z0-9])*\.[a-zA-Z]{2,}$"
   local valid=false
   local answer
 
@@ -323,7 +354,7 @@ question_iii_password() {
   fi
 
   for password in "${password_list[@]}"; do
-    if [ -z "${!password:-}" ] || [ "${!password}" = "{{PASSWORD}}" ]; then
+    if [ -z "${!password:-}" ] || [ "${!password}" = "{{PASSWORD}}" ] || [ "$password" != "$III_ADMIN_PASSWORD" ]; then
       write_back_data "$password" "$III_ADMIN_PASSWORD" true
     fi
   done
