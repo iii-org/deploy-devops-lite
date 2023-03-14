@@ -1,5 +1,7 @@
 # Deploy DevOps Lite
 
+[English](README.md) | [繁體中文](README.zh_TW.md)
+
 ## 系統需求
 
 - 作業系統
