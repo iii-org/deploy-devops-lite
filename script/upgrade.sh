@@ -32,5 +32,5 @@ INFO "If you wish to start up your self, you are safe to exit now."
 echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
 sleep 5
 
-docker-compose down
-docker-compose up -d
+docker compose up \
+  --remove-orphans -d
