@@ -78,7 +78,7 @@ write_back_data() {
     }
     NF {
       if ($1 ~ /^#/) {
-        NF = 1
+        NF = NF
       }
       else {
         NF = 2
