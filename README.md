@@ -65,3 +65,8 @@ If the script runs successfully, it will show the message below
 ```
 
 You can open the browser and visit `http://<IP_ADDRESS>` to check if the DevOps Lite has been deployed successfully.
+
+## Upgrade
+
+Run `script/upgrade.sh` to upgrade the DevOps Lite.  
+The script will automatically pull the latest code from the repository and run the deployment program.

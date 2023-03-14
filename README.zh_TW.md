@@ -63,3 +63,8 @@
 ```
 
 您可以在您的瀏覽器中輸入 `http://<IP_ADDRESS>` 來檢查 DevOps Lite 是否已成功部署。
+
+## 更新
+
+執行 `script/update.sh` 來更新 DevOps Lite。  
+此腳本會拉取最新更新並重新啟動 docker compose。
