@@ -93,6 +93,11 @@ bash_traceback() {
     return
   fi
 
+  # Check if .git exists
+  if [ ! -d "$project_dir"/.git ]; then
+    ERROR "Script failed, current version: \e[97m$(git describe --tags --always --dirty)\e[0m"
+  fi
+
   # Modified from https://gist.github.com/Asher256/4c68119705ffa11adb7446f297a7beae
   local return_value=$?
   set +o xtrace
