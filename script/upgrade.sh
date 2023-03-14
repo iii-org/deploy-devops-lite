@@ -33,4 +33,6 @@ echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
 sleep 5
 
 docker compose up \
+  --pull always \
+  --quiet-pull \
   --remove-orphans -d
