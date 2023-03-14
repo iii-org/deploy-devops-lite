@@ -121,7 +121,7 @@ services:
       - ./environments.json:/environments.json
       - iii-devops-lite-file:/opt/nfs
       - iii-devops-lite-log:/logs
-    environment:
+    environment: &iii_environment
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:${III_DB_PASSWORD}@iii-devops-lite-db:5432/devopsdb
       SQLALCHEMY_TRACK_MODIFICATIONS: false
       WTF_CSRF_CHECK_DEFAULT: false
@@ -140,6 +140,30 @@ services:
       ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
       DEPLOYER_NODE_IP: ${IP_ADDR}
       REDIS_BASE_URL: redis:6379
+
+  iii-devops-lite-api-worker:
+    image: iiiorg/devops-lite-api:0.0.3
+    container_name: "iii-devops-lite-api-worker"
+    restart: on-failure
+    depends_on:
+      - redis
+      - iii-devops-lite-api
+    command: celery -A apis.api:celery worker -P eventlet --loglevel=INFO
+    volumes:
+      - ./environments.json:/environments.json
+    environment: 
+      <<: *iii_environment
+  
+  iii-devops-lite-api-beat:
+    image: iiiorg/devops-lite-api:0.0.3
+    container_name: "iii-devops-lite-api-beat"
+    restart: on-failure
+    depends_on:
+      - redis
+      - iii-devops-lite-api
+    command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    environment: 
+      <<: *iii_environment
 
   iii-devops-lite-ui:
     image: iiiorg/devops-lite-ui:0.0.3
