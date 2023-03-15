@@ -6,6 +6,8 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/script/common.sh
 
+GITLAB_RUNNER="docker compose exec runner"
+
 get_distribution() {
   # Copy from https://get.docker.com/
   lsb_dist=""
@@ -235,7 +237,7 @@ setup_gitlab() {
   # shellcheck disable=SC2034
   for i in {1..300}; do
     set +e # Disable exit on error
-    STATUS_CODE="$(docker compose exec runner curl -s -k -q --max-time 5 -w '%{http_code}' -o /dev/null "http://gitlab:$GITLAB_PORT/users/sign_in")"
+    STATUS_CODE="$($RUNNER curl -s -k -q --max-time 5 -w '%{http_code}' -o /dev/null "http://gitlab:$GITLAB_PORT/users/sign_in")"
     set -e # Enable exit on error
 
     if [ "$STATUS_CODE" -eq 200 ]; then
@@ -257,7 +259,7 @@ setup_gitlab() {
   if [ -z "$GITLAB_INIT_RESPONSE" ]; then
     INFO "Initial access token created, token is: $GITLAB_INIT_ACCESS_TOKEN"
     INFO "You can test token via command: "
-    echo "  docker compose exec runner curl --header \"PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN\" \"http://gitlab:$GITLAB_PORT/api/v4/user\""
+    echo "  $GITLAB_RUNNER curl --header \"PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN\" \"http://gitlab:$GITLAB_PORT/api/v4/user\""
   else
     ERROR "Initial access token creation failed, response: \n$GITLAB_INIT_RESPONSE"
     exit 1
@@ -276,7 +278,7 @@ setup_gitlab() {
   INFO "Gitlab shared runner token retrieved, token is: $GITLAB_RUNNER_REGISTRATION_TOKEN"
   INFO "Registering shared runner..."
 
-  docker compose exec runner gitlab-runner register -n \
+  $GITLAB_RUNNER gitlab-runner register -n \
     --url "http://gitlab:$GITLAB_PORT/" \
     --registration-token "$GITLAB_RUNNER_REGISTRATION_TOKEN" \
     --executor "docker" \
@@ -290,6 +292,18 @@ setup_gitlab() {
   INFO "Gitlab shared runner registered"
 
   "${bin_dir:?}"/add_gitlab_template.sh "$GITLAB_INIT_ACCESS_TOKEN"
+
+  $GITLAB_RUNNER curl -s -k \
+    --request PUT "http://gitlab:$GITLAB_PORT/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \
+    --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" >/dev/null
+
+  $GITLAB_RUNNER curl -s -k \
+    --request PUT "http://gitlab:$GITLAB_PORT/api/v4/application/settings?signup_enabled=false" \
+    --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" >/dev/null
+
+  $GITLAB_RUNNER curl -s -k \
+    --request PUT "http://gitlab:$GITLAB_PORT/api/v4/application/settings?auto_devops_enabled=false" \
+    --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" >/dev/null
 
   NOTICE "Gitlab setup complete"
 }
@@ -454,13 +468,15 @@ EOF
 
 post_script() {
   local POST_RESPONSE
-  POST_RESPONSE="$(docker compose exec runner curl -s -k \
-    --request POST --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
-    "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
-    --form 'key=SONAR_TOKEN' \
-    --form 'value="'"$SONARQUBE_ADMIN_TOKEN"'"' \
-    --form 'protected=true' \
-    --form 'masked=true')"
+  POST_RESPONSE="$(
+    $GITLAB_RUNNER curl -s -k \
+      --request POST "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
+      --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
+      --form 'key=SONAR_TOKEN' \
+      --form 'value="'"$SONARQUBE_ADMIN_TOKEN"'"' \
+      --form 'protected=true' \
+      --form 'masked=true'
+  )"
 
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
 
@@ -472,12 +488,14 @@ post_script() {
   SONARQUBE_HOST_URL="http://$IP_ADDR:$SQ_PORT"
   INFO "Setting Gitlab CICD variable SONAR_HOST_URL to $SONARQUBE_HOST_URL"
 
-  POST_RESPONSE="$(docker compose exec runner curl -s -k \
-    --request POST --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
-    "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
-    --form 'key=SONAR_HOST_URL' \
-    --form 'value="'"$SONARQUBE_HOST_URL"'"' \
-    --form 'protected=true')"
+  POST_RESPONSE="$(
+    $GITLAB_RUNNER curl -s -k \
+      --request POST "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
+      --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
+      --form 'key=SONAR_HOST_URL' \
+      --form 'value="'"$SONARQUBE_HOST_URL"'"' \
+      --form 'protected=true'
+  )"
 
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
 
@@ -487,12 +505,14 @@ post_script() {
   fi
 
   API_ORIGIN="http://$IP_ADDR:$III_PORT"
-  POST_RESPONSE="$(docker compose exec runner curl -s -k \
-    --request POST --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
-    "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
-    --form 'key=API_ORIGIN' \
-    --form 'value="'"$API_ORIGIN"'"' \
-    --form 'protected=true')"
+  POST_RESPONSE="$(
+    $GITLAB_RUNNER curl -s -k \
+      --request POST "http://gitlab:$GITLAB_PORT/api/v4/admin/ci/variables" \
+      --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
+      --form 'key=API_ORIGIN' \
+      --form 'value="'"$API_ORIGIN"'"' \
+      --form 'protected=true'
+  )"
 
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
 
