@@ -474,7 +474,7 @@ post_script() {
       --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
       --form 'key=SONAR_TOKEN' \
       --form 'value="'"$SONARQUBE_ADMIN_TOKEN"'"' \
-      --form 'protected=true' \
+      --form 'protected=false' \
       --form 'masked=true'
   )"
 
@@ -494,7 +494,7 @@ post_script() {
       --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
       --form 'key=SONAR_HOST_URL' \
       --form 'value="'"$SONARQUBE_HOST_URL"'"' \
-      --form 'protected=true'
+      --form 'protected=false'
   )"
 
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
@@ -511,7 +511,7 @@ post_script() {
       --header "PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN" \
       --form 'key=API_ORIGIN' \
       --form 'value="'"$API_ORIGIN"'"' \
-      --form 'protected=true'
+      --form 'protected=false'
   )"
 
   key=$(echo "$POST_RESPONSE" | jq -r '.key')
