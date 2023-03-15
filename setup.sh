@@ -58,6 +58,12 @@ command_check() {
     sudo setcap cap_net_bind_service=ep "$(which rootlesskit)"
     systemctl --user restart docker
 
+    # Enable linger to keep the user systemd instance running
+    # From official docs https://docs.docker.com/engine/security/rootless/#daemon
+    systemctl --user start docker
+    systemctl --user enable docker
+    sudo loginctl enable-linger "$(whoami)"
+
     export PATH=$BIN:$PATH
     echo "export PATH=$BIN:$PATH" >>~/.bashrc
     export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/docker.sock
