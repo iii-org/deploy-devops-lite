@@ -237,7 +237,7 @@ setup_gitlab() {
   # shellcheck disable=SC2034
   for i in {1..300}; do
     set +e # Disable exit on error
-    STATUS_CODE="$($RUNNER curl -s -k -q --max-time 5 -w '%{http_code}' -o /dev/null "http://gitlab:$GITLAB_PORT/users/sign_in")"
+    STATUS_CODE="$($GITLAB_RUNNER curl -s -k -q --max-time 5 -w '%{http_code}' -o /dev/null "http://gitlab:$GITLAB_PORT/users/sign_in")"
     set -e # Enable exit on error
 
     if [ "$STATUS_CODE" -eq 200 ]; then
