@@ -1,17 +1,23 @@
 stages:
-  - prepare
-  - scaner
+  - initial-pipeline
+  - sonarqube
 
-prepare-variable-debug:
-  stage: prepare
+.common_except:
+  variables: &id001
+  - $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+
+Integration--initial pipeline:
+  stage: initial-pipeline
   before_script:
     - apk add --update curl && rm -rf /var/cache/apk/*
   script:
     - curl --location -s --request POST "${API_ORIGIN}/project/issues_commit_by_name" --form 'project_name="'"$CI_PROJECT_NAME"'"'
   allow_failure: true
+  except:
+    variables: *id001
 
-scaner-sonarqube:
-  stage: scaner
+Test--SonarQube source code scan:
+  stage: sonarqube
   image:
     name: iiiorg/sonarqube-runner:1.1.0
     entrypoint: [ "" ]
@@ -26,4 +32,8 @@ scaner-sonarqube:
     - chmod a+x ./iiidevops/sonarqube/*
     - ./iiidevops/sonarqube/SonarScan
   allow_failure: true
+  only:
+  - master
+  except:
+    variables: *id001
 
