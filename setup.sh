@@ -20,6 +20,14 @@ get_distribution() {
   echo "$lsb_dist" | tr '[:upper:]' '[:lower:]'
 }
 
+is_wsl() {
+  case "$(uname -r)" in
+  *microsoft*) true ;; # WSL 2
+  *Microsoft*) true ;; # WSL 1
+  *) false ;;
+  esac
+}
+
 command_check() {
   # Check if .initialized exist, if so, skip setup
   if [ -f .initialized ]; then
@@ -179,6 +187,12 @@ prepare_check() {
 lsb_dist="$(get_distribution)"
 # If distribution not in ubuntu or debian, exit
 if [ "$lsb_dist" != "ubuntu" ] && [ "$lsb_dist" != "debian" ]; then
+  # Detect WSL
+  if is_wsl; then
+    ERROR "WSL is currently not supported, please use Ubuntu or Debian on a virtual machine or a physical machine."
+    exit 1
+  fi
+
   ERROR "Your distribution is currently not supported, please use Ubuntu or Debian"
   exit 1
 fi
