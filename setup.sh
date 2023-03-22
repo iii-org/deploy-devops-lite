@@ -99,6 +99,14 @@ command_check() {
     INFO "Install docker done! Running docker in rootless mode!"
   fi
 
+  # docker compose version
+  if ! docker compose version >/dev/null 2>&1; then
+    ERROR "Make sure \e[97mdocker compose\e[0m is runnable"
+    ERROR "You can install via https://docs.docker.com/compose/install/"
+    ERROR "Or you can install via \e[97msudo apt install docker-compose-plugin\e[0m (depends on your docker version)"
+    exit 1
+  fi
+
   INFO "Command check complete"
   touch .initialized
   INFO "Done! Command check complete, continue setup..."
