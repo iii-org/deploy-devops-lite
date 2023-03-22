@@ -184,6 +184,12 @@ prepare_check() {
   INFO "redmine.sql and REDMINE_API_KEY generated, key is: $REDMINE_API_KEY"
 }
 
+# Check if current running user is not root
+if [ "$(id -u)" = 0 ]; then
+  ERROR "Please run this script as non-root user"
+  exit 1
+fi
+
 lsb_dist="$(get_distribution)"
 # If distribution not in ubuntu or debian, exit
 if [ "$lsb_dist" != "ubuntu" ] && [ "$lsb_dist" != "debian" ]; then

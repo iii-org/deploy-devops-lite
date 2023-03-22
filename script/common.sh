@@ -94,7 +94,7 @@ bash_traceback() {
   fi
 
   # Check if .git exists
-  if [ ! -d "$project_dir"/.git ]; then
+  if [ -d "$project_dir"/.git ]; then
     ERROR "Script failed, current version: \e[97m$(git describe --tags --always --dirty)\e[0m"
   fi
 
