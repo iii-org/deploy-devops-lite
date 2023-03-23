@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
-source "$base_dir"/script/common.sh
+source "$base_dir"/common.sh
 
 # Via https://get.docker.com/
 echo "[+] curl -s https://get.docker.com/ | bash"
