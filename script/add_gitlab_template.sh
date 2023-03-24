@@ -6,6 +6,8 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/common.sh
 
+IMPORT_ALL=1                               # 1: Install all scripts, 0: Install only selected scripts
+IMPORT_TEMPLATES=()                        # List o
 GITHUB_TEMPLATE_USER="iiidevops-templates" # https://github.com/iiidevops-templates
 GITLAB_URL=gitlab:${GITLAB_PORT}
 GITLAB_INIT_TOKEN=""
@@ -52,6 +54,24 @@ gitlab_get_group_id() {
 
   # TODO: Fix if empty array
   echo "$GITLAB_RESPONSE" | jq -r '.[0].id'
+}
+
+gitlab_get_project() {
+  GITLAB_RESPONSE=$(
+    $GITLAB_RUNNER curl -s -k \
+      --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
+      --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
+  )
+
+  gitlab_parse_error "$GITLAB_RESPONSE"
+
+  # Check [0] name is exactly the same
+  if [ "$(echo "$GITLAB_RESPONSE" | jq -r '.[0].name')" != "$1" ]; then
+    echo "null"
+  fi
+
+  # Return project object
+  echo "$GITLAB_RESPONSE" | jq -r '.[0]'
 }
 
 gitlab_get_project_id() {
@@ -154,27 +174,27 @@ gitlab_delete_project() {
 usage() {
   echo "Add GitLab templates."
   echo
-  echo "Usage: $(basename "$0") [OPTIONS]... [GITLAB_INIT_TOKEN]"
+  echo "Usage: $(basename "$0") [OPTIONS] ..."
   echo
   echo "Options:"
-  echo "  -h,  --help    print this help"
+  echo "  -h,  --help      print this help"
+  echo "  -T,  --token     GitLab init token, if not set, will auto get from environments.json"
+  echo "  -t,  --template  The template to add to gitlab"
+  echo ""
+  echo "Example:"
+  echo "  $(basename "$0")"
+  echo "    # Running all template in templates and use GitLab init token from environments.json"
+  echo
+  echo "  $(basename "$0") -T 1234567890abcdef1234 -t \"gitlab-ci-templates\""
+  echo "    # Running template gitlab-ci-templates and pass GitLab init token"
+  echo
+  echo "  $(basename "$0") -t \"gitlab-ci-templates\" -t \"gitlab-ci-templates-2\""
+  echo "    # Running two templates and use GitLab init token from environments.json"
   exit 21
 }
 
-main() {
-  local output_log="${project_dir:?}"/.executed_to_runner.log
+prepare_gitlab_groups() {
   local gitlab_instance_credentials
-
-  # Check if GitLab is running
-  if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
-    ERROR "GitLab is not running, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
-    exit 1
-  fi
-
-  if [ -f "$output_log" ]; then
-    rm "$output_log"
-  fi
-
   gitlab_instance_credentials="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@$GITLAB_URL"
 
   $GITLAB_RUNNER sh -c "if [ -f ~/.git-credentials ]; then \
@@ -191,20 +211,60 @@ main() {
 
   gitlab_create_group "local-templates"
   gitlab_create_group "$GITHUB_TEMPLATE_USER"
+}
 
-  response_json="$(gitlab_get_group_projects "$GITHUB_TEMPLATE_USER")"
+main() {
+  local output_log="${project_dir:?}"/.executed_to_runner.log
 
-  # Filtered response
-  echo "$response_json" | jq -cr '[.[] | {id: .id, name: .path_with_namespace}]' | while read -r filterd; do
-    for i in $(echo "$filterd" | jq -cr '.[]'); do
-      INFO "Deleting $(echo "$i" | jq -r '.name')"
-      gitlab_delete_project "$(echo "$i" | jq -r '.id')"
-      INFO "Deleted $(echo "$i" | jq -r '.name')"
+  if [ -f "$output_log" ]; then
+    rm "$output_log"
+  fi
+
+  prepare_gitlab_groups
+
+  # Templates
+  local _templates=()
+
+  if [ "$IMPORT_ALL" -eq 1 ]; then
+    # Set _templates to each directory in template directory
+    while IFS='' read -r line; do _templates+=("$line"); done < <(ls -d "$project_dir"/templates/*)
+    # All: Delete all projects in group
+    response_json="$(gitlab_get_group_projects "$GITHUB_TEMPLATE_USER")"
+
+    # Filtered response
+    echo "$response_json" | jq -cr '[.[] | {id: .id, name: .path_with_namespace}]' | while read -r filterd; do
+      for i in $(echo "$filterd" | jq -cr '.[]'); do
+        INFO "Deleting $(echo "$i" | jq -r '.name')"
+        gitlab_delete_project "$(echo "$i" | jq -r '.id')"
+        INFO "Deleted $(echo "$i" | jq -r '.name')"
+      done
     done
-  done
+  else
+    # Delete projects in gitlab
+    for template in "${IMPORT_TEMPLATES[@]}"; do
+      if [ -d "$project_dir"/templates/"$template" ]; then
+        INFO "Importing template: \e[97m$template\e[0m"
+        project="$(gitlab_get_project "$template")"
+        project_id="$(echo "$project" | jq -r '.id')"
+
+        if [ -n "$project" ] && [ "$project" != "null" ]; then
+          INFO "Deleting project: $template"
+          gitlab_delete_project "$project_id"
+          INFO "Deleted project: $template"
+        fi
+
+        # Add to array
+        _templates+=("$project_dir"/templates/"$template")
+      else
+        ERROR "Cannot find template: \e[97m$template\e[0m"
+        # Remove from array
+        IMPORT_TEMPLATES=("${IMPORT_TEMPLATES[@]/$template/}")
+      fi
+    done
+  fi
 
   # For each directory in template directory
-  for _dir in templates/*; do
+  for _dir in ${_templates[*]}; do
     if [ -d "$_dir" ]; then
       RUNNER_COMMANDS=""
 
@@ -257,18 +317,41 @@ main() {
   INFO "Import templates done!"
 }
 
-# If no arguments passed, print help
-if [[ "$#" -eq 0 ]]; then
-  usage
-fi
-
 while [[ "$#" -gt 0 ]]; do
   case $1 in
   -h | --help) usage ;;
-  *)
-    GITLAB_INIT_TOKEN=$1
-    main
+  -T | --token)
+    GITLAB_INIT_TOKEN="$2"
     shift
     ;;
+  -t | --template)
+    IMPORT_ALL=0
+    IMPORT_TEMPLATES+=("$2")
+    shift
+    ;;
+  *)
+    ERROR "Unknown parameter passed, maybe you want to add to the template? $1"
+    ;;
   esac
+  shift
 done
+
+# Check if GITLAB_INIT_TOKEN is set
+if [ -z "$GITLAB_INIT_TOKEN" ]; then
+  # Check if file exist
+  if [ ! -f "$project_dir"/environments.json ]; then
+    ERROR "Cannot find environments.json, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
+    exit 1
+  fi
+
+  GITLAB_INIT_TOKEN="$(jq -r '.GITLAB_PRIVATE_TOKEN' "$project_dir"/environments.json)"
+fi
+
+# Check if GitLab is running
+if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
+  ERROR "GitLab is not running, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
+  exit 1
+fi
+
+echo "Exec main, GITLAB_INIT_TOKEN: $GITLAB_INIT_TOKEN"
+main
