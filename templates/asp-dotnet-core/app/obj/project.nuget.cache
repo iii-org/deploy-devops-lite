@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "N1+HdxJNv95KumzGrA/IeN1ei3uffHRkT0wxpreO2fzK1Dq4vYlGEoIWchZq+loT/4738ILIwj5yTBJ/zUayPQ==",
+  "success": true,
+  "projectFilePath": "D:\\github-desktop\\docker-asp-mvc-example\\app\\ASP-MVC-example.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\m0724\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.10.13\\microsoft.visualstudio.azure.containers.tools.targets.1.10.13.nupkg.sha512"
+  ],
+  "logs": []
+}
