@@ -283,7 +283,7 @@ setup_gitlab() {
 
   INFO "Gitlab shared runner registered"
 
-  "${bin_dir:?}"/add_gitlab_template.sh "$GITLAB_INIT_ACCESS_TOKEN"
+  "${bin_dir:?}"/add_gitlab_template.sh --token "$GITLAB_INIT_ACCESS_TOKEN"
 
   $GITLAB_RUNNER curl -s -k \
     --request PUT "http://gitlab:$GITLAB_PORT/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \

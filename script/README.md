@@ -13,5 +13,5 @@
 
 ### Usages
 
-- `add_gitlab_template.sh <GITLAB_ACCESS_TOKEN>`
+- `add_gitlab_template.sh`
 - `clean.sh`
