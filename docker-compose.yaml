@@ -106,7 +106,7 @@ services:
       POSTGRES_PASSWORD: ${III_DB_PASSWORD}
 
   iii-devops-lite-api:
-    image: iiiorg/devops-lite-api:0.0.6
+    image: iiiorg/devops-lite-api:0.0.7
     container_name: "iii-devops-lite-api"
     restart: on-failure
     depends_on:
@@ -142,7 +142,7 @@ services:
       REDIS_BASE_URL: redis:6379
 
   iii-devops-lite-api-worker:
-    image: iiiorg/devops-lite-api:0.0.6
+    image: iiiorg/devops-lite-api:0.0.7
     container_name: "iii-devops-lite-api-worker"
     restart: on-failure
     depends_on:
@@ -155,7 +155,7 @@ services:
       <<: *iii_environment
   
   iii-devops-lite-api-beat:
-    image: iiiorg/devops-lite-api:0.0.6
+    image: iiiorg/devops-lite-api:0.0.7
     container_name: "iii-devops-lite-api-beat"
     restart: on-failure
     depends_on:
@@ -166,7 +166,7 @@ services:
       <<: *iii_environment
 
   iii-devops-lite-ui:
-    image: iiiorg/devops-lite-ui:0.0.6
+    image: iiiorg/devops-lite-ui:0.0.7
     container_name: "iii-devops-lite-ui"
     restart: always
     depends_on:
