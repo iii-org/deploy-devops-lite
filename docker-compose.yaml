@@ -22,7 +22,7 @@ services:
       - "gitlab-data:/var/opt/gitlab"
 
   runner:
-    image: gitlab/gitlab-runner:alpine-v15.8.2
+    image: gitlab/gitlab-runner:alpine-v15.10.0
     container_name: "gitlab-runner"
     restart: always
     environment:
@@ -44,7 +44,7 @@ services:
       POSTGRESQL_DATABASE: sonarqube
 
   sonarqube:
-    image: sonarqube:8.9.6-community
+    image: sonarqube:8.9.7-community
     container_name: "sonarqube"
     restart: always
     depends_on:
@@ -68,7 +68,7 @@ services:
       POSTGRES_DB: redmine_database
 
   redmine:
-    image: redmine:4.1.5
+    image: redmine:4.2.10-alpine
     container_name: "redmine"
     restart: always
     depends_on:
@@ -85,7 +85,7 @@ services:
       REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
   redis:
-    image: redis:6.2.6
+    image: redis:6.2.11
     container_name: "redis"
     restart: always
     ports:

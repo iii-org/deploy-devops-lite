@@ -118,8 +118,25 @@ sonarqube_check() {
   NOTICE "Sonarqube requirements check complete"
 }
 
+redis_check() {
+  INFO "Checking Redis requirements"
+
+  # Check vm.overcommit_memory is enabled
+  if [ "$(sudo sysctl -n vm.overcommit_memory)" -ne 1 ]; then
+    INFO "vm.overcommit_memory is enabled"
+    INFO "Executing command to set vm.overcommit_memory to 1..."
+    sudo sysctl -w vm.overcommit_memory=1
+
+    INFO "Persisting vm.overcommit_memory to \e[97m/etc/sysctl.d/99-redis.conf\e[0m"
+    echo "vm.overcommit_memory=1" | sudo tee -a /etc/sysctl.d/99-redis.conf
+  fi
+
+  NOTICE "Redis requirements check complete"
+}
+
 prepare_check() {
   sonarqube_check
+  redis_check
 
   # Check IP_ADDR is set
   if [ -z "$IP_ADDR" ]; then
