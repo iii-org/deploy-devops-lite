@@ -68,7 +68,7 @@ services:
       POSTGRES_DB: redmine_database
 
   redmine:
-    image: redmine:4.2.10-alpine
+    image: redmine:4.2.10
     container_name: "redmine"
     restart: always
     depends_on:
