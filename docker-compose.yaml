@@ -20,6 +20,8 @@ services:
       - "gitlab-config:/etc/gitlab"
       - "gitlab-logs:/var/log/gitlab"
       - "gitlab-data:/var/opt/gitlab"
+    healthcheck:
+      disable: false
 
   runner:
     image: gitlab/gitlab-runner:alpine-v15.10.0

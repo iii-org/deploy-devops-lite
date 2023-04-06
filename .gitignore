@@ -8,6 +8,8 @@ redmine.sql
 .env
 .env.bak
 
+backup/
+
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json
