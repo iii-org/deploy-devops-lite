@@ -10,6 +10,7 @@ source "$base_dir"/common.sh
 BACKUP_DIR="${project_dir:?}"/backup
 GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
+GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 
 if [ ! -d "$BACKUP_DIR" ]; then
   mkdir -p "$BACKUP_DIR"
@@ -34,4 +35,11 @@ backup_gitlab() {
   INFO "Backup GitLab done"
 }
 
+backup_gitlab_runner_config() {
+  INFO "Backup GitLab Runner config..."
+  docker compose exec -t runner cat /etc/gitlab-runner/config.toml >"$GITLAB_RUNNER_CONFIG"
+  INFO "Backup GitLab Runner config done"
+}
+
 backup_gitlab
+backup_gitlab_runner_config

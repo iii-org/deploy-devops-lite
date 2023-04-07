@@ -10,6 +10,7 @@ source "$base_dir"/common.sh
 BACKUP_DIR="${project_dir:?}"/backup
 GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
+GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 GITLAB_RUNNER="docker compose exec runner"
 
 # Run as restore service
@@ -84,4 +85,24 @@ restore_gitlab() {
   INFO "Restore GitLab done"
 }
 
+restore_runner() {
+  INFO "Restore GitLab Runner config..."
+
+  # Check if the backup file exists
+  if [ ! -f "$GITLAB_RUNNER_CONFIG" ]; then
+    ERROR "Backup file not found: $GITLAB_RUNNER_CONFIG"
+    exit 1
+  fi
+
+  # Restore the GitLab Runner config
+  docker compose cp --archive "$BACKUP_DIR"/gitlab-runner-config.toml runner:/etc/gitlab-runner/config.toml
+
+  INFO "List GitLab Runner config..."
+  # Check GitLab Runner
+  docker compose exec runner gitlab-runner list
+
+  INFO "Restore GitLab Runner config done"
+}
+
 restore_gitlab
+restore_runner
