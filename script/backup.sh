@@ -12,6 +12,8 @@ GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
 GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
+REDMINE_FILES="$BACKUP_DIR"/redmine_files.tar.gz
+REDMINE_SQL="$BACKUP_DIR"/redmine.sql
 
 if [ ! -d "$BACKUP_DIR" ]; then
   mkdir -p "$BACKUP_DIR"
@@ -48,12 +50,28 @@ backup_sonarqube() {
   # shellcheck disable=SC1004
   docker compose exec sonarqube-db \
     bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" pg_dump \
-    -U "${POSTGRESQL_USERNAME}" \
-    --dbname="${POSTGRESQL_DATABASE}"' >"$SONARQUBE_SQL"
+      -U "${POSTGRESQL_USERNAME}" \
+      --dbname="${POSTGRESQL_DATABASE}"' >"$SONARQUBE_SQL"
 
   INFO "Backup SonarQube done"
+}
+
+backup_redmine() {
+  INFO "Backup Redmine service..."
+
+  # Backup Redmine files
+  docker compose exec redmine bash -c 'cd /usr/src/redmine/files && tar czf - .' >"$REDMINE_FILES"
+
+  # shellcheck disable=SC1004
+  docker compose exec redmine-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" pg_dump \
+      -U "${POSTGRES_USER}" \
+      --dbname="${POSTGRES_DB}"' >"$REDMINE_SQL"
+
+  INFO "Backup Redmine done"
 }
 
 backup_gitlab
 backup_gitlab_runner_config
 backup_sonarqube
+backup_redmine

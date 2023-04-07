@@ -66,6 +66,7 @@ services:
       - redmine-db-data:/var/lib/postgresql/data
       - ./redmine.sql:/tmp/redmine.sql
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
       POSTGRES_DB: redmine_database
 

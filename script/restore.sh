@@ -12,6 +12,8 @@ GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
 GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
+REDMINE_FILES="$BACKUP_DIR"/redmine_files.tar.gz
+REDMINE_SQL="$BACKUP_DIR"/redmine.sql
 GITLAB_RUNNER="docker compose exec runner"
 
 # Run as restore service
@@ -132,6 +134,47 @@ restore_sonarqube() {
   docker compose start sonarqube
 
   INFO "Restore SonarQube data done"
+}
+
+restore_redmine() {
+  INFO "Restore Redmine data..."
+
+  # Check if /usr/src/redmine/files empty
+  if [ "$(docker compose exec redmine ls -A /usr/src/redmine/files)" ]; then
+    # Remove all files in /usr/src/redmine/files
+    docker compose exec redmine find /usr/src/redmine/files -mindepth 1 -delete
+  fi
+
+  # Restore files from backup
+  docker compose cp --archive "$REDMINE_FILES" redmine:/usr/src/redmine/files.tar.gz
+  docker compose exec redmine tar -xPf /usr/src/redmine/files.tar.gz -C /usr/src/redmine/files
+  docker compose exec redmine rm /usr/src/redmine/files.tar.gz
+
+  # Stop service
+  docker compose stop redmine
+
+  # Drop database
+  # shellcheck disable=SC1004
+  docker compose exec redmine-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRES_USER}" -c "DROP DATABASE ${POSTGRES_DB}"' >/dev/null 2>&1
+
+  # Create database
+  # shellcheck disable=SC1004
+  docker compose exec redmine-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRES_USER}" -c "CREATE DATABASE ${POSTGRES_DB}"' >/dev/null 2>&1
+
+  # Restore database
+  # shellcheck disable=SC1004
+  docker compose exec -T redmine-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRES_USER}" "${POSTGRES_DB}"' <"$REDMINE_SQL" > /dev/null 2>&1
+
+  # Start service
+  docker compose start redmine
+
+  INFO "Restore Redmine data done"
 }
 
 restore_gitlab
