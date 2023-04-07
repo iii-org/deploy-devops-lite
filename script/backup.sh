@@ -19,6 +19,8 @@ if [ ! -d "$BACKUP_DIR" ]; then
   mkdir -p "$BACKUP_DIR"
 else
   INFO "Clean up backup directory..."
+  # Move old backup files to backup directory
+  mv "$BACKUP_DIR" "$BACKUP_DIR"."$(date +%Y%m%d%H%M%S)"
   rm -rf "${BACKUP_DIR:?}"/*
 fi
 

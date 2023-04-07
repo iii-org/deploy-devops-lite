@@ -9,6 +9,7 @@ redmine.sql
 .env.bak
 
 backup/
+backup.*/
 
 ### VisualStudioCode template
 .vscode/*
