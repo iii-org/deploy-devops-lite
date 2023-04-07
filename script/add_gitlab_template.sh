@@ -353,5 +353,5 @@ if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; t
   exit 1
 fi
 
-echo "Exec main, GITLAB_INIT_TOKEN: $GITLAB_INIT_TOKEN"
+INFO "Importing templates to GitLab, init token is: \e[97m$GITLAB_INIT_TOKEN\e[0m"
 main
