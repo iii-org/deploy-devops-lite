@@ -126,7 +126,7 @@ restore_sonarqube() {
   # shellcheck disable=SC1004
   docker compose exec -T sonarqube-db \
     bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
-      -U "${POSTGRESQL_USERNAME}" "${POSTGRESQL_DATABASE}"' <"$SONARQUBE_SQL"
+      -U "${POSTGRESQL_USERNAME}" "${POSTGRESQL_DATABASE}"' <"$SONARQUBE_SQL" > /dev/null 2>&1
 
   # Start service
   docker compose start sonarqube
