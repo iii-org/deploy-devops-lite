@@ -11,6 +11,7 @@ BACKUP_DIR="${project_dir:?}"/backup
 GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
 GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
+SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
 
 if [ ! -d "$BACKUP_DIR" ]; then
   mkdir -p "$BACKUP_DIR"
@@ -41,5 +42,18 @@ backup_gitlab_runner_config() {
   INFO "Backup GitLab Runner config done"
 }
 
+backup_sonarqube() {
+  INFO "Backup SonarQube data..."
+
+  # shellcheck disable=SC1004
+  docker compose exec sonarqube-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" pg_dump \
+    -U "${POSTGRESQL_USERNAME}" \
+    --dbname="${POSTGRESQL_DATABASE}"' >"$SONARQUBE_SQL"
+
+  INFO "Backup SonarQube done"
+}
+
 backup_gitlab
 backup_gitlab_runner_config
+backup_sonarqube

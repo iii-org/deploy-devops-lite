@@ -11,6 +11,7 @@ BACKUP_DIR="${project_dir:?}"/backup
 GITLAB_BACKUP_DATA="$BACKUP_DIR"/gitlab_backup.tar
 GITLAB_BACKUP_CONFIG="$BACKUP_DIR"/gitlab_config.tar
 GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
+SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
 GITLAB_RUNNER="docker compose exec runner"
 
 # Run as restore service
@@ -104,5 +105,35 @@ restore_runner() {
   INFO "Restore GitLab Runner config done"
 }
 
+restore_sonarqube() {
+  INFO "Restore SonarQube data..."
+
+  # Stop service
+  docker compose stop sonarqube
+
+  # DROP DATABASE
+  # shellcheck disable=SC1004
+  docker compose exec sonarqube-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRESQL_USERNAME}" -c "DROP DATABASE ${POSTGRESQL_DATABASE}"' >/dev/null 2>&1
+
+  # CREATE DATABASE
+  # shellcheck disable=SC1004
+  docker compose exec sonarqube-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRESQL_USERNAME}" -c "CREATE DATABASE ${POSTGRESQL_DATABASE}"' >/dev/null 2>&1
+
+  # shellcheck disable=SC1004
+  docker compose exec -T sonarqube-db \
+    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+      -U "${POSTGRESQL_USERNAME}" "${POSTGRESQL_DATABASE}"' <"$SONARQUBE_SQL"
+
+  # Start service
+  docker compose start sonarqube
+
+  INFO "Restore SonarQube data done"
+}
+
 restore_gitlab
 restore_runner
+restore_sonarqube
