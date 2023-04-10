@@ -106,7 +106,10 @@ services:
     volumes:
       - iii-devops-lite-db-data:/var/lib/postgresql/data
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${III_DB_PASSWORD}
+      POSTGRES_DB: postgres
+      III_DB: devopsdb
 
   iii-devops-lite-api:
     extends:

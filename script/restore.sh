@@ -14,6 +14,8 @@ GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
 REDMINE_FILES="$BACKUP_DIR"/redmine_files.tar.gz
 REDMINE_SQL="$BACKUP_DIR"/redmine.sql
+IIIDEVOPS_FILES="$BACKUP_DIR"/iiidevops_files.tar.gz
+IIIDEVOPS_SQL="$BACKUP_DIR"/iiidevops.sql
 GITLAB_RUNNER="docker compose exec runner"
 
 # Run as restore service
@@ -128,7 +130,7 @@ restore_sonarqube() {
   # shellcheck disable=SC1004
   docker compose exec -T sonarqube-db \
     bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
-      -U "${POSTGRESQL_USERNAME}" "${POSTGRESQL_DATABASE}"' <"$SONARQUBE_SQL" > /dev/null 2>&1
+      -U "${POSTGRESQL_USERNAME}" "${POSTGRESQL_DATABASE}"' <"$SONARQUBE_SQL" >/dev/null 2>&1
 
   # Start service
   docker compose start sonarqube
@@ -169,7 +171,7 @@ restore_redmine() {
   # shellcheck disable=SC1004
   docker compose exec -T redmine-db \
     bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
-      -U "${POSTGRES_USER}" "${POSTGRES_DB}"' <"$REDMINE_SQL" > /dev/null 2>&1
+      -U "${POSTGRES_USER}" "${POSTGRES_DB}"' <"$REDMINE_SQL" >/dev/null 2>&1
 
   # Start service
   docker compose start redmine
@@ -177,6 +179,60 @@ restore_redmine() {
   INFO "Restore Redmine data done"
 }
 
+restore_iiidevops() {
+  INFO "Restore iiidevops data..."
+
+  local api_service="iii-devops-lite-api"
+  local api_worker_service="iii-devops-lite-api-worker"
+  local api_beat_service="iii-devops-lite-api-beat"
+  local db_service="iii-devops-lite-db"
+  local api_exec="docker compose exec $api_service"
+  local db_exec="docker compose exec -T $db_service"
+
+  # Check if /opt/nfs empty
+  if [ "$($api_exec ls -A /opt/nfs)" ]; then
+    # Remove all files in /opt/nfs
+    $api_exec find /opt/nfs -mindepth 1 -delete
+  fi
+
+  # Restore files from backup
+  docker compose cp --archive "$IIIDEVOPS_FILES" "$api_service":/opt/nfs.tar.gz
+  $api_exec tar -xPf /opt/nfs.tar.gz -C /opt/nfs
+  $api_exec rm /opt/nfs.tar.gz
+
+  # Stop service
+  docker compose stop "$api_service"
+  docker compose stop "$api_worker_service"
+  docker compose stop "$api_beat_service"
+
+  # Drop database
+  # shellcheck disable=SC1004
+  # shellcheck disable=SC2016
+  $db_exec bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+    -U "${POSTGRES_USER}" -c "DROP DATABASE ${III_DB}"' >/dev/null 2>&1
+
+  # Create database
+  # shellcheck disable=SC1004
+  # shellcheck disable=SC2016
+  $db_exec bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+    -U "${POSTGRES_USER}" -c "CREATE DATABASE ${III_DB}"' >/dev/null 2>&1
+
+  # Restore database
+  # shellcheck disable=SC1004
+  # shellcheck disable=SC2016
+  $db_exec bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" psql \
+    -U "${POSTGRES_USER}" "${III_DB}"' <"$IIIDEVOPS_SQL" >/dev/null 2>&1
+
+  # Start service
+  docker compose start "$api_service"
+  docker compose start "$api_worker_service"
+  docker compose start "$api_beat_service"
+
+  INFO "Restore iiidevops data done"
+}
+
 restore_gitlab
 restore_runner
 restore_sonarqube
+restore_redmine
+restore_iiidevops

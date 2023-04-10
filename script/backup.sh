@@ -14,6 +14,8 @@ GITLAB_RUNNER_CONFIG="$BACKUP_DIR"/gitlab-runner-config.toml
 SONARQUBE_SQL="$BACKUP_DIR"/sonarqube.sql
 REDMINE_FILES="$BACKUP_DIR"/redmine_files.tar.gz
 REDMINE_SQL="$BACKUP_DIR"/redmine.sql
+IIIDEVOPS_FILES="$BACKUP_DIR"/iiidevops_files.tar.gz
+IIIDEVOPS_SQL="$BACKUP_DIR"/iiidevops.sql
 
 if [ ! -d "$BACKUP_DIR" ]; then
   mkdir -p "$BACKUP_DIR"
@@ -66,14 +68,30 @@ backup_redmine() {
 
   # shellcheck disable=SC1004
   docker compose exec redmine-db \
-    bash -c 'PGPASSWORD="${POSTGRESQL_PASSWORD}" pg_dump \
+    bash -c 'PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump \
       -U "${POSTGRES_USER}" \
       --dbname="${POSTGRES_DB}"' >"$REDMINE_SQL"
 
   INFO "Backup Redmine done"
 }
 
+backup_iiidevops() {
+  INFO "Backup iiidevops..."
+
+  # Backup Redmine files
+  docker compose exec iii-devops-lite-api bash -c 'cd /opt/nfs && tar czf - .' >"$IIIDEVOPS_FILES"
+
+  # shellcheck disable=SC1004
+  docker compose exec iii-devops-lite-db \
+    bash -c 'PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump \
+      -U "${POSTGRES_USER}" \
+      --dbname="${III_DB}"' >"$IIIDEVOPS_SQL"
+
+  INFO "Backup iiidevops done"
+}
+
 backup_gitlab
 backup_gitlab_runner_config
 backup_sonarqube
 backup_redmine
+backup_iiidevops
