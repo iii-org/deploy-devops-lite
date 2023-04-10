@@ -21,7 +21,7 @@ else
   INFO "Clean up backup directory..."
   # Move old backup files to backup directory
   mv "$BACKUP_DIR" "$BACKUP_DIR"."$(date +%Y%m%d%H%M%S)"
-  rm -rf "${BACKUP_DIR:?}"/*
+  mkdir -p "$BACKUP_DIR"
 fi
 
 backup_gitlab() {
