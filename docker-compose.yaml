@@ -113,6 +113,7 @@ services:
       file: docker-compose.iiidevops.yaml
       service: backend-base
     container_name: "iii-devops-lite-api"
+    restart: on-failure
     depends_on:
       - gitlab
       - sonarqube
