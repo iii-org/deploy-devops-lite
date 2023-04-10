@@ -147,7 +147,7 @@ services:
     command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
 
   iii-devops-lite-ui:
-    image: iiiorg/devops-lite-ui:0.0.7
+    image: iiiorg/devops-lite-ui:0.0.8
     container_name: "iii-devops-lite-ui"
     restart: always
     depends_on:
