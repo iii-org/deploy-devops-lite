@@ -29,6 +29,15 @@
   git clone https://github.com/iii-org/deploy-devops-lite.git Lite
   ```
 
+- 或直接下載 [更新腳本](https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh)
+
+  ```shell
+  wget https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh -O upgrade.sh
+  chmod +x upgrade.sh
+  
+  ./upgrade.sh
+  ```
+
 ### 步驟 2：設定環境變數（可選）
 
 - 如果您希望在執行部署程式之前設定環境變數，請執行以下指令：

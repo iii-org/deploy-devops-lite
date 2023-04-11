@@ -29,6 +29,15 @@ We should prepare the info we need to deploy the devops lite.
     git clone https://github.com/iii-org/deploy-devops-lite.git Lite
     ```
 
+- Or, download the [upgrade.sh](https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh)
+
+  ```shell
+  wget https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh -O upgrade.sh
+  chmod +x upgrade.sh
+  
+  ./upgrade.sh
+  ```
+
 ### Step 2. Setting up the environment variables (Optional)
 
 - If you wish setting up the environment variables before running the deployment program, you can run the following
