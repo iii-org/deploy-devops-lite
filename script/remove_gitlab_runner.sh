@@ -28,6 +28,15 @@ main() {
 
   $RUNNER_EXEC gitlab-runner unregister --name "$SHARED_RUNNER_NAME"
 
+  INFO "Provisioning GitLab Config..."
+  # Get current /etc/gitlab-runner/config.toml concurrent value
+  concurrent="$($RUNNER_EXEC cat /etc/gitlab-runner/config.toml | grep concurrent | awk '{print $3}')"
+  INFO "Current concurrent value: $concurrent"
+  # Modify /etc/gitlab-runner/config.toml concurrent value
+  $RUNNER_EXEC sed -i "s/concurrent = $concurrent/concurrent = $((concurrent - 1))/" /etc/gitlab-runner/config.toml
+  concurrent="$($RUNNER_EXEC cat /etc/gitlab-runner/config.toml | grep concurrent | awk '{print $3}')"
+  INFO "New concurrent value: $concurrent"
+
   INFO "GitLab Runner \e[97m$SHARED_RUNNER_NAME\e[0m successfully removed from GitLab"
 }
 
