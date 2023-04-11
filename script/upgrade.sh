@@ -8,7 +8,7 @@ project_dir="$base_dir"/Lite              # Default project directory
 if [ ! -f "$base_dir"/common.sh ]; then
   echo "Downloading minimal required files..."
   # Download functions.sh if functions.sh not exists
-  #  wget -q -O "$base_dir"/functions.sh https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/functions.sh
+  wget -q -O "$base_dir"/functions.sh https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/functions.sh
   chmod +x "$base_dir"/functions.sh
 
   source "$base_dir"/functions.sh
