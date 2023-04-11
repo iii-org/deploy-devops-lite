@@ -2,13 +2,28 @@
 
 set -euo pipefail
 
-# Load common functions
-base_dir="$(cd "$(dirname "$0")" && pwd)"
-source "$base_dir"/common.sh
+base_dir="$(cd "$(dirname "$0")" && pwd)" # Base directory of this script
+project_dir="$base_dir"/Lite              # Default project directory
 
-cd "${project_dir:?}" || FAILED "Failed to change directory to ${project_dir:?}"
+if [ ! -f "$base_dir"/common.sh ]; then
+  echo "Downloading minimal required files..."
+  # Download functions.sh if functions.sh not exists
+  #  wget -q -O "$base_dir"/functions.sh https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/functions.sh
+  chmod +x "$base_dir"/functions.sh
+
+  source "$base_dir"/functions.sh
+
+  WARN "Missing \e[92mcommon.sh\e[0m, assuming this is a standalone script."
+
+  mkdir -p "$project_dir"
+else
+  # If common.sh exists, we are in the project directory
+  source "$base_dir"/common.sh
+fi
 
 update_via_git() {
+  cd "${project_dir}" || FAILED "Failed to change directory to ${project_dir}"
+
   INFO "Updating git remotes..."
   git remote update
 
@@ -25,6 +40,9 @@ update_via_git() {
 }
 
 update_via_tar() {
+  cd "${project_dir}" || FAILED "Failed to change directory to ${project_dir}"
+  cd ..
+
   INFO "Downloading latest release..."
 
   # https://github.com/iii-org/deploy-devops-lite/archive/refs/heads/master.tar.gz
@@ -33,8 +51,11 @@ update_via_tar() {
   INFO "Extracting files..."
   tar -xzf release.tar.gz
 
+  INFO "Removing old files..."
+  rm -rf "${project_dir:?}"/*
+
   INFO "Copying files..."
-  cp -r deploy-devops-lite-master/* .
+  cp -rT deploy-devops-lite-master/ "$project_dir"
 
   INFO "Cleaning up..."
   rm -rf deploy-devops-lite-master
