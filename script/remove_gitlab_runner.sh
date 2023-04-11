@@ -18,6 +18,14 @@ usage() {
 }
 
 main() {
+  local concurrent
+  concurrent="$($RUNNER_EXEC cat /etc/gitlab-runner/config.toml | grep concurrent | awk '{print $3}')"
+
+  if [ "$concurrent" -eq 1 ]; then
+    ERROR "Can not remove the last GitLab Runner"
+    exit 1
+  fi
+
   INFO "Removing GitLab Runner \e[97m$SHARED_RUNNER_NAME\e[0m from GitLab..."
 
   INFO "Checking GitLab Runner exist..."
