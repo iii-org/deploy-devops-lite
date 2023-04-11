@@ -314,6 +314,8 @@ main() {
     fi
   done
 
+  $GITLAB_RUNNER curl -s http://iii-devops-lite-api:10009/template_list_for_cronjob?force_update=1 >/dev/null 2>&1
+
   INFO "Import templates done!"
 }
 
