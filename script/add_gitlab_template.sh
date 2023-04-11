@@ -8,6 +8,7 @@ source "$base_dir"/common.sh
 
 IMPORT_ALL=1                               # 1: Install all scripts, 0: Install only selected scripts
 IMPORT_TEMPLATES=()                        # List o
+UPDATE_REDIS=1                             # 0: Skip update redis, 1: Update redis
 GITHUB_TEMPLATE_USER="iiidevops-templates" # https://github.com/iiidevops-templates
 GITLAB_URL=gitlab:${GITLAB_PORT}
 GITLAB_INIT_TOKEN=""
@@ -314,7 +315,9 @@ main() {
     fi
   done
 
-  $GITLAB_RUNNER curl -s http://iii-devops-lite-api:10009/template_list_for_cronjob?force_update=1 >/dev/null 2>&1
+  if [ "$UPDATE_REDIS" -eq 1 ]; then
+    $GITLAB_RUNNER curl -s http://iii-devops-lite-api:10009/template_list_for_cronjob?force_update=1 >/dev/null 2>&1
+  fi
 
   INFO "Import templates done!"
 }
@@ -330,6 +333,9 @@ while [[ "$#" -gt 0 ]]; do
     IMPORT_ALL=0
     IMPORT_TEMPLATES+=("$2")
     shift
+    ;;
+  -i | --init)
+    UPDATE_REDIS=0 # Disable update redis when init
     ;;
   *)
     ERROR "Unknown parameter passed, maybe you want to add to the template? $1"
