@@ -31,6 +31,8 @@ main() {
     --registration-token "$RUNNER_REGISTRATION_TOKEN" \
     --executor "docker" \
     --docker-image alpine:latest \
+    --docker-privileged \
+    --docker-volumes "$DOCKER_SOCKET:/var/run/docker.sock" \
     --description "$SHARED_RUNNER_NAME" \
     --tag-list "shared-runner" \
     --run-untagged="true" \
