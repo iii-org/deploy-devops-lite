@@ -21,6 +21,17 @@ else
   source "$base_dir"/common.sh
 fi
 
+done_script() {
+  INFO "Restart docker compose"
+  INFO "If you wish to start up your self, you are safe to exit now."
+  echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
+  sleep 5
+
+  docker compose pull
+  docker compose up \
+    --remove-orphans -d
+}
+
 update_via_git() {
   cd "${project_dir}" || FAILED "Failed to change directory to ${project_dir}"
 
@@ -37,6 +48,8 @@ update_via_git() {
 
   INFO "Pulling latest changes..."
   git pull
+
+  done_script
 }
 
 update_via_tar() {
@@ -51,15 +64,14 @@ update_via_tar() {
   INFO "Extracting files..."
   tar -xzf release.tar.gz
 
-  INFO "Removing old files..."
-  rm -rf "${project_dir:?}"/*
-
   INFO "Copying files..."
   cp -rT deploy-devops-lite-master/ "$project_dir"
 
   INFO "Cleaning up..."
   rm -rf deploy-devops-lite-master
   rm release.tar.gz
+
+  done_script
 }
 
 # Check if .git exists
@@ -69,11 +81,4 @@ else
   update_via_git
 fi
 
-INFO "Restart docker compose"
-INFO "If you wish to start up your self, you are safe to exit now."
-echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
-sleep 5
-
-docker compose pull
-docker compose up \
-  --remove-orphans -d
+# WARNING: This script will **REPLACED** while upgrading, please put any custom script before this line.
