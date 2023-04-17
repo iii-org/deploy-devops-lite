@@ -4,6 +4,7 @@ set -euo pipefail
 
 base_dir="$(cd "$(dirname "$0")" && pwd)" # Base directory of this script
 project_dir="$base_dir"/Lite              # Default project directory
+user="$(id -un 2>/dev/null || true)"      # Get current username
 
 if [ ! -f "$base_dir"/common.sh ]; then
   echo "Downloading minimal required files..."
@@ -73,6 +74,12 @@ update_via_tar() {
 
   done_script
 }
+
+if [ "$user" != "root" ]; then
+  INFO "Changing permission of all files to current user (preventing permission issues)"
+  INFO "Current user: $user"
+  sudo chown -R "$user":"$user" "$project_dir"
+fi
 
 # Check if .git exists
 if [ ! -d "${project_dir}"/.git ]; then
