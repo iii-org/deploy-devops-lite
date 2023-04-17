@@ -5,6 +5,7 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)" # Base directory of this script
 project_dir="$base_dir"/Lite              # Default project directory
 user="$(id -un 2>/dev/null || true)"      # Get current username
+clean_install=false                       # Clean install flag
 
 if [ ! -f "$base_dir"/common.sh ]; then
   echo "Downloading minimal required files..."
@@ -17,6 +18,7 @@ if [ ! -f "$base_dir"/common.sh ]; then
   WARN "Missing \e[92mcommon.sh\e[0m, assuming this is a standalone script."
 
   mkdir -p "$project_dir"
+  clean_install=true
 else
   # If common.sh exists, we are in the project directory
   source "$base_dir"/common.sh
@@ -24,6 +26,11 @@ fi
 
 done_script() {
   cd "${project_dir}" || FAILED "Failed to change directory to ${project_dir}"
+
+  if [ "$clean_install" = true ]; then
+    INFO "Clean install, please run \e[96m$project_dir/setup.sh\e[0m to start up your project."
+    exit 0
+  fi
 
   INFO "Restart docker compose"
   INFO "If you wish to start up your self, you are safe to exit now."
