@@ -169,7 +169,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:0.0.8
+    image: iiiorg/devops-lite-ui:0.0.9
     container_name: "iii-devops-lite-ui"
     restart: always
     depends_on:
