@@ -6,7 +6,7 @@ version: "3"
 
 services:
   backend-base:
-    image: iiiorg/devops-lite-api:0.0.8
+    image: iiiorg/devops-lite-api:0.0.9
     restart: always
     volumes:
       - ./environments.json:/environments.json
