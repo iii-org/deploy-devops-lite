@@ -475,6 +475,13 @@ EOF
   NOTICE "environments.json generated!"
 }
 
+print_urls() {
+  INFO "The deployment of III-DevOps-Lite services has been completed. Please try to connect to the following URL."
+  INFO "Gitlab: http://$IP_ADDR:$GITLAB_PORT"
+  INFO "Sonarqube: http://$IP_ADDR:$SQ_PORT"
+  INFO "IIIdevops: http://$IP_ADDR"
+}
+
 post_script() {
   local POST_RESPONSE
   POST_RESPONSE="$(
@@ -538,3 +545,4 @@ setup_redmine
 setup_sonarqube
 post_script
 generate_environment_json
+print_urls
