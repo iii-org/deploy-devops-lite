@@ -194,7 +194,7 @@ services:
     healthcheck:
       test: curl --fail http://localhost/prod-api/swagger-ui/ || exit 1
       interval: 10s
-      timeout: 5s
+      timeout: 1s
       retries: 5
 
 volumes:
