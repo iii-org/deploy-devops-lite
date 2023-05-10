@@ -10,7 +10,7 @@ x-logging:
 services:
   gitlab:
     <<: *default-logging
-    image: gitlab/gitlab-ce:13.12.15-ce.0
+    image: gitlab/gitlab-ce:15.11.2-ce.0
     container_name: "gitlab"
     restart: always
     hostname: "${IP_ADDR}"
@@ -21,7 +21,7 @@ services:
         external_url 'http://${IP_ADDR}:${GITLAB_PORT}'
         prometheus_monitoring['enable'] = false
         gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
-        unicorn['worker_processes'] = 2
+        puma['worker_processes'] = 2
         sidekiq['concurrency'] = 9
         gitlab_rails['gitlab_default_projects_features_container_registry'] = false
     volumes:
@@ -33,7 +33,7 @@ services:
 
   runner:
     <<: *default-logging
-    image: gitlab/gitlab-runner:alpine-v15.10.0
+    image: gitlab/gitlab-runner:alpine-v15.11.0
     container_name: "gitlab-runner"
     restart: always
     environment:
@@ -57,7 +57,7 @@ services:
 
   sonarqube:
     <<: *default-logging
-    image: sonarqube:8.9.7-community
+    image: sonarqube:9.9.1-community
     container_name: "sonarqube"
     restart: always
     depends_on:
@@ -84,7 +84,7 @@ services:
 
   redmine:
     <<: *default-logging
-    image: redmine:4.2.10
+    image: redmine:5.0.5
     container_name: "redmine"
     restart: always
     depends_on:

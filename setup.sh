@@ -258,21 +258,28 @@ setup_gitlab() {
     sleep 1
   done
 
-  GITLAB_INIT_ACCESS_TOKEN="$(
+  GITLAB_INIT_ACCESS_TOKEN="glpat-$(
     tr </dev/urandom -dc '[:alpha:]' | head -c 20
     echo
   )" # Should 20 chars long
-  GITLAB_INIT_RESPONSE="$(docker compose exec gitlab gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$GITLAB_INIT_ACCESS_TOKEN'); token.save!")"
 
-  # If success, no output
-  if [ -z "$GITLAB_INIT_RESPONSE" ]; then
-    INFO "Initial access token created, token is: $GITLAB_INIT_ACCESS_TOKEN"
-    INFO "You can test token via command: "
-    echo "  $GITLAB_RUNNER curl --header \"PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN\" \"http://gitlab:$GITLAB_PORT/api/v4/user\""
-  else
-    ERROR "Initial access token creation failed, response: \n$GITLAB_INIT_RESPONSE"
-    exit 1
-  fi
+  docker compose exec gitlab gitlab-rails runner \
+    "token = User.admins.first.personal_access_tokens.create(scopes: ['api', 'read_api', 'read_user', 'read_repository', 'write_repository'], name: 'IIIdevops_init_token'); token.set_token('${GITLAB_INIT_ACCESS_TOKEN}'); token.save!" ||
+    (
+      ERROR "GitLab token created failed, maybe GitLab root user is not created."
+      ERROR "Please check GitLab container logs via command: "
+      ERROR "  docker compose logs -f gitlab"
+      ERROR "If user is not created, please reset password via command: "
+      ERROR "  ./script/generate_env.sh iii_password -f"
+      ERROR "The password must not contain commonly used combinations of words and letters."
+      ERROR "For more password detail, read https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
+      ERROR "Finally, run script/clean.sh to clean up and re-run setup.sh"
+      exit 1
+    )
+
+  INFO "Initial access token created, token is: $GITLAB_INIT_ACCESS_TOKEN"
+  INFO "You can test token via command: "
+  echo "  $GITLAB_RUNNER curl --header \"PRIVATE-TOKEN: $GITLAB_INIT_ACCESS_TOKEN\" \"http://gitlab:$GITLAB_PORT/api/v4/user\""
 
   INFO "Creating shared runner"
 

@@ -283,6 +283,14 @@ check_password() {
     fi
   fi
 
+  # Check if password contain "@"
+  # If contain, it will cause error when api connect to database
+  if [[ "$answer" =~ "@" ]]; then
+    valid=false
+  else
+    valid=true
+  fi
+
   echo "$valid"
 }
 
