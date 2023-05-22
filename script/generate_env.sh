@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090
 
 set -euo pipefail
 
-# Load common functions
-base_dir="$(cd "$(dirname "$0")" && pwd)"
-source "$base_dir"/common.sh
+sourced=false
+(return 0 2>/dev/null) && sourced=true || sourced=false
 
+if ! ${sourced}; then
+  base_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+  source "$base_dir"/common.sh
+fi
+
+env_file="${project_dir:?}"/.env
 FORCE=false
-RUNNING_QUESTIONS=()
-ALL_QUESTION=(
+QUESTIONS=()
+ALL_SETS=(
   "ip_addr"
   "iii_login"
   "iii_email"
@@ -16,6 +22,7 @@ ALL_QUESTION=(
 )
 
 read_password() {
+  set -x
   local password=""
   # Check if arguments > 0
   if [ $# -eq 1 ]; then
@@ -25,24 +32,30 @@ read_password() {
   fi
   # Run Command
   echo "$password"
+  set +x
 }
 
 usage() {
-  echo "Help setting up environment variables."
-  echo "If no options are passed, all questions will be run."
-  echo
-  echo "Usage: $(basename "$0") [options]... [questions]..."
-  echo
-  echo "Options:"
-  echo "  -h,  --help                 print this help"
-  echo
-  echo "Questions:"
-  echo "  all                         run all questions (will ignore other arguments)"
-  echo "  ip_addr                     set IP address for the server"
-  echo "  docker_sock                 set docker socket file"
-  echo "  iii_login                   set III admin account"
-  echo "  iii_email                   set III admin email"
-  echo "  iii_password                set III admin password"
+  local _text_
+  read -r -d '' _text_ <<EOF || true
+Usage: $(basename "${0}") [options]... [questions]...
+Help setting up environment variables.
+If no options are passed, all questions will be run.
+
+Questions:
+  all                       run all questions (will ignore other arguments)
+  ip                        set IP address for the server
+  docker_sock               set docker socket file
+  iii_login                 set III admin account
+  iii_email                 set III admin email
+  iii_password              set III admin password
+
+Miscellaneous:
+  -h, --help                display this help text and exit
+      --disable-color       disable color output
+  -f, --force               force reset the question
+EOF
+  echo "$_text_"
   exit 21
 }
 
@@ -273,25 +286,66 @@ check_password() {
   local valid=false
   local answer="$1"
 
+  # Due to GitLab password policy, password should not contain common passwords
+  # https://repository.prace-ri.eu/git/help/user/profile/user_passwords.md#block-weak-passwords
+  # Password checking rule: https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/weak_password_digests.yml#L15-27
+  local common_word_check
+  common_word_check=(
+    "admin"
+    "guest"
+    "mustang"
+    "unknown"
+    "gfhjkm" # password in Russian keyboard
+    "password"
+    "devops"
+    "gitlab"
+    "github"
+    "qaz"
+    "wsx"
+    "edc"
+    "rfv"
+    "147258369"
+    "@" # not allowed cause it will use to connect database
+    "1234"
+    "4321"
+    "abcd"
+    "qwer"
+    "asdf"
+    "zxcv"
+  )
+
   if [ -z "$answer" ] || [ "$answer" = "{{PASSWORD}}" ] || [ "${#answer}" -lt 8 ] || [ "${#answer}" -gt 20 ]; then
     valid=false
   else
     if [[ "$answer" =~ [[:lower:]] && "$answer" =~ [[:upper:]] && "$answer" =~ [[:digit:]] && "$answer" =~ [[:punct:]] ]]; then
       valid=true
-    else
-      valid=false
     fi
   fi
 
-  # Check if password contain "@"
-  # If contain, it will cause error when api connect to database
-  if [[ "$answer" =~ "@" ]]; then
-    valid=false
-  else
-    valid=true
+  for word in "${common_word_check[@]}"; do
+    # copy answer to lowercase
+    answer2="${answer,,}"
+    if [[ "${answer2}" =~ ${word} ]]; then
+      valid=false
+    fi
+  done
+
+  # Check if password sha is in common password list
+  # Put in the last to reduce the number of sha256sum calculation
+  if ${valid}; then
+    answer2="$(echo "${answer,,}" | sha256sum | awk '{ print $1 }')"
+    # check if password is in common password list
+    while IFS= read -r weak_password; do
+      if [[ "${answer2}" == "${weak_password}" ]]; then
+        valid=false
+      fi
+    done <<<"$(cat "${bin_dir:?}/common_password.txt")"
   fi
 
-  echo "$valid"
+  if ${valid}; then
+    return 0
+  fi
+  return 1
 }
 
 test_password() {
@@ -300,42 +354,44 @@ test_password() {
   local key="$1"
   local value="$2"
 
-  if [ -z "$value" ]; then
-    valid=false
-  else
-    if [ "$FORCE" = true ]; then
-      valid=false
-    else
-      if [ "$value" = "{{PASSWORD}}" ]; then
-        valid=false
-      else
-        if [ "$(check_password "$value")" = true ]; then
-          valid=true
-          INFO "Password \e[97m$key\e[0m already meat the requirement"
-          return
-        else
-          valid=false
-          WARN "Current password \e[97m$key\e[0m is invalid, please enter a valid password"
-        fi
+  if [ -n "${value}" ]; then
+    if [ "$value" != "{{PASSWORD}}" ]; then
+      if check_password "$value"; then
+        valid=true
       fi
     fi
   fi
 
-  if [ "$valid" = false ]; then
-    INFO "Setting password \e[97m$key\e[0m"
+  if ${FORCE}; then
+    valid=false
+    WARN "Due to \e[1;97m--force\e[0m, ${key} will be reset"
   fi
 
+  if ${valid}; then
+    INFO "Password \e[97m$key\e[0m already meat the requirement"
+    return 0
+  fi
+
+  INFO "Setting password \e[97m$key\e[0m"
+
   while ! $valid; do
-    answer="$(read_password "$key")"
+    answer1="$(read_password "$key")"
     echo
-    if [ "$(check_password "$answer")" = true ]; then
-      valid=true
+    answer2="$(read_password "Confirm password")"
+    echo
+    if [ "${answer1}" = "${answer2}" ]; then
+      if check_password "${answer1}"; then
+        valid=true
+      else
+        WARN "Invalid password, should be 8-20 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character"
+        WARN "And, DO NOT use commonly used passwords, such as 'devops' (https://repository.prace-ri.eu/git/help/user/profile/user_passwords.md#block-weak-passwords)"
+      fi
     else
-      WARN "Invalid password, should be 8-20 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character"
+      WARN "Passwords do not match, please try again"
     fi
   done
 
-  write_back_data "$key" "$answer" true
+  write_back_data "$key" "${answer1}" true
 }
 
 question_iii_password() {
@@ -378,10 +434,10 @@ while [[ "$#" -gt 0 ]]; do
     FORCE=true
     ;;
   all)
-    RUNNING_QUESTIONS=("${ALL_QUESTION[@]}")
+    QUESTIONS=("${ALL_SETS[@]}")
     break
     ;;
-  *) RUNNING_QUESTIONS+=("$1") ;;
+  *) QUESTIONS+=("$1") ;;
   esac
   shift
 done
@@ -391,6 +447,6 @@ cp "$env_file" "$env_file.bak"
 INFO "Backup \e[97m$env_file\e[0m file to \e[97m$env_file.bak\e[0m"
 
 # For each question, run the function
-for question in "${RUNNING_QUESTIONS[@]}"; do
+for question in "${QUESTIONS[@]}"; do
   question_"$question"
 done
