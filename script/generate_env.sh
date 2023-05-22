@@ -287,7 +287,7 @@ check_password() {
   local answer="$1"
 
   # Due to GitLab password policy, password should not contain common passwords
-  # https://repository.prace-ri.eu/git/help/user/profile/user_passwords.md#block-weak-passwords
+  # https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords
   # Password checking rule: https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/weak_password_digests.yml#L15-27
   local common_word_check
   common_word_check=(
@@ -384,7 +384,7 @@ test_password() {
         valid=true
       else
         WARN "Invalid password, should be 8-20 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character"
-        WARN "And, DO NOT use commonly used passwords, such as 'devops' (https://repository.prace-ri.eu/git/help/user/profile/user_passwords.md#block-weak-passwords)"
+        WARN "And, DO NOT use commonly used passwords, such as 'devops' (https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords)"
       fi
     else
       WARN "Passwords do not match, please try again"
