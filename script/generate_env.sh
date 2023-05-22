@@ -22,7 +22,6 @@ ALL_SETS=(
 )
 
 read_password() {
-  set -x
   local password=""
   # Check if arguments > 0
   if [ $# -eq 1 ]; then
@@ -32,7 +31,6 @@ read_password() {
   fi
   # Run Command
   echo "$password"
-  set +x
 }
 
 usage() {
