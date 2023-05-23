@@ -63,6 +63,17 @@ write_back_data() {
     value="${value//\"/\\\\\"}"
   fi
 
+  # If value contain '\$', then escape it
+  if [[ "$value" == *\\\$* ]]; then
+    # From $ to \$
+    value="${value//\$/\\\\\\\\\\$}"
+  else
+    # Escape backslash
+    value="${value//\\/\\\\}"
+    # Escape dollar sign
+    value="${value//\$/\\\$}"
+  fi
+
   # Escape back quote
   value="${value//\`/\\\`}"
 
