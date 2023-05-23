@@ -74,14 +74,19 @@ write_back_data() {
     value="${value//\"/\\\\\"}"
   fi
 
-  # Escape backslash
-  value="${value//\\/\\\\}"
+  # If value contain '\$', then escape it
+  if [[ "$value" == *\\\$* ]]; then
+    # From $ to \$
+    value="${value//\$/\\\\\\\\\\$}"
+  else
+    # Escape backslash
+    value="${value//\\/\\\\}"
+    # Escape dollar sign
+    value="${value//\$/\\\$}"
+  fi
 
   # Escape back quote
   value="${value//\`/\\\`}"
-
-  # Escape dollar sign
-  value="${value//\$/\\\$}"
 
   # Write back to .env file, replace the old key, using awk to escape special characters
   awk -v key="$key" -v value="$value" 'BEGIN { FS=OFS="=\"" }
