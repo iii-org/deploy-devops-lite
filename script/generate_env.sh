@@ -289,27 +289,9 @@ check_password() {
   # Password checking rule: https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/weak_password_digests.yml#L15-27
   local common_word_check
   common_word_check=(
-    "admin"
-    "guest"
-    "mustang"
-    "unknown"
-    "gfhjkm" # password in Russian keyboard
-    "password"
     "devops"
     "gitlab"
-    "github"
-    "qaz"
-    "wsx"
-    "edc"
-    "rfv"
-    "147258369"
     "@" # not allowed cause it will use to connect database
-    "1234"
-    "4321"
-    "abcd"
-    "qwer"
-    "asdf"
-    "zxcv"
   )
 
   if [ -z "$answer" ] || [ "$answer" = "{{PASSWORD}}" ] || [ "${#answer}" -lt 8 ] || [ "${#answer}" -gt 20 ]; then
@@ -382,7 +364,8 @@ test_password() {
         valid=true
       else
         WARN "Invalid password, should be 8-20 characters long and contain at least one lowercase letter, one uppercase letter, one number, and one special character"
-        WARN "And, DO NOT use commonly used passwords, such as 'devops' (https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords)"
+        WARN "DO NOT contain these words: 'devops', 'gitlab' (case-insensitive)"
+        WARN "See: https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
       fi
     else
       WARN "Passwords do not match, please try again"
