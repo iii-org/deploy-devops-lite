@@ -8,6 +8,10 @@ source "$base_dir"/common.sh
 
 cd "${project_dir:?}" || FAILED "Failed to change directory to ${project_dir:?}"
 
+if [ -z "${DOCKER_SOCKET:-}" ]; then
+  "${base_dir}"/generate_env.sh docker_sock
+fi
+
 WARN "\e[33mThis script will remove all data in docker volumes.\e[0m"
 WARN "\e[33mPlease make sure you have backed up your data.\e[0m"
 echo -e "Press \e[96mCtrl+C\e[0m to cancel, sleep 5 seconds to continue..."
