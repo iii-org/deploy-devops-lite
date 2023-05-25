@@ -5,12 +5,11 @@
 ## System requirements
 
 - Operating system
-    - Ubuntu 20.04+
-    - Debian 11
+    - Ubuntu 20.04
 - Hardware requirements
-    - 1 vCPU
+    - 2 vCPU
     - 8 GB RAM
-    - 40 GB disk space (SSD recommended)
+    - 60 GB disk space (SSD recommended)
 
 ### Before we start...
 
