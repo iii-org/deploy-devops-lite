@@ -9,7 +9,7 @@ services:
     image: iiiorg/devops-lite-api:0.0.9
     restart: always
     volumes:
-      - ./environments.json:/environments.json
+      - ./HEAD.env:/env/HEAD.env
     # We don't share depends_on with other services, because it's docker limit
     environment:
       SQLALCHEMY_HOST: iii-devops-lite-db:5432

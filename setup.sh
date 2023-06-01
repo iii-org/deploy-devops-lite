@@ -455,24 +455,22 @@ setup_sonarqube() {
   NOTICE "Sonarqube setup complete"
 }
 
-generate_environment_json() {
-  INFO "Generating environments.json..."
+generate_environment_env() {
+  INFO "Generating HEAD.env..."
   JWT_SECRET_KEY="$(
     tr </dev/urandom -cd 'a-f0-9' | head -c 20
     echo
   )"
 
   # Using heredoc to generate environments.json
-  cat <<EOF >environments.json
-{
-	"GITLAB_PRIVATE_TOKEN": "$GITLAB_INIT_ACCESS_TOKEN",
-	"JWT_SECRET_KEY": "$JWT_SECRET_KEY",
-	"REDMINE_API_KEY": "$REDMINE_API_KEY",
-	"SONARQUBE_ADMIN_TOKEN": "$SONARQUBE_ADMIN_TOKEN"
-}
+  cat <<EOF >HEAD.env
+GITLAB_PRIVATE_TOKEN=$GITLAB_INIT_ACCESS_TOKEN
+JWT_SECRET_KEY=$JWT_SECRET_KEY
+REDMINE_API_KEY=$REDMINE_API_KEY
+SONARQUBE_ADMIN_TOKEN=$SONARQUBE_ADMIN_TOKEN
 EOF
 
-  NOTICE "environments.json generated!"
+  NOTICE "HEAD.env generated!"
 }
 
 print_urls() {
@@ -544,5 +542,5 @@ setup_gitlab
 setup_redmine
 setup_sonarqube
 post_script
-generate_environment_json
+generate_environment_env
 print_urls
