@@ -22,8 +22,8 @@ if [ -f .initialized ]; then
   rm .initialized
   INFO "Environment initialized flag removed"
 fi
-if [ -f environments.json ]; then
-  rm environments.json
+if [ -f HEAD.env ]; then
+  rm HEAD.env
   INFO "Environment config file removed"
 fi
 

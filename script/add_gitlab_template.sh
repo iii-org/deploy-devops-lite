@@ -179,18 +179,18 @@ usage() {
   echo
   echo "Options:"
   echo "  -h,  --help      print this help"
-  echo "  -T,  --token     GitLab init token, if not set, will auto get from environments.json"
+  echo "  -T,  --token     GitLab init token, if not set, will auto get from HEAD.env"
   echo "  -t,  --template  The template to add to gitlab"
   echo ""
   echo "Example:"
   echo "  $(basename "$0")"
-  echo "    # Running all template in templates and use GitLab init token from environments.json"
+  echo "    # Running all template in templates and use GitLab init token from HEAD.env"
   echo
   echo "  $(basename "$0") -T 1234567890abcdef1234 -t \"gitlab-ci-templates\""
   echo "    # Running template gitlab-ci-templates and pass GitLab init token"
   echo
   echo "  $(basename "$0") -t \"gitlab-ci-templates\" -t \"gitlab-ci-templates-2\""
-  echo "    # Running two templates and use GitLab init token from environments.json"
+  echo "    # Running two templates and use GitLab init token from HEAD.env"
   exit 21
 }
 
@@ -347,12 +347,12 @@ done
 # Check if GITLAB_INIT_TOKEN is set
 if [ -z "$GITLAB_INIT_TOKEN" ]; then
   # Check if file exist
-  if [ ! -f "$project_dir"/environments.json ]; then
-    ERROR "Cannot find environments.json, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
+  if [ ! -f "$project_dir"/HEAD.env ]; then
+    ERROR "Cannot find HEAD.env, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
     exit 1
   fi
 
-  GITLAB_INIT_TOKEN="$(jq -r '.GITLAB_PRIVATE_TOKEN' "$project_dir"/environments.json)"
+  GITLAB_INIT_TOKEN="$(jq -r '.GITLAB_PRIVATE_TOKEN' "$project_dir"/HEAD.env)"
 fi
 
 # Check if GitLab is running

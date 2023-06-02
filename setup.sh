@@ -151,7 +151,7 @@ prepare_check() {
   INFO "Generating redmine.sql"
 
   cp redmine.sql.tmpl redmine.sql
-  touch environments.json
+  touch HEAD.env
 
   REDMINE_SALT=$(echo -n "$REDMINE_DB_PASSWORD" | md5sum | awk '{print $1}')
   REDMINE_HASHED_DB_PASSWORD=$(echo -n "$REDMINE_DB_PASSWORD" | sha1sum | awk '{print $1}')
@@ -207,13 +207,13 @@ else
   source "$base_dir"/script/common.sh
 fi
 
-# If environments.json exist, do not run setup
-if [ -e environments.json ]; then
-  # If environments.json not empty, means setup already done
-  if [ -s environments.json ]; then
-    NOTICE "environments.json exist, skip setup..."
-    NOTICE "If you want to re-setup, please remove environments.json first"
-    NOTICE "Use \e[7;40;96mrm environments.json\e[0m to remove environments.json"
+# If HEAD.env exist, do not run setup
+if [ -e HEAD.env ]; then
+  # If HEAD.env not empty, means setup already done
+  if [ -s HEAD.env ]; then
+    NOTICE "HEAD.env exist, skip setup..."
+    NOTICE "If you want to re-setup, please remove HEAD.env first"
+    NOTICE "Use \e[7;40;96mrm HEAD.env\e[0m to remove HEAD.env"
     NOTICE "Assume you want to start up the services, start up services now..."
     docker compose up --build --no-deps -d
     INFO "Done! Exiting setup script..."
@@ -462,7 +462,7 @@ generate_environment_env() {
     echo
   )"
 
-  # Using heredoc to generate environments.json
+  # Using heredoc to generate HEAD.env
   cat <<EOF >HEAD.env
 GITLAB_PRIVATE_TOKEN=$GITLAB_INIT_ACCESS_TOKEN
 JWT_SECRET_KEY=$JWT_SECRET_KEY
