@@ -71,7 +71,7 @@ write_back_data() {
     # Escape backslash
     value="${value//\\/\\\\}"
     # Escape dollar sign
-    value="${value//\$/\\\$}"
+    value="${value//\$/\\\\\$}"
   fi
 
   # Escape back quote
