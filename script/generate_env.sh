@@ -54,7 +54,7 @@ write_back_data() {
   # Check if key is in .env file
   if ! grep -q "$key=" "${env_file:?}"; then
     INFO "$key not found in .env file, adding it"
-    echo "$key='$value'" >>"$env_file"
+    echo "$key=\"$value\"" >>"$env_file"
   fi
 
   # Check if value contains double quote
