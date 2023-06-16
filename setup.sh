@@ -437,6 +437,24 @@ setup_sonarqube() {
     fi
   done
 
+  # Create default quality gate
+  SONARQUBE_RESPONSE=$(
+    curl -s -k \
+      --request POST "http://localhost:$SQ_PORT/api/qualitygates/create" \
+      -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+      --form 'name="Default Quality Gate"'
+  )
+
+  #  QUALITY_GATE_ID=$(echo "$SONARQUBE_RESPONSE" | jq -r '.id')
+
+  # Create set default quality gate
+  SONARQUBE_RESPONSE=$(
+    curl -s -k \
+      --request POST "http://localhost:$SQ_PORT/api/qualitygates/set_as_default" \
+      -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+      --form 'name="Default Quality Gate"'
+  )
+
   # Update admin password
   SONARQUBE_RESPONSE=$(
     curl -s -k \
