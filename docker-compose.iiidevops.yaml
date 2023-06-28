@@ -9,10 +9,13 @@ services:
     image: iiiorg/devops-lite-api:0.0.9
     restart: always
     volumes:
-      - ./environments.json:/environments.json
+      - ./HEAD.env:/env/HEAD.env
     # We don't share depends_on with other services, because it's docker limit
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:${III_DB_PASSWORD}@iii-devops-lite-db:5432/devopsdb
+      SQLALCHEMY_HOST: iii-devops-lite-db:5432
+      SQLALCHEMY_ACCOUNT: postgres
+      SQLALCHEMY_PASSWORD: ${III_DB_PASSWORD}
+      SQLALCHEMY_DATABASE: devopsdb
       SQLALCHEMY_TRACK_MODIFICATIONS: false
       WTF_CSRF_CHECK_DEFAULT: false
       JSON_AS_ASCII: false

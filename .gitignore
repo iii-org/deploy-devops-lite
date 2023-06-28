@@ -2,7 +2,7 @@
 .initialized
 .redmine-sql-import.log
 .executed_to_runner.log
-environments.json
+HEAD.env
 redmine.sql
 
 .env
