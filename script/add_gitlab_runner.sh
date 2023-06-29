@@ -67,7 +67,9 @@ if [ -z "$GITLAB_INIT_TOKEN" ]; then
     exit 1
   fi
 
-  GITLAB_INIT_TOKEN="$(jq -r '.GITLAB_PRIVATE_TOKEN' "$project_dir"/HEAD.env)"
+  . "$project_dir"/HEAD.env
+
+  GITLAB_INIT_TOKEN="${GITLAB_PRIVATE_TOKEN:?Missing GITLAB_PRIVATE_TOKEN in HEAD.env}"
 fi
 
 # Check if GitLab is running
