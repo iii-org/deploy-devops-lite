@@ -179,7 +179,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:0.0.9
+    image: iiiorg/devops-lite-ui:0.1.0
     container_name: "iii-devops-lite-ui"
     restart: always
     labels:
@@ -189,7 +189,7 @@ services:
     ports:
       - "80:80"
     environment:
-      API_URL: http://iii-devops-lite-api:10009/
+      API_URL_LITE: http://iii-devops-lite-api:10009/
     healthcheck:
       test: curl --fail http://localhost/prod-api/swagger-ui/ || exit 1
       interval: 10s
