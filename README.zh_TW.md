@@ -15,8 +15,8 @@
 
 在執行 Deploy DevOps Lite 之前，需先準備以下資訊：
 
-- [ ] 伺服器的 IP 位址
-- [ ] 伺服器登入預設密碼
+- [ ] 伺服器的 IP 位址 Exp. 61.67.2.30
+- [ ] 登入伺服器的帳號密碼(不能是 root 但具有 sudo 權限) Exp. iiidouser
 
 ## 安裝步驟
 
@@ -37,7 +37,7 @@
   ./upgrade.sh
   ```
 
-### 步驟 2：設定環境變數（可選）
+### 步驟 2：設定環境變數
 
 - 如果您希望在執行部署程式之前設定環境變數，請執行以下指令：
 
@@ -46,6 +46,10 @@
   cd Lite
   ./script/generate_env.sh all
   ```
+    - IP_ADDR : 設定目前這台主機的 IP Exp. 61.67.2.30
+    - III_ADMIN_LOGIN : 設定預設管理者帳號(不能是 root 或 admin) Exp. sysadmin
+    - III_ADMIN_EMAIL : 設定預設管理者電子郵件 Exp. sysadmin@iiidevops.org
+    - III_ADMIN_PASSWORD : 設定預設管理者密碼(需要8-20個字同時需要至少1個大寫1個小寫和1個數字)
 
 您可以確認設定的環境變數在 `.env` 檔案中。
 
