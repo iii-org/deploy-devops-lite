@@ -18,11 +18,11 @@ sudo apt-get install -y -qq uidmap >/dev/null
 # Linger user
 sudo loginctl enable-linger "$(whoami)"
 
-export XDG_RUNTIME_DIR=/run/user/$(id -u user)
-echo "XDG_RUNTIME_DIR=/run/user/$(id -u user)" >>~/.bashrc
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >>~/.bashrc
 
-export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u user)/bus
-echo "DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u user)/bus" >>~/.bashrc
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus
+echo "DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus" >>~/.bashrc
 
 dockerd-rootless-setuptool.sh install
 
