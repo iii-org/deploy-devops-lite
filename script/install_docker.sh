@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 set -euo pipefail
 
@@ -13,6 +14,16 @@ curl -s https://get.docker.com/ | bash
 INFO "Setting up docker in rootless mode..."
 sudo apt-get update -qq >/dev/null
 sudo apt-get install -y -qq uidmap >/dev/null
+
+# Linger user
+sudo loginctl enable-linger "$(whoami)"
+
+export XDG_RUNTIME_DIR=/run/user/$(id -u user)
+echo "XDG_RUNTIME_DIR=/run/user/$(id -u user)" >>~/.bashrc
+
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u user)/bus
+echo "DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u user)/bus" >>~/.bashrc
+
 dockerd-rootless-setuptool.sh install
 
 BIN="$(dirname "$(command -v dockerd-rootless.sh)")"
