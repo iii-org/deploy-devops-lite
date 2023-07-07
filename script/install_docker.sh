@@ -15,33 +15,39 @@ INFO "Setting up docker in rootless mode..."
 sudo apt-get update -qq >/dev/null
 sudo apt-get install -y -qq uidmap >/dev/null
 
-# Linger user
-sudo loginctl enable-linger "$(whoami)"
-
-if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
-  export XDG_RUNTIME_DIR=/run/user/$(id -u)
-  echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >>~/.bashrc
+if systemctl --user show-environment >/dev/null 2>&1; then
+  SYSTEMD=1
 fi
 
-if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
-  export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus
-  echo "export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus" >>~/.bashrc
+if [ -n "${SYSTEMD:-}" ]; then
+  # Linger user
+  sudo loginctl enable-linger "$(whoami)"
+
+  if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    export XDG_RUNTIME_DIR=/run/user/$(id -u)
+    echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >>~/.bashrc
+  fi
+
+  if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+    export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus
+    echo "export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus" >>~/.bashrc
+  fi
+
+  # shellcheck disable=SC1090
+  . ~/.bashrc
+
+  # Critical check to make sure systemd is running, it can be triggered on login method
+  sudo su - "$(whoami)" -c "echo 'Trying to start dbus service, sleep 3 seconds'; sleep 3"
+  #dbus-update-activation-environment --systemd XDG_RUNTIME_DIR
+
+  # When changed user, it will create a bus file in /run/user/$(id -u)/bus, if not, it will fail
+  if [ ! -S "${DBUS_SESSION_BUS_ADDRESS}" ]; then
+    WARN "Systemd socket ${DBUS_SESSION_BUS_ADDRESS} does not exist."
+    exit 1
+  fi
 fi
 
-# shellcheck disable=SC1090
-. ~/.bashrc
-
-# Critical check to make sure systemd is running, it can be triggered on login method
-sudo su - "$(whoami)" -c "echo 'Trying to start dbus service, sleep 3 seconds'; sleep 3"
-#dbus-update-activation-environment --systemd XDG_RUNTIME_DIR
-
-# When changed user, it will create a bus file in /run/user/$(id -u)/bus, if not, it will fail
-if [ ! -S "${DBUS_SESSION_BUS_ADDRESS}" ]; then
-  WARN "Systemd socket ${DBUS_SESSION_BUS_ADDRESS} does not exist."
-  exit 1
-fi
-
-# Print systemd environment
+# Print systemd environment, check if $USER can use systemctl
 systemctl --user show-environment
 
 # Run dockerd-rootless.sh
