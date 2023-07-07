@@ -31,6 +31,20 @@ fi
 # shellcheck disable=SC1090
 . ~/.bashrc
 
+# Critical check to make sure systemd is running, it can be triggered on login method
+sudo su - "$(whoami)" -c "echo 'Trying to start dbus service, sleep 3 seconds'; sleep 3"
+#dbus-update-activation-environment --systemd XDG_RUNTIME_DIR
+
+# When changed user, it will create a bus file in /run/user/$(id -u)/bus, if not, it will fail
+if [ ! -S "${DBUS_SESSION_BUS_ADDRESS}" ]; then
+  WARN "Systemd socket ${DBUS_SESSION_BUS_ADDRESS} does not exist."
+  exit 1
+fi
+
+# Print systemd environment
+systemctl --user show-environment
+
+# Run dockerd-rootless.sh
 dockerd-rootless-setuptool.sh install
 
 BIN="$(dirname "$(command -v dockerd-rootless.sh)")"
