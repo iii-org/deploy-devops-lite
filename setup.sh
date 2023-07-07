@@ -207,6 +207,13 @@ else
   source "$base_dir"/script/common.sh
 fi
 
+# Check have correct docker permission
+if ! docker ps >/dev/null 2>&1; then
+  ERROR "Docker permission check failed, please check if you have correct docker permission"
+  ERROR "Maybe you try to run docker in root mode? Set the correct docker socket and try again"
+  exit 1
+fi
+
 # If HEAD.env exist, do not run setup
 if [ -e HEAD.env ]; then
   # If HEAD.env not empty, means setup already done

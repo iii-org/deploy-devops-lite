@@ -168,7 +168,7 @@ question_docker_sock() {
   while ! $valid; do
     # Trying to auto detect docker socket
     if [ "$valid" = false ]; then
-      if [ -S "$XDG_RUNTIME_DIR/docker.sock" ]; then
+      if [ -S "${XDG_RUNTIME_DIR:-/home/${USER}/.local/share}/docker.sock" ]; then
         INFO "Found docker socket at \e[97m$XDG_RUNTIME_DIR/docker.sock\e[0m"
         answer="$XDG_RUNTIME_DIR/docker.sock"
         valid=true
