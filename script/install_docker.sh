@@ -18,11 +18,15 @@ sudo apt-get install -y -qq uidmap >/dev/null
 # Linger user
 sudo loginctl enable-linger "$(whoami)"
 
-export XDG_RUNTIME_DIR=/run/user/$(id -u)
-echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >>~/.bashrc
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+  export XDG_RUNTIME_DIR=/run/user/$(id -u)
+  echo "export XDG_RUNTIME_DIR=/run/user/$(id -u)" >>~/.bashrc
+fi
 
-export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus
-echo "export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus" >>~/.bashrc
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+  export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus
+  echo "export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/bus" >>~/.bashrc
+fi
 
 # shellcheck disable=SC1090
 . ~/.bashrc
