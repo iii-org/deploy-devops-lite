@@ -19,7 +19,8 @@ if systemctl --user show-environment >/dev/null 2>&1; then
   SYSTEMD=1
 fi
 
-if [ -n "${SYSTEMD:-}" ]; then
+# Only when systemd not available, we need to setup user systemd
+if [ -z "${SYSTEMD:-}" ]; then
   # Linger user
   sudo loginctl enable-linger "$(whoami)"
 
