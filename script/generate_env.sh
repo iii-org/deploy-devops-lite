@@ -128,7 +128,7 @@ question_ip_addr() {
 
   # Prompt question
   if [ "$valid" = false ]; then
-    INFO "Getting IP address for the server"
+    INFO "Please provide IP address for the server"
   fi
 
   while ! $valid; do
@@ -224,7 +224,7 @@ question_iii_login() {
   fi
 
   if [ "$valid" = false ]; then
-    INFO "Setting III init login account"
+    INFO "Please provide III init login account for the server"
   fi
 
   while ! $valid; do
@@ -265,7 +265,7 @@ question_iii_email() {
   fi
 
   if [ "$valid" = false ]; then
-    INFO "Setting III init login email"
+    INFO "Please provide III init login email for the server"
   fi
 
   while ! $valid; do
