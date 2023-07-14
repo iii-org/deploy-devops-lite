@@ -15,8 +15,8 @@
 
 We should prepare the info we need to deploy the devops lite.
 
-- [ ] The IP address of the server
-- [ ] The default password used to log in the server
+- [ ] The IP address of the server (e.g. 61.67.2.30)
+- [ ] The account and password of the server (not root but have sudo permission) (e.g. iiidouser)
 
 ## Installation
 
@@ -37,7 +37,7 @@ We should prepare the info we need to deploy the devops lite.
   ./upgrade.sh
   ```
 
-### Step 2. Setting up the environment variables (Optional)
+### Step 2. Setting up the environment variables
 
 - If you wish setting up the environment variables before running the deployment program, you can run the following
 
@@ -46,6 +46,12 @@ We should prepare the info we need to deploy the devops lite.
     cd Lite
     ./script/generate_env.sh all
     ```
+
+- IP_ADDR: Set the current server IP address (e.g. `10.0.0.6`)
+- III_ADMIN_LOGIN: Set the admin account of the DevOps Lite, cannot be `admin` or `root` (e.g. `sysadmin`)
+- III_ADMIN_EMAIL: Set the email of the admin account (e.g. `sysadmin@iiidevops.org`)
+- III_ADMIN_PASSWORD: Set the password of the admin account (Should be at least 8 characters, including uppercase,
+  lowercase, numbers, and special characters)
 
 You can check the environment variables in the `.env` file.
 
