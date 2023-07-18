@@ -51,7 +51,7 @@ if [ -z "${SYSTEMD:-}" ]; then
 fi
 
 # Print systemd environment, check if $USER can use systemctl
-systemctl --user show-environment
+systemctl --user show-environment --no-pager
 
 # Run dockerd-rootless.sh
 dockerd-rootless-setuptool.sh install
