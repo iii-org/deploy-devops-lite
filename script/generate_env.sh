@@ -132,7 +132,7 @@ question_ip_addr() {
   fi
 
   while ! $valid; do
-    read -r ip
+    read -rp "IP address: " ip
     if [[ "$ip" =~ $IPv4_format ]]; then
       valid=true
     else
@@ -190,7 +190,7 @@ question_docker_sock() {
 
     # If not found, prompt user to enter
     WARN "Docker socket not found, please enter the docker socket file manually"
-    read -r answer
+    read -rp "Docker socket: " answer
     if [ -S "$answer" ]; then
       valid=true
     else
@@ -228,7 +228,7 @@ question_iii_login() {
   fi
 
   while ! $valid; do
-    read -r answer
+    read -rp "Admin account: " answer
     if [[ "$answer" =~ $rule ]]; then
       valid=true
     else
@@ -269,7 +269,7 @@ question_iii_email() {
   fi
 
   while ! $valid; do
-    read -r answer
+    read -rp "Email: " answer
     if [[ "$answer" =~ $rule ]]; then
       valid=true
     else
