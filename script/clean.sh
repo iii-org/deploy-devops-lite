@@ -26,6 +26,11 @@ if [ -f HEAD.env ]; then
   rm HEAD.env
   INFO "Environment config file removed"
 fi
+if [ -f .env ]; then
+  rm .env
+  rm .env.bak
+  INFO "Environment config file removed"
+fi
 
 # For folders in templates, remove all .git folders
 INFO "Removing .git folders in templates"
