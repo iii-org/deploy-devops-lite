@@ -1,7 +1,3 @@
 echo '========== SonarQube(Default) =========='
-sonar-scanner \
-    -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.projectName=$CI_PROJECT_NAME \
-    -Dsonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA \
-    -Dsonar.log.level=DEBUG -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=600 -Dsonar.scm.disabled=true \
-    -Dsonar.login=$SONAR_TOKEN
+
+/usr/bin/entrypoint.sh sonar-scanner;
