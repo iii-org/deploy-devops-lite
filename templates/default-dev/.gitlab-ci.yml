@@ -28,6 +28,22 @@ Test--SonarQube source code scan:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
+  before_script:
+    - echo "Prepare SonarQube properties file..."
+    - >-
+      config="sonar.host.url=$SONAR_HOST_URL
+      sonar.projectKey=$CI_PROJECT_NAME
+      sonar.projectName=$CI_PROJECT_NAME
+      sonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+      sonar.log.level=DEBUG
+      sonar.qualitygate.wait=true
+      sonar.qualitygate.timeout=600
+      sonar.scm.disabled=true
+      sonar.login=$SONAR_TOKEN
+
+      sonar.scm.disabled=true
+      sonar.sourceEncoding=UTF-8"
+    - echo "$config" > sonar-project.properties
   script:
     - chmod a+x ./iiidevops/sonarqube/*
     - ./iiidevops/sonarqube/SonarScan
