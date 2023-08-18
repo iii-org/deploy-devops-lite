@@ -29,7 +29,7 @@ Test--SonarQube source code scan:
     - .sonar/cache
   before_script:
     - echo "Prepare SonarQube properties file..."
-    - >-
+    - |-
       config="sonar.host.url=$SONAR_HOST_URL
       sonar.projectKey=$CI_PROJECT_NAME
       sonar.projectName=$CI_PROJECT_NAME
