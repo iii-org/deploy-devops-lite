@@ -115,7 +115,6 @@ services:
     <<: *default-logging
     image: postgres:12
     container_name: "iii-devops-lite-db"
-    user: postgres
     restart: always
     ports:
       - "${III_DB_PORT}:5432"
@@ -127,7 +126,7 @@ services:
       POSTGRES_DB: postgres
 
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "bash -c 'pg_isready -U $POSTGRES_USER'" ]
       interval: 10s
       timeout: 5s
       retries: 5
