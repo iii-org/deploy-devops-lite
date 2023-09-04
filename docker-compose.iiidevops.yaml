@@ -10,6 +10,7 @@ services:
     restart: always
     volumes:
       - ./HEAD.env:/env/HEAD.env
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
     # We don't share depends_on with other services, because it's docker limit
     environment:
       SQLALCHEMY_HOST: iii-devops-lite-db:5432
