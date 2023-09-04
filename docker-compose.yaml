@@ -115,6 +115,7 @@ services:
     <<: *default-logging
     image: postgres:12
     container_name: "iii-devops-lite-db"
+    user: postgres
     restart: always
     ports:
       - "${III_DB_PORT}:5432"
