@@ -21,6 +21,7 @@ Test--SonarQube source code scan:
     entrypoint:
     - ''
   variables:
+    iiidevops: sonarqube
     SONAR_USER_HOME: ${CI_PROJECT_DIR}/.sonar
     GIT_DEPTH: '0'
   cache:
