@@ -22,6 +22,7 @@ Test--SonarQube source code scan:
     name: iiiorg/sonarqube-runner:1.1.0
     entrypoint: [ "" ]
   variables:
+    iiidevops: sonarqube
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
   cache:
