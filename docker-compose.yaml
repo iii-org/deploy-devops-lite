@@ -126,7 +126,7 @@ services:
       POSTGRES_DB: postgres
 
     healthcheck:
-      test: [ "CMD-SHELL", "bash -c 'pg_isready -U $POSTGRES_USER'" ]
+      test: [ "CMD-SHELL", "bash -c 'pg_isready -U $$POSTGRES_USER'" ]
       interval: 10s
       timeout: 5s
       retries: 5
