@@ -1,0 +1,31 @@
+include:
+  - path: docker/docker-compose.${MODE:-NONE}.yaml
+
+volumes:
+  gitlab-data:
+    driver: local
+  gitlab-config:
+    driver: local
+  gitlab-logs:
+    driver: local
+  runner-config:
+    driver: local
+
+  sonarqube-data:
+    driver: local
+
+  redmine-db-data:
+    driver: local
+  redmine-files:
+    driver: local
+
+  iii-devops-lite-db-data:
+    driver: local
+  iii-devops-lite-file:
+    driver: local
+  iii-devops-lite-log:
+    driver: local
+
+networks:
+  default:
+    name: iiidevops-lite-network
