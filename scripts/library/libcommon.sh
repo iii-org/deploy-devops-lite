@@ -82,8 +82,10 @@ load_env_file() {
 
 generate_random_string() {
   local length="$1"
+  local RULE="${2:-[:alnum:]}"
+
   echo "$(
-    tr </dev/urandom -dc '[:alnum:]' | head -c ${length}
+    tr </dev/urandom -dc "$RULE" | head -c ${length}
     true
   )"
 }

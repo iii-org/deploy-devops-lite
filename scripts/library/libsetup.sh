@@ -72,6 +72,7 @@ get_service_authority() {
   service_port_map["redmine"]="$PORT_REDMINE"
   service_port_map["sonarqube"]="$PORT_SONARQUBE"
   service_port_map["api"]="$PORT_III_API"
+  service_port_map["ui"]="$PORT_III_UI"
 
   if [[ "$MODE" == "IP" ]]; then
     echo "$IP_ADDR:${service_port_map[$service_name]}"
@@ -91,6 +92,43 @@ get_service_url() {
   else
     echo "https://$service_url"
   fi
+}
+
+setup_gitlab_variable() {
+  local KEY="$1"
+  local VALUE="$2"
+  local PROTECTED=false
+  local MASKED="${3:-true}"
+
+  local RESPONSE
+  local JQ_KEY
+
+  local DATA
+  DATA="$(
+    jq -n \
+      --arg key "$KEY" \
+      --arg value "$VALUE" \
+      --arg protected "$PROTECTED" \
+      --arg masked "$MASKED" \
+      '{key: $key, value: $value, protected: $protected, masked: $masked}'
+  )"
+
+  RESPONSE="$(
+    curl -s -k -X POST "$(get_service_url "gitlab")/api/v4/admin/ci/variables" \
+      -H "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$DATA"
+  )"
+
+  JQ_KEY=$(echo "$RESPONSE" | jq -r '.key')
+
+  if [[ "$JQ_KEY" != "$KEY" ]]; then
+    ERROR "❌ Setting Gitlab CICD variable ${WHITE}$KEY${NOFORMAT} failed, response:"
+    ERROR "$RESPONSE"
+    exit 1
+  fi
+
+  INFO "🔑 Gitlab CICD variable ${WHITE}$KEY${NOFORMAT} set successfully!"
 }
 
 setup_gitlab() {
@@ -155,7 +193,7 @@ setup_gitlab() {
 
   INFO "✅ Registered shared runner"
   # TODO: execute add gitlab template script, need fix it to support DNS mode
-#  "${BINARY_DIR:?}"/add_gitlab_template.sh --token "$REGISTRATOR_TOKEN" --init
+  #  "${BINARY_DIR:?}"/add_gitlab_template.sh --token "$REGISTRATOR_TOKEN" --init
 
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \
@@ -168,6 +206,10 @@ setup_gitlab() {
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?auto_devops_enabled=false" \
     -H "PRIVATE-TOKEN: $REGISTRATOR_TOKEN" >/dev/null
+
+  setup_gitlab_variable "SONAR_TOKEN" "$SONARQUBE_ADMIN_TOKEN"
+  setup_gitlab_variable "SONAR_HOST_URL" "$(get_service_url "sonarqube")" false
+  setup_gitlab_variable "API_ORIGIN" "$(get_service_url "api")" false
 
   INFO "✅ GitLab setup finished!"
 }

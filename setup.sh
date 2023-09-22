@@ -231,6 +231,30 @@ start_services() {
   INFO "🌟 Services started!"
 }
 
+gen_API_env() {
+  INFO "🔄 Generating HEAD.env file..."
+
+  JWT_SECRET_KEY="$(generate_random_string 20 'a-f0-9')"
+
+  # Using heredoc to generate HEAD.env
+  cat <<EOF >"$III_ENV"
+GITLAB_PRIVATE_TOKEN=$GITLAB_INIT_TOKEN
+JWT_SECRET_KEY=$JWT_SECRET_KEY
+REDMINE_API_KEY=$REDMINE_API_KEY
+SONARQUBE_ADMIN_TOKEN=$SONARQUBE_ADMIN_TOKEN
+EOF
+
+  INFO "✅ HEAD.env generated!"
+}
+
+after_script() {
+  INFO "🎉 ${WHITE}III DevOps Community${NOFORMAT} is ready!"
+  INFO "🎉 You can now visit ${WHITE}$(get_service_url "ui")${NOFORMAT} to start using it!"
+  INFO "GitLab: ${WHITE}$(get_service_url "gitlab")${NOFORMAT}"
+  INFO "Redmine: ${WHITE}$(get_service_url "redmine")${NOFORMAT}"
+  INFO "SonarQube: ${WHITE}$(get_service_url "sonarqube")${NOFORMAT}"
+}
+
 main() {
   parse_params "$@"
 
@@ -250,6 +274,8 @@ main() {
   setup_sonarqube
   setup_redmine
   setup_gitlab
+  gen_API_env
+  after_script
 }
 
 main "$@"
