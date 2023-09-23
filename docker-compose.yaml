@@ -164,7 +164,7 @@ services:
     depends_on:
       - redis
       - iii-devops-lite-api
-    command: celery -A apis.api:celery worker -P eventlet --loglevel=INFO
+    command: PYTHONPATH=/usr/src/app/apis celery -A apis.api.celery worker -P eventlet --loglevel=INFO
   
   iii-devops-lite-api-beat:
     <<: *default-logging
@@ -175,7 +175,7 @@ services:
     depends_on:
       - redis
       - iii-devops-lite-api
-    command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    command: PYTHONPATH=/usr/src/app/apis celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
 
   iii-devops-lite-ui:
     <<: *default-logging

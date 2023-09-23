@@ -9,7 +9,7 @@ services:
     image: iiiorg/devops-lite-api:0.1.3
     restart: always
     volumes:
-      - ./HEAD.env:/env/HEAD.env
+      - ./HEAD.env:/usr/src/app/env/HEAD.env
       - ${DOCKER_SOCKET}:/var/run/docker.sock
     # We don't share depends_on with other services, because it's docker limit
     environment:
