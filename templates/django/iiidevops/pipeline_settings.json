@@ -1,0 +1,6 @@
+{
+  "name": "Python-Django",
+  "description": "Python 3.8 / Django 3.1.7 <a class='el-link el-link--primary' href='https://github.com/iiidevops-v2-templates/ci-django-testsite/blob/master/README.md' target='_blank'>簡易網頁說明</a><hr /><ul><li><strong>v2.0</strong>更新CI自動化腳本</li></ul>",
+  "arguments": [
+  ]
+}

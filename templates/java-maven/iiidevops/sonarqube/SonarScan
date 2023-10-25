@@ -1,0 +1,7 @@
+echo '========== SonarQube(Maven) =========='
+cd app && mvn install
+mvn clean verify sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL\
+    -Dsonar.projectName=$PROJECT_NAME -Dsonar.projectKey=$PROJECT_NAME\
+    -Dsonar.projectVersion=$GIT_BRANCH:$GIT_COMMIT_ID\
+	-Dsonar.log.level=DEBUG -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=600\
+	-Dsonar.login=$SONAR_LOGIN

@@ -1,0 +1,11 @@
+# 本地端測試
+# if dont want to mess with your os env
+version: '3.1'
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile.local
+    restart: always
+    ports:
+      - 80
