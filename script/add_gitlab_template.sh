@@ -30,7 +30,7 @@ gitlab_runner() {
     sleep 1
   done
 
-  $GITLAB_RUNNER "$*"
+  $GITLAB_RUNNER "$@"
 }
 
 gitlab_parse_error() {
