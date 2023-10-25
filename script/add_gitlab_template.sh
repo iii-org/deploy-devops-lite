@@ -14,6 +14,25 @@ GITLAB_URL=gitlab:${GITLAB_PORT}
 GITLAB_INIT_TOKEN=""
 GITLAB_RUNNER="docker compose exec runner"
 
+gitlab_runner() {
+  local timeout=120
+  while true; do
+    if [ "$timeout" -eq 0 ]; then
+      ERROR "Timeout, cannot connect to Gitlab runner"
+      exit 1
+    fi
+
+    if $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
+      break
+    fi
+
+    INFO "Gitlab runner is not running, wait 1 second"
+    sleep 1
+  done
+
+  $GITLAB_RUNNER "$*"
+}
+
 gitlab_parse_error() {
   message_check="$(echo "$1" | jq -r 'if type == "object" then .message elif type == "array" then "" else .[] end')"
 
@@ -46,7 +65,7 @@ gitlab_get_id_or_path() {
 
 gitlab_get_group_id() {
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request GET "http://gitlab:$GITLAB_PORT/api/v4/groups?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
@@ -59,7 +78,7 @@ gitlab_get_group_id() {
 
 gitlab_get_project() {
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
@@ -77,7 +96,7 @@ gitlab_get_project() {
 
 gitlab_get_project_id() {
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
@@ -92,7 +111,7 @@ gitlab_get_group_projects() {
   id_or_path="$(gitlab_get_id_or_path "$1")"
 
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request GET "http://gitlab:$GITLAB_PORT/api/v4/groups/$id_or_path/projects?per_page=100" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json"
@@ -106,7 +125,7 @@ gitlab_get_group_projects() {
 gitlab_create_group() {
   data="{\"name\": \"$1\", \"path\": \"$1\", \"visibility\": \"public\"}"
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request POST "http://gitlab:$GITLAB_PORT/api/v4/groups" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json" \
@@ -140,7 +159,7 @@ gitlab_create_project() {
 
   # Deprecated: Use builds_access_level instead of jobs_enabled
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request POST "http://gitlab:$GITLAB_PORT/api/v4/projects" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json" \
@@ -164,7 +183,7 @@ gitlab_delete_project() {
   id_or_path="$(gitlab_get_id_or_path "$1")"
 
   GITLAB_RESPONSE=$(
-    $GITLAB_RUNNER curl -s -k \
+    gitlab_runner curl -s -k \
       --request DELETE "http://gitlab:$GITLAB_PORT/api/v4/projects/$id_or_path" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
@@ -198,7 +217,7 @@ prepare_gitlab_groups() {
   local gitlab_instance_credentials
   gitlab_instance_credentials="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@$GITLAB_URL"
 
-  $GITLAB_RUNNER sh -c "if [ -f ~/.git-credentials ]; then \
+  gitlab_runner sh -c "if [ -f ~/.git-credentials ]; then \
     if grep -q \"$gitlab_instance_credentials\" ~/.git-credentials; then \
       echo \"$gitlab_instance_credentials\" >>~/.git-credentials; \
     fi; \
@@ -206,9 +225,9 @@ prepare_gitlab_groups() {
     echo \"$gitlab_instance_credentials\" >>~/.git-credentials; \
   fi"
 
-  $GITLAB_RUNNER git config --global credential.helper store
-  $GITLAB_RUNNER git config --global init.defaultBranch master
-  $GITLAB_RUNNER git config --global --add safe.directory '*'
+  gitlab_runner git config --global credential.helper store
+  gitlab_runner git config --global init.defaultBranch master
+  gitlab_runner git config --global --add safe.directory '*'
 
   gitlab_create_group "local-templates"
   gitlab_create_group "$GITHUB_TEMPLATE_USER"
@@ -306,7 +325,7 @@ main() {
       echo "[RUNNER] $RUNNER_COMMANDS" >>"$output_log"
 
       # Execute commands in runner
-      $GITLAB_RUNNER sh -c "$RUNNER_COMMANDS" >>"$output_log"
+      gitlab_runner sh -c "$RUNNER_COMMANDS" >>"$output_log"
 
       INFO "Imported template: $dir_name to $GITHUB_TEMPLATE_USER completed!"
 
@@ -316,7 +335,7 @@ main() {
   done
 
   if [ "$UPDATE_REDIS" -eq 1 ]; then
-    $GITLAB_RUNNER curl -s http://iii-devops-lite-api:10009/template_list_for_cronjob?force_update=1 >/dev/null 2>&1
+    gitlab_runner curl -s http://iii-devops-lite-api:10009/template_list_for_cronjob?force_update=1 >/dev/null 2>&1
   fi
 
   INFO "Import templates done!"
