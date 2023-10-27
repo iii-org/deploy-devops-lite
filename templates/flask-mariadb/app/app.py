@@ -1,24 +1,29 @@
+import os
+
+from flask import Flask
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
+# 讀取資料庫連線參數
+DB_USERNAME = os.getenv("db_username")
+DB_PASSWORD = os.getenv("db_password")
+DB_NAME = os.getenv("db_name")
+DB_HOST = os.getenv("db_host")
+DB_URL = f"mysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+
 # sqlite資料庫設定
 # /// = 相對路徑relative path, //// = 絕對路徑absolute path
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     complete = db.Column(db.Boolean)
-
-
-with app.app_context():
-    db.init_app(app)
-    db.create_all()
 
 
 ## 首頁畫面(Semantic UI漂亮的網頁)
@@ -57,4 +62,6 @@ def delete(todo_id):
 
 
 if __name__ == "__main__":
+    # 建立資料庫
+    db.create_all()
     app.run(debug=True, host="0.0.0.0")
