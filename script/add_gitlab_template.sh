@@ -312,6 +312,8 @@ main() {
         # If git remote url is $GITLAB_URL, skip
         if [ "$(git remote get-url origin)" = "http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git" ]; then
           INFO "Git remote \e[97m$dir_name\e[0m already set, skip change remote url"
+          RUNNER_COMMANDS+="git add .; "
+          RUNNER_COMMANDS+="git commit -m \"Update template\"; "
         else
           # If exist, change remote url
           RUNNER_COMMANDS+="git remote rename origin old-origin; "
