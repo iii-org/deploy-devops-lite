@@ -7,10 +7,10 @@ mvn install
 
 mvn clean verify sonar:sonar \
     -Dsonar.host.url=$SONAR_HOST_URL \
-    -Dsonar.projectKey=$PROJECT_NAME \
-    -Dsonar.projectName=$PROJECT_NAME \
-    -Dsonar.projectVersion=$GIT_BRANCH:$GIT_COMMIT_ID \
-	-Dsonar.qualitygate.timeout=600 \
-	-Dsonar.qualitygate.wait=true \
-	-Dsonar.log.level=DEBUG \
-	-Dsonar.login=$SONAR_LOGIN
+    -Dsonar.projectKey=$CI_PROJECT_NAME \
+    -Dsonar.projectName=$CI_PROJECT_NAME \
+    -Dsonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA \
+    -Dsonar.qualitygate.timeout=600 \
+    -Dsonar.qualitygate.wait=true \
+    -Dsonar.log.level=DEBUG \
+    -Dsonar.login=$SONAR_TOKEN
