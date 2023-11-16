@@ -179,7 +179,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:ce-0.3.0
+    image: iiiorg/devops-lite-ui:ce-0.3.2
     container_name: "iii-devops-lite-ui"
     restart: always
     labels:
