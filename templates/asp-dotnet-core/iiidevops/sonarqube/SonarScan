@@ -1,6 +1,12 @@
 echo '========== SonarQube(ASP.NET) =========='
 cd app && echo 'Install scan package' && apt-get update && apt install -y locales default-jre nodejs && dotnet tool install --global dotnet-sonarscanner
 echo 'Add dotnet tools into PATH' && export PATH="$PATH:/root/.dotnet/tools"
+
+# install open-jdk-17
+
+ apt-get update
+ apt-get install -y openjdk-17-jdk
+
 locale-gen "en_US.UTF-8" && update-locale LC_ALL="en_US.UTF-8" && export LANG="en_US.UTF-8"
 dotnet-sonarscanner\
   begin\
