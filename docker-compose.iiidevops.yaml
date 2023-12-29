@@ -6,7 +6,7 @@ version: "3"
 
 services:
   backend-base:
-    image: iiiorg/devops-lite-api:ce-0.4.1
+    image: iiiorg/devops-lite-api:ce-0.5.0
     restart: always
     volumes:
       - ./HEAD.env:/usr/src/app/env/HEAD.env
