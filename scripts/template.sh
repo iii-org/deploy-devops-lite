@@ -43,6 +43,25 @@ EOF
   exit 21
 }
 
+gitlab_runner() {
+  local timeout=120
+  while true; do
+    if [ "$timeout" -eq 0 ]; then
+      ERROR "Timeout, cannot connect to Gitlab runner"
+      exit 1
+    fi
+
+    if $GITLAB_RUNNER curl -s -k "${URL_GITLAB}/api/v4/version" >/dev/null; then
+      break
+    fi
+
+    INFO "Gitlab runner is not running, wait 1 second"
+    sleep 1
+  done
+
+  $GITLAB_RUNNER "$@"
+}
+
 gitlab_parse_error() {
   message_check="$(echo "$1" | jq -r 'if type == "object" then .message elif type == "array" then "" else .[] end')"
 
@@ -300,6 +319,8 @@ main() {
         # If git remote url is same, skip
         if [ "$(git remote get-url origin)" = "${URL_GITLAB}/$GITHUB_TEMPLATE_USER/$dir_name.git" ]; then
           INFO "Git remote ${WHITE}$dir_name${NOFORMAT} already set, skip change remote url"
+          RUNNER_COMMANDS+="git add .; "
+          RUNNER_COMMANDS+="git commit -m \"Update template\"; "
         else
           # If exist, change remote url
           RUNNER_COMMANDS+="git remote rename origin old-origin; "
@@ -312,13 +333,13 @@ main() {
 
       echo "[RUNNER] $RUNNER_COMMANDS" >>"$output_log"
 
-      # Execute commands in runner
-      $GITLAB_RUNNER sh -c "$RUNNER_COMMANDS" >>"$output_log"
-
-      INFO "Imported template: $dir_name to $GITHUB_TEMPLATE_USER completed!"
-
       # Return to root directory
       cd "${PROJECT_DIR}" || ERROR "Cannot cd to ${PROJECT_DIR}"
+
+      # Execute commands in runner
+      gitlab_runner sh -c "$RUNNER_COMMANDS" >>"$output_log"
+
+      INFO "Imported template: $dir_name to $GITHUB_TEMPLATE_USER completed!"
     fi
   done
 
