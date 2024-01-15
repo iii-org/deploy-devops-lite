@@ -192,7 +192,7 @@ setup_gitlab() {
     --access-level="not_protected"
 
   INFO "✅ Registered shared runner"
-  "${BINARY_DIR:?}"/template.sh --token "$REGISTRATOR_TOKEN" --init
+  "${BINARY_DIR:?}"/template.sh --token "$GITLAB_INIT_TOKEN" --init
 
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \
