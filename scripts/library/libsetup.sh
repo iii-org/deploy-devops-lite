@@ -178,7 +178,7 @@ setup_gitlab() {
 
   # Register shared runner
   INFO "🔧 Registering shared runner..."
-  # TODO: check if the runner is correctly registered
+
   $DOCKER_COMPOSE_COMMAND exec runner \
     gitlab-runner register -n \
     --url "$gitlab_url" \
@@ -192,8 +192,7 @@ setup_gitlab() {
     --access-level="not_protected"
 
   INFO "✅ Registered shared runner"
-  # TODO: execute add gitlab template script, need fix it to support DNS mode
-  #  "${BINARY_DIR:?}"/add_gitlab_template.sh --token "$REGISTRATOR_TOKEN" --init
+  "${BINARY_DIR:?}"/template.sh --token "$REGISTRATOR_TOKEN" --init
 
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \

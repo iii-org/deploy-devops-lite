@@ -14,6 +14,7 @@ Basic run for III DevOps Community version.
 Available targets:
   setup       Setup III DevOps Community version (default)
   clean       Remove III DevOps Community version
+  template    Update III DevOps templates to GitLab
   upgrade     Upgrade III DevOps Community version
   backup      Backup III DevOps Community version (not implemented)
   restore     Restore III DevOps Community version (not implemented)
@@ -37,6 +38,7 @@ fi
 target_list=(
   "setup"
   "clean"
+  "template"
   "upgrade"
   "backup"
   "restore"

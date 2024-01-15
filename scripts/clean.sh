@@ -13,7 +13,7 @@ cd "${PROJECT_DIR:?}" || FAILED "Failed to change directory to ${PROJECT_DIR:?}"
 WARN "${ORANGE}This script will remove all data in docker volumes.${NOFORMAT}"
 WARN "${ORANGE}Please make sure you have backed up your data.${NOFORMAT}"
 echo -e "Press ${RED}Ctrl+C${NOFORMAT} to cancel, sleep 5 seconds to continue..."
-#sleep 5
+sleep 5
 
 DOCKER_SOCKET="$(detect_docker_socket)" $DOCKER_COMPOSE_COMMAND down -v
 

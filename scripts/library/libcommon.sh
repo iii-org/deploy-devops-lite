@@ -16,6 +16,29 @@ get_distribution() {
   echo "$dists" | tr '[:upper:]' '[:lower:]'
 }
 
+url_encode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for ((pos = 0; pos < strlen; pos++)); do
+    c=${string:$pos:1}
+    case "$c" in
+    [-_.~a-zA-Z0-9]) o="${c}" ;;
+    *) printf -v o '%%%02x' "'$c" ;;
+    esac
+    encoded+="${o}"
+  done
+  echo "${encoded}"
+}
+
+url_decode() {
+  local url_encoded="${1//+/ }"
+  printf '%b' "${url_encoded//%/\\x}"
+}
+
+
 check_runas_root() {
   if [ "$(id -u)" == "0" ]; then
     ERROR "Please run this script as normal user, not root."
