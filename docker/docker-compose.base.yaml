@@ -30,10 +30,11 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorg/devops-lite-api:0.1.2
+    image: iiiorg/devops-lite-api:ce-0.5.0
     restart: always
     volumes:
-      - ${III_ENV}:/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
     # We don't share depends_on with other services, because it's docker limit
     environment:
       ADMIN_INIT_EMAIL: ${III_ADMIN_EMAIL}
@@ -164,7 +165,7 @@ services:
       POSTGRES_DB: postgres
 
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "bash -c 'pg_isready -U $$POSTGRES_USER'" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -189,7 +190,8 @@ services:
     ports:
       - "${III_PORT}:10009"
     volumes:
-      - ${III_ENV}:/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
       - iii-devops-lite-file:/opt/nfs
       - iii-devops-lite-log:/logs
 
@@ -201,9 +203,10 @@ services:
     depends_on:
       - redis
       - iii-devops-lite-api
-    command: celery -A apis.api:celery worker -P eventlet --loglevel=INFO
+    command: celery -A apis.api.celery worker -P eventlet --loglevel=INFO
     volumes:
-      - ${III_ENV}:/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
 
   iii-devops-lite-api-beat:
     <<: *default-logging
@@ -215,17 +218,18 @@ services:
       - iii-devops-lite-api
     command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
     volumes:
-      - ${III_ENV}:/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${DOCKER_SOCKET}:/var/run/docker.sock 
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:0.1.2
+    image: iiiorg/devops-lite-ui:ce-0.5.1
     container_name: "iii-devops-lite-ui"
     restart: always
     depends_on:
       - iii-devops-lite-api
     environment:
-      API_URL_LITE: http://iii-devops-lite-api:10009/
+      API_URL: http://iii-devops-lite-api:10009/
     healthcheck:
       test: curl --fail http://localhost/prod-api/swagger-ui/ || exit 1
       interval: 10s

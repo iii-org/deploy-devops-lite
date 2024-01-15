@@ -6,18 +6,24 @@
 BINARY_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 PROJECT_DIR="$(cd "$(dirname "$BINARY_DIR")" && pwd)"
 
-DEBUG=false
-export DEBUG
-
 SPINNING=false
 export SPINNING
 
-# Log: https://serverfault.com/a/103569
-#      https://unix.stackexchange.com/a/145654
-#      https://blog.tratif.com/2023/01/09/bash-tips-1-logging-in-shell-scripts/
+# Load colors
+source "$BINARY_DIR"/library/libcolor.sh
 
-source "$BINARY_DIR"/functions.sh
-source "$BINARY_DIR"/traps.sh
+# Load basic logging module
+source "$BINARY_DIR"/library/liblog.sh
+
+# This script load all functions
+source $BINARY_DIR/library/libcommon.sh
+source $BINARY_DIR/library/libtitle.sh
+
+source "$BINARY_DIR"/library/libsetup.sh
+source "$BINARY_DIR"/library/libdocker.sh
+source "$BINARY_DIR"/library/libvariable.sh
+
+source "$BINARY_DIR"/library/traps.sh
 
 ENVIRONMENT_FILE="${PROJECT_DIR}"/.env
 

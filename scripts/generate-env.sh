@@ -57,19 +57,23 @@ password_validator() {
   fi
 }
 
-string_validator() {
+account_validator() {
   local string="$1"
   if [[ ${#string} -lt 2 ]]; then
-    ERROR "String must be at least 2 characters."
+    ERROR "Account must be at least 2 characters."
     return 1
   fi
   if [[ ${#string} -gt 32 ]]; then
-    ERROR "String must be less than 32 characters."
+    ERROR "Account must be less than 32 characters."
     return 1
   fi
-  # String should only allow alphanumeric characters and underscore
+  if [[ "$string" = "admin" ]]; then
+    ERROR "Account name is not allowed to be admin."
+    return 1
+  fi
+  # Account should only allow alphanumeric characters and underscore
   if [[ ! "$string" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,30}[a-zA-Z0-9]$ ]]; then
-    ERROR "String must only contain alphanumeric characters and underscore."
+    ERROR "Account must only contain alphanumeric characters and underscore."
     ERROR " (rule: ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,30}[a-zA-Z0-9]$)"
     return 1
   fi
@@ -134,7 +138,10 @@ ask_port() {
   local port
 
   while true; do
-    read -rp "Please enter ${port_name} port [${default_port}]: " port
+    echo -n "Please enter ${port_name} port [${default_port}]: "
+
+    read -r port
+
     if [[ -z "$port" ]]; then
       port="$default_port"
     fi
@@ -142,7 +149,9 @@ ask_port() {
       break
     fi
   done
-  echo "$port"
+
+  ANSWER="$port"
+  export ANSWER
 }
 
 ask_password() {
@@ -151,10 +160,12 @@ ask_password() {
   local check
 
   while true; do
-    read -rp "Please enter ${password_name}: " -s result
+    echo -n "Please enter ${password_name}: "
+    read -rs result
     echo 1>&2
 
-    read -rp "Please enter password again: " -s check
+    echo -n "Please enter password again: "
+    read -rs check
     echo 1>&2
 
     if [[ "$result" != "$check" ]]; then
@@ -166,24 +177,31 @@ ask_password() {
       break
     fi
   done
-  echo "$result"
+
+  ANSWER="$result"
+  export ANSWER
 }
 
-ask_string() {
+ask_account() {
   local string_name="$1"
   local default_string="$2"
   local string
 
   while true; do
-    read -rp "Please enter ${string_name} [${default_string}]: " string
+    echo -n "Please enter ${string_name} [${default_string}]: "
+
+    read -r string
+
     if [[ -z "$string" ]]; then
       string="$default_string"
     fi
-    if string_validator "$string"; then
+    if account_validator "$string"; then
       break
     fi
   done
-  echo "$string"
+
+  ANSWER="$string"
+  export ANSWER
 }
 
 ask_ip() {
@@ -192,7 +210,10 @@ ask_ip() {
   local ip
 
   while true; do
-    read -rp "Please enter ${ip_name} [${default_ip}]: " ip
+    echo -n "Please enter ${ip_name} [${default_ip}]: "
+
+    read -r ip
+
     if [[ -z "$ip" ]]; then
       ip="$default_ip"
     fi
@@ -200,7 +221,9 @@ ask_ip() {
       break
     fi
   done
-  echo "$ip"
+
+  ANSWER="$ip"
+  export ANSWER
 }
 
 ask_email() {
@@ -208,12 +231,17 @@ ask_email() {
   local email
 
   while true; do
-    read -rp "Please enter ${email_name}: " email
+    echo -n "Please enter ${email_name}: "
+
+    read -r email
+
     if email_validator "$email"; then
       break
     fi
   done
-  echo "$email"
+
+  ANSWER="$email"
+  export ANSWER
 }
 
 ask_option() {
@@ -223,15 +251,23 @@ ask_option() {
   local option
   local index
 
+  DEBUG "Option name: $option_name"
+  DEBUG "Options: ${options[*]}"
+  DEBUG "Default option: $default_option"
+
   while true; do
     index=1
     INFO "Please select ${option_name}:"
     for o in "${options[@]}"; do
-      echo " ${index}) ${o}" 1>&2
+      echo " ${index}) ${o}"
       index=$((index + 1))
     done
 
-    read -rp "Please enter ${option_name} [${default_option}]: " option
+    echo -n "Please enter ${option_name} [${default_option}]: "
+
+    read -r option
+
+    DEBUG "Select option: $option"
 
     if [[ -z "$option" ]]; then
       option="$default_option"
@@ -248,15 +284,17 @@ ask_option() {
       break
     fi
   done
-  echo "$option"
+  ANSWER="$option"
+  export ANSWER
+}
+
+get_answer() {
+  echo "${ANSWER:-}"
 }
 
 sync_passwords() {
   local password_list=(
     "SQ_AM_PASSWORD"
-    "SQ_DB_PASSWORD"
-    "III_DB_PASSWORD"
-    "REDMINE_DB_PASSWORD"
     "GITLAB_ROOT_PASSWORD"
   )
 
@@ -264,6 +302,21 @@ sync_passwords() {
     # If password is not equal to III_ADMIN_PASSWORD, then write it
     if [[ "${!password:-}" != "$III_ADMIN_PASSWORD" ]]; then
       variable_write "$password" "${III_ADMIN_PASSWORD:-}" true
+    fi
+  done
+
+  INFO "✅ Passwords sync finished!"
+  INFO "🔄 Generating random db passwords..."
+
+  local random_list=(
+    "SQ_DB_PASSWORD"
+    "III_DB_PASSWORD"
+    "REDMINE_DB_PASSWORD"
+  )
+
+  for password in "${random_list[@]}"; do
+    if [[ "${!password:-}" = '{{PASSWORD}}' ]]; then
+      variable_write "$password" "$(generate_random_string 32)" true
     fi
   done
 }
@@ -274,76 +327,108 @@ check_env() {
     INFO "ℹ️ It seems that you are running ${WHITE}III DevOps Community${NOFORMAT} for the first time."
     INFO "💡 If you change the mode in the future."
     INFO "   ${RED}Re-install${NOFORMAT} ${WHITE}III DevOps Community${NOFORMAT} to avoid unexpected errors."
-    INFO "💡 If you are not sure, please choose ${WHITE}IP${NOFORMAT} mode."
-    MODE="$(ask_option "network mode" options[@] "${options[0]}")"
+
+    # TODO: check if DNS mode are ready
+    #    INFO "💡 If you are not sure, please choose ${WHITE}IP${NOFORMAT} mode."
+    #    ask_option "network mode" options[@] "${options[0]}"
+    #    MODE="$(get_answer)"
+
+    MODE="IP"
     variable_write "MODE" "$MODE"
   else
     if ! option_validator "$MODE" "${options[@]}"; then
-      MODE="$(ask_option "network mode" options[@] "${options[0]}")"
+
+      # TODO: check if DNS mode are ready
+      #    ask_option "network mode" options[@] "${options[0]}"
+      #    MODE="$(get_answer)"
+
+      MODE="IP"
       variable_write "MODE" "$MODE"
     fi
   fi
 
   # TODO: If DNS mode, ask domain name and certificate path / certificate method
 
-  if [[ -z "${IP_ADDR:-}" ]]; then
-    IP_ADDR="$(ask_ip "IP address" "$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')")"
+  _ip_f() {
+    ask_ip "IP address" "$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')"
+    IP_ADDR="$(get_answer)"
     variable_write "IP_ADDR" "$IP_ADDR"
+  }
+
+  if [[ -z "${IP_ADDR:-}" ]]; then
+    _ip_f
   else
     if ! ip_validator "$IP_ADDR"; then
-      IP_ADDR="$(ask_ip "IP address" "$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')")"
-      variable_write "IP_ADDR" "$IP_ADDR"
+      _ip_f
     fi
   fi
+
+  _dir_f() {
+    BASE_DIR="${PROJECT_DIR:?}"
+    variable_write "BASE_DIR" "$BASE_DIR"
+  }
 
   # Files
   if [[ -z "${BASE_DIR:-}" ]]; then
-    BASE_DIR="${PROJECT_DIR:?}"
-    variable_write "BASE_DIR" "$BASE_DIR"
+    _dir_f
   else
     if [[ "${BASE_DIR}" != "${PROJECT_DIR:?}" ]]; then
-      BASE_DIR="${PROJECT_DIR:?}"
-      variable_write "BASE_DIR" "$BASE_DIR"
+      _dir_f
     fi
   fi
 
-  if [[ -z "${DOCKER_SOCKET:-}" ]]; then
+  _docker_f() {
     DOCKER_SOCKET="$(detect_docker_socket)"
     variable_write "DOCKER_SOCKET" "$DOCKER_SOCKET"
+  }
+
+  if [[ -z "${DOCKER_SOCKET:-}" ]]; then
+    _docker_f
   else
     if ! socket_validator "$DOCKER_SOCKET"; then
-      DOCKER_SOCKET="$(detect_docker_socket)"
-      variable_write "DOCKER_SOCKET" "$DOCKER_SOCKET"
+      _docker_f
     fi
   fi
+
+  _login_f() {
+    ask_account "III init login account" "sysadmin"
+    III_ADMIN_LOGIN="$(get_answer)"
+    variable_write "III_ADMIN_LOGIN" "$III_ADMIN_LOGIN"
+  }
 
   if [[ -z "${III_ADMIN_LOGIN:-}" ]]; then
-    III_ADMIN_LOGIN="$(ask_string "III init login account" "admin")"
-    variable_write "III_ADMIN_LOGIN" "$III_ADMIN_LOGIN"
+    _login_f
   else
-    if ! string_validator "$III_ADMIN_LOGIN"; then
-      III_ADMIN_LOGIN="$(ask_string "III init login account" "admin")"
-      variable_write "III_ADMIN_LOGIN" "$III_ADMIN_LOGIN"
+    if ! account_validator "$III_ADMIN_LOGIN"; then
+      _login_f
     fi
   fi
+
+  _email_f() {
+    ask_email "III init login email"
+    III_ADMIN_EMAIL="$(get_answer)"
+    variable_write "III_ADMIN_EMAIL" "$III_ADMIN_EMAIL"
+  }
 
   if [[ -z "${III_ADMIN_EMAIL:-}" ]]; then
-    III_ADMIN_EMAIL="$(ask_email "III init login email")"
-    variable_write "III_ADMIN_EMAIL" "$III_ADMIN_EMAIL"
+    _email_f
   else
     if ! email_validator "$III_ADMIN_EMAIL"; then
-      III_ADMIN_EMAIL="$(ask_email "III init login email")"
-      variable_write "III_ADMIN_EMAIL" "$III_ADMIN_EMAIL"
+      _email_f
     fi
   fi
 
-  if [[ -z "${III_ADMIN_PASSWORD:-}" ]]; then
-    III_ADMIN_PASSWORD="$(ask_password "III init login password")"
+  _pwd_f() {
+    ask_password "III init login password"
+    III_ADMIN_PASSWORD="$(get_answer)"
     variable_write "III_ADMIN_PASSWORD" "$III_ADMIN_PASSWORD" true
+  }
+
+  if [[ -z "${III_ADMIN_PASSWORD:-}" ]]; then
+    _pwd_f
   else
     if ! password_validator "$III_ADMIN_PASSWORD"; then
-      III_ADMIN_PASSWORD="$(ask_password "III init login password")"
-      variable_write "III_ADMIN_PASSWORD" "$III_ADMIN_PASSWORD" true
+      _pwd_f
     fi
   fi
 

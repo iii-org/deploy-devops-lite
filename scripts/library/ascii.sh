@@ -5,8 +5,6 @@ _msg() {
 }
 
 banner() {
-  { debug_disable; } 2>/dev/null
-
   local WIDTH
   WIDTH="$(tput cols)"
   # Text To ASCII Art Generator (TAAG) - Ivrit
@@ -25,13 +23,9 @@ banner() {
     _msg " |___|___|___| |____/ \___| \_/  \___/| .__/|___/ "
     _msg "                                      |_|   - Community"
   fi
-
-  debug_enable
 }
 
 buddha() {
-  { debug_disable; } 2>/dev/null
-
   _msg "                       _oo0oo_ "
   _msg "                      o8888888o "
   _msg "                      88\" . \"88 "
@@ -55,6 +49,4 @@ buddha() {
   _msg "     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
   _msg ""
   _msg "               佛祖保佑        永無臭蟲"
-
-  debug_enable
 }

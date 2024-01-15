@@ -13,9 +13,9 @@ cd "${PROJECT_DIR:?}" || FAILED "Failed to change directory to ${PROJECT_DIR:?}"
 WARN "${ORANGE}This script will remove all data in docker volumes.${NOFORMAT}"
 WARN "${ORANGE}Please make sure you have backed up your data.${NOFORMAT}"
 echo -e "Press ${RED}Ctrl+C${NOFORMAT} to cancel, sleep 5 seconds to continue..."
-sleep 5
+#sleep 5
 
-$DOCKER_COMPOSE_COMMAND down -v
+DOCKER_SOCKET="$(detect_docker_socket)" $DOCKER_COMPOSE_COMMAND down -v
 
 if [[ -f "${PROJECT_DIR}/.checked" ]]; then
   rm "${PROJECT_DIR}/.checked"
@@ -51,4 +51,4 @@ for template_dir in templates/*; do
   fi
 done
 
-NOTICE "Environment cleaned up, please run ${CYAN}setup.sh${NOFORMAT} to re-initialize the environment."
+NOTICE "Environment cleaned up, please run ${CYAN}run.sh${NOFORMAT} to re-install."

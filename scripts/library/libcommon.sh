@@ -1,32 +1,5 @@
 #!/usr/bin/env bash
 
-msg() {
-  echo >&2 -e "${1-}"
-}
-
-INFO() {
-  msg "${GREEN}[INFO]${NOFORMAT} ${1}"
-}
-
-NOTICE() {
-  msg "${CYAN}[NOTICE]${NOFORMAT} ${1}"
-}
-
-WARN() {
-  msg "${ORANGE}[WARN]${NOFORMAT} ${1}"
-}
-
-ERROR() {
-  msg "${RED}[ERROR]${NOFORMAT} ${1}" >&2
-}
-
-FAILED() {
-  local msg=$1
-  local code=${2-1} # default exit status 1
-  msg "${RED}[FAILED]${NOFORMAT} ${msg}"
-  exit "$code"
-}
-
 command_exists() {
   command -v "$@" >/dev/null 2>&1
 }
@@ -46,6 +19,11 @@ get_distribution() {
 check_runas_root() {
   if [ "$(id -u)" == "0" ]; then
     ERROR "Please run this script as normal user, not root."
+    exit 1
+  fi
+
+  if ! command_exists sudo; then
+    ERROR "No sudo command found, please install sudo and add your user to sudoers."
     exit 1
   fi
 
@@ -121,22 +99,4 @@ detect_docker_socket() {
     exit 1
   fi
   echo "$socket"
-}
-
-debug_disable() {
-  # Disable output to debug message
-  {
-    if $DEBUG; then
-      set +x
-    fi
-  } 2>/dev/null
-}
-
-debug_enable() {
-  # Enable output to debug message
-  {
-    if $DEBUG; then
-      set -x
-    fi
-  } 2>/dev/null
 }

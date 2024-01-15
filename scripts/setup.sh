@@ -4,8 +4,8 @@ set -euo pipefail
 
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
-source "$base_dir"/scripts/common.sh
-source "$base_dir"/scripts/ascii.sh
+source "$base_dir"/common.sh
+source "$base_dir"/library/ascii.sh
 
 COMMAND_CHECK_FLAG="$base_dir"/.checked
 
@@ -13,11 +13,10 @@ usage() {
   cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [OPTION]...
 
-Install III DevOps Community.
+Install III DevOps Community version.
 
 Miscellaneous:
   -h, --help                Print this help and exit
-  -v, --verbose             Print script debug info
 EOF
   exit 21
 }
@@ -26,7 +25,6 @@ parse_params() {
   while :; do
     case "${1-}" in
     -h | --help) usage ;;
-    -v | --verbose) DEBUG=true ;;
     -?*) FAILED "Unknown option: $1" ;;
     *) break ;;
     esac
@@ -37,7 +35,7 @@ parse_params() {
 command_check() {
   if [[ -f $COMMAND_CHECK_FLAG ]]; then
     INFO "✅ Commands already checked!"
-    INFO "💡 To re-run the commands check, remove the file"
+    INFO "💡 To re-run the commands check, remove file:"
     INFO "   ${WHITE}${COMMAND_CHECK_FLAG}${NOFORMAT}"
     return
   fi
@@ -177,18 +175,18 @@ requirements_check() {
 
   INFO "📄 Copying sample files..."
 
-  mkdir -p "$base_dir"/generate
+  mkdir -p "$PROJECT_DIR"/generate
 
   # Copy static files
-  if [[ ! -f "$base_dir"/generateredis.conf ]]; then
-    cp "$base_dir"/sample/redis.conf "$base_dir"/generate
+  if [[ ! -f "$PROJECT_DIR"/generateredis.conf ]]; then
+    cp "$PROJECT_DIR"/sample/redis.conf "$PROJECT_DIR"/generate
   fi
 
-  if [[ ! -f "$base_dir"/generate/redmine-configuration.yml ]]; then
-    cp "$base_dir"/sample/redmine-configuration.yml "$base_dir"/generate
+  if [[ ! -f "$PROJECT_DIR"/generate/redmine-configuration.yml ]]; then
+    cp "$PROJECT_DIR"/sample/redmine-configuration.yml "$PROJECT_DIR"/generate
   fi
 
-  cp "$base_dir"/sample/redmine.sql.template "$base_dir"/generate/redmine.sql
+  cp "$PROJECT_DIR"/sample/redmine.sql.template "$PROJECT_DIR"/generate/redmine.sql
   touch "$III_ENV"
 
   INFO "✅ Sample files copied!"
@@ -206,12 +204,12 @@ requirements_check() {
 
   AUTHORITY="$(get_service_authority "redmine")"
 
-  sed -i "s|{{hashed_password}}|$HASHED_PWD|g" "$base_dir"/generate/redmine.sql
-  sed -i "s|{{salt}}|$SALT|g" "$base_dir"/generate/redmine.sql
-  sed -i "s|{{api_key}}|$API_KEY|g" "$base_dir"/generate/redmine.sql
-  sed -i "s|{{devops_domain_name}}|$AUTHORITY|g" "$base_dir"/generate/redmine.sql
+  sed -i "s|{{hashed_password}}|$HASHED_PWD|g" "$PROJECT_DIR"/generate/redmine.sql
+  sed -i "s|{{salt}}|$SALT|g" "$PROJECT_DIR"/generate/redmine.sql
+  sed -i "s|{{api_key}}|$API_KEY|g" "$PROJECT_DIR"/generate/redmine.sql
+  sed -i "s|{{devops_domain_name}}|$AUTHORITY|g" "$PROJECT_DIR"/generate/redmine.sql
 
-  chmod 644 "$base_dir"/generate/redmine.sql
+  chmod 644 "$PROJECT_DIR"/generate/redmine.sql
 
   INFO "🔑 Redmine API key: ${ORANGE}$API_KEY${NOFORMAT}"
   variable_write "REDMINE_API_KEY" "$API_KEY"
@@ -226,6 +224,7 @@ start_services() {
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
     --no-deps \
+    --quiet-pull \
     --remove-orphans
 
   INFO "🌟 Services started!"
