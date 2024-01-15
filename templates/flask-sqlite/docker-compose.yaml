@@ -1,0 +1,23 @@
+# if dont want to mess with your os env
+version: '3.1'
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 5000
+  # 如果沒有要跑Postman-collection(newman)的話可以註解掉下方功能
+  postman_collection:
+    image: postman/newman
+    depends_on:
+      - web
+    volumes:
+      - ./app:/etc/postman:rw
+    command:
+      - "run"
+      - "/etc/postman/postman_collection_local.json"
+      - "--reporters"
+      - "junit"
+      - "--reporter-junit-export=/etc/postman/newman-report.xml"

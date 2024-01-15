@@ -1,0 +1,46 @@
+stages:
+- initial
+- scan
+- build
+- deploy
+- test
+- publish
+
+include:
+- local: '.gitlab-ci.yml'
+
+squash-commits:
+  stage: publish
+  image: alpine/git
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: clone
+  before_script:
+    - git config --global user.email "gitlab-ci@dev7.iiidevops.org"
+    - git config --global user.name "GitLab CI"
+  script:
+    - set -euo pipefail
+
+    - git branch $STAGE_BRANCH || echo "staging branch already exists"
+    - git checkout $STAGE_BRANCH
+
+    - PREVIOUS_TAG=$(git describe --tags --abbrev=0 || git rev-list --max-parents=0 HEAD)
+    - SECOND_TAG=$(git describe --tags --abbrev=0 "${PREVIOUS_TAG}"^ || git rev-list --max-parents=0 HEAD)
+
+    - git reset --soft "${SECOND_TAG}"
+
+    - |
+      rm common.yaml
+      cp iiidevops/.gitlab-ci.yml.tmp .gitlab-ci.yml 
+      git add -A
+      git commit -m "chore: squash commits between ${SECOND_TAG} and ${PREVIOUS_TAG}"
+      git tag -a "${PREVIOUS_TAG}" -m "chore: release ${PREVIOUS_TAG}" --force
+      git checkout $DEVELOP_BRANCH
+      git merge -X theirs $STAGE_BRANCH --no-edit
+
+    - |
+      git push "https://gitlab-ci-token:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" $STAGE_BRANCH --force --tags
+      git push "https://gitlab-ci-token:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" $DEVELOP_BRANCH
+  rules:
+    - if: $CI_COMMIT_TAG && $GITLAB_USER_NAME != "Shared Token For Bot"
+

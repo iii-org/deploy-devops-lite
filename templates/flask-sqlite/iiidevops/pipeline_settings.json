@@ -1,0 +1,6 @@
+{
+  "name": "Python-Flask-SQLite",
+  "description": "Flask / Sqlite <a class='el-link el-link--primary' href='https://github.com/iiidevops-v2-templates/ci-flask-sqlite-todo/blob/master/README.md' target='_blank'>Todo 範本說明</a><hr /><ul><li><strong>v2.0</strong>:更新CI自動化腳本</li></ul>",
+  "arguments": [
+  ]
+}

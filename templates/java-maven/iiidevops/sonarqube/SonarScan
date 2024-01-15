@@ -1,0 +1,16 @@
+echo '========== SonarQube(Maven) =========='
+
+apt-get update && apt-get install -y maven
+
+cd app
+mvn install
+
+mvn clean verify sonar:sonar \
+    -Dsonar.host.url=$SONAR_HOST_URL \
+    -Dsonar.projectKey=$CI_PROJECT_NAME \
+    -Dsonar.projectName=$CI_PROJECT_NAME \
+    -Dsonar.projectVersion=$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA \
+    -Dsonar.qualitygate.timeout=600 \
+    -Dsonar.qualitygate.wait=true \
+    -Dsonar.log.level=DEBUG \
+    -Dsonar.login=$SONAR_TOKEN

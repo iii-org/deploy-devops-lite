@@ -1,0 +1,24 @@
+{
+  "name": "Python-Flask-PostgreSQL",
+  "description": "Flask / Postgres: 11 <a class='el-link el-link--primary' href='https://github.com/iiidevops-templates/flask-postgres-todo/blob/master/README.md' target='_blank'>Todo 範本說明</a><hr /><ul>  <li><strong>v1.26</strong>:增加定義 SonarQube 與 Checkmarx 黑白名單功能</li>  <li><strong>v1.20</strong>:整合 rancher-cli 與 deployment-wait 至 iiidevops-cli</li>  <li><strong>v1.19</strong>:增加自動計算原始碼行數功能</li></ul>",
+  "arguments": [
+    {
+      "key": "db.username",
+      "display": "DB Username",
+      "default_value": "iiidevops",
+      "input_type": "text"
+    },
+    {
+      "key": "db.password",
+      "display": "DB Password",
+      "default_value": "DevOps_123",
+      "input_type": "password"
+    },
+    {
+      "key": "db.name",
+      "display": "DB Name",
+      "default_value": "todo_db",
+      "input_type": "text"
+    }
+  ]
+}

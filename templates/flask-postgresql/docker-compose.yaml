@@ -1,0 +1,45 @@
+# if dont want to mess with your os env
+version: '3.1'
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile.local
+    restart: always
+    depends_on:
+      - db
+    environment:
+      db_name: todo
+      db_username: postgres
+      db_password: IIIdevops123!
+      db_host: db
+    ports:
+      - 5000
+  db:
+    image: bitnami/postgresql:11-debian-10
+    restart: always
+    environment:
+      POSTGRESQL_DATABASE: todo
+      POSTGRESQL_PASSWORD: IIIdevops123!
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d:rw
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 8080
+  # 如果沒有要跑Postman-collection(newman)的話可以註解掉下方功能
+  postman_collection:
+    image: postman/newman
+    depends_on:
+      - web
+    volumes:
+      - ./app:/etc/postman:rw
+    command:
+      - "run"
+      - "/etc/postman/postman_collection_local.json"
+      - "--reporters"
+      - "junit"
+      - "--reporter-junit-export=/etc/postman/newman-report.xml"

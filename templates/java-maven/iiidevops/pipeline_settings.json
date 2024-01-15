@@ -1,0 +1,6 @@
+{
+  "name": "Java-Spring Boot(Maven)",
+  "description": "Maven 3.6.3-OpenJDK 15 / SpringBoot 2.3.3 / Tomcat jdk11 <a class='el-link el-link--primary' href='https://github.com/iiidevops-v2-templates/ci-spring-boot-maven-hello/blob/master/README.md' target='_blank'>簡易網頁範本說明</a><hr /><ul><li><strong>v2.0</strong>:更新CI自動化腳本</li></ul>",
+  "arguments": [
+  ]
+}
