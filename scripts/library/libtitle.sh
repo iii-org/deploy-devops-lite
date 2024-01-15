@@ -13,3 +13,7 @@ title_center() {
 
   printf '%*.*s %s %*.*s\n' 0 "$left" "$padding" "${color}${title}${NOFORMAT}" 0 "$right" "$padding"
 }
+
+full_sep() {
+  printf "%$(tput cols)s\n" | tr " " "="
+}

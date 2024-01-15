@@ -247,6 +247,7 @@ EOF
 }
 
 after_script() {
+  full_sep
   INFO "🎉 ${WHITE}III DevOps Community${NOFORMAT} is ready!"
   INFO "🎉 You can now visit ${WHITE}$(get_service_url "ui")${NOFORMAT} to start using it!"
   INFO "GitLab: ${WHITE}$(get_service_url "gitlab")${NOFORMAT}"
