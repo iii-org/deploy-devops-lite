@@ -258,6 +258,7 @@ main() {
   parse_params "$@"
 
   banner
+  full_sep
 
   check_runas_root
   check_distro
