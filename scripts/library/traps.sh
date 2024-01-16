@@ -58,7 +58,7 @@ trap_traceback() {
   fi
 
   ERROR "======================================================"
-  ERROR "All output is saved to: ${ORANGE}${LOG_OUTPUT}${NOFORMAT}"
+  ERROR "Logging files is located at: ${ORANGE}${LOG_FOLDER}${NOFORMAT}"
   ERROR "System info collected in: ${ORANGE}${LOG_DEVICE_INFO}${NOFORMAT}"
   ERROR "Please attach the log file(s) when reporting the issue."
 }

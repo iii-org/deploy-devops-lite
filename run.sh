@@ -7,17 +7,20 @@ LOG_FOLDER="${base_dir}/logs"
 
 usage() {
   cat <<EOF
-Usage: $(basename "${BASH_SOURCE[0]}") [OPTION]... [TARGET]...
+Usage: $(basename "${BASH_SOURCE[0]}") [TARGET]... [OPTION]...
 
 Basic run for III DevOps Community version.
 
-Available targets:
+Targets:
   setup       Setup III DevOps Community version (default)
   clean       Remove III DevOps Community version
   template    Update III DevOps templates to GitLab
   upgrade     Upgrade III DevOps Community version
   backup      Backup III DevOps Community version (not implemented)
   restore     Restore III DevOps Community version (not implemented)
+
+Options:
+  -h, --help  Print this help and exit
 EOF
   exit 0
 }
@@ -46,6 +49,7 @@ target_list=(
 
 # Find target in target_list
 if [[ ! " ${target_list[*]} " =~ \ ${target}\  ]]; then
+  echo -e "\033[1;31mInvalid target\033[0m: ${target}"
   usage
 fi
 

@@ -13,8 +13,7 @@ DEBUG=1
 
 LOG_LEVEL=${LOG_LEVEL:-${INFO}}
 LOG_FOLDER="${PROJECT_DIR}/logs"
-LOG_OUTPUT="${LOG_FOLDER}/output.log"
-export LOG_OUTPUT
+export LOG_FOLDER
 LOG_LOGGING="${LOG_FOLDER}/logging.log"
 LOG_DEVICE_INFO="${LOG_FOLDER}/device_info.log"
 export LOG_DEVICE_INFO
