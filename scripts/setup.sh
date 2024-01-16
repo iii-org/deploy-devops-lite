@@ -6,6 +6,7 @@ set -euo pipefail
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/common.sh
 source "$base_dir"/library/ascii.sh
+source "$base_dir"/library/libio.sh
 
 COMMAND_CHECK_FLAG="$base_dir"/.checked
 
@@ -262,6 +263,8 @@ main() {
 
   check_runas_root
   check_distro
+  perform_io_test
+
   command_check
   env_validate
   docker_get_version
