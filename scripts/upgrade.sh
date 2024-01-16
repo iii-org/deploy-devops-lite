@@ -113,12 +113,17 @@ update_via_git() {
 }
 
 update_via_tar() {
-  if [ ! -d "${PROJECT_DIR}" ]; then
-    mkdir "${PROJECT_DIR}"
-  fi
+  local temp_dir
+  local backup_location
+  temp_dir="$(mktemp -d)"
+  backup_location="${temp_dir}/original.bak"
 
-  cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
-  cd ..
+  cd "${temp_dir}" || FAILED "Failed to change directory to ${temp_dir}"
+
+  INFO "Backup old files..."
+  cp -R "${PROJECT_DIR}" "${backup_location}"
+
+  INFO "Files backup location: ${WHITE}${backup_location}${NOFORMAT}"
 
   INFO "Downloading latest release..."
 
@@ -128,8 +133,16 @@ update_via_tar() {
   INFO "Extracting files..."
   tar -xzf release.tar.gz
 
+  INFO "Removing old files..."
+  rm -rf "${PROJECT_DIR}"
+
   INFO "Copying files..."
   cp -rT deploy-devops-lite-master/ "${PROJECT_DIR}"
+
+  if [[ -d "${backup_location}/generate" ]]; then
+    INFO "Copying old generated files..."
+    cp -rT "${backup_location}/generate" "${PROJECT_DIR}/generate"
+  fi
 
   INFO "Cleaning up..."
   rm -rf deploy-devops-lite-master
