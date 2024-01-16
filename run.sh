@@ -7,17 +7,18 @@ LOG_FOLDER="${base_dir}/logs"
 
 usage() {
   cat <<EOF
-Usage: $(basename "${BASH_SOURCE[0]}") [TARGET]... [OPTION]...
+Usage: $(basename "${BASH_SOURCE[0]}") [TARGET]... [OPTION]... [ARGUMENT]...
 
 Basic run for III DevOps Community version.
 
 Targets:
-  setup       Setup III DevOps Community version (default)
-  clean       Remove III DevOps Community version
-  template    Update III DevOps templates to GitLab
-  upgrade     Upgrade III DevOps Community version
-  backup      Backup III DevOps Community version (not implemented)
-  restore     Restore III DevOps Community version (not implemented)
+  setup             Setup III DevOps Community version (default)
+  clean             Remove III DevOps Community version
+  template          Update III DevOps templates to GitLab
+  upgrade           Upgrade III DevOps Community version
+  runner            Add or remove GitLab runner
+  backup            Backup III DevOps Community version (not implemented)
+  restore           Restore III DevOps Community version (not implemented)
 
 Options:
   -h, --help  Print this help and exit
@@ -43,6 +44,7 @@ target_list=(
   "clean"
   "template"
   "upgrade"
+  "runner"
   "backup"
   "restore"
 )

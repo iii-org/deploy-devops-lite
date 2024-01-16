@@ -38,6 +38,25 @@ url_decode() {
   printf '%b' "${url_encoded//%/\\x}"
 }
 
+get_init_token() {
+  if [[ -z "${GITLAB_INIT_TOKEN:-}" ]]; then
+    # If not set, get from HEAD.env
+    if [[ ! -f "${PROJECT_DIR}/generate/HEAD.env" ]]; then
+      ERROR "Cannot find HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
+      exit 1
+    fi
+
+    source "${PROJECT_DIR}/generate/HEAD.env"
+
+    if [[ -z "${GITLAB_INIT_TOKEN:-}" ]]; then
+      ERROR "Cannot find GITLAB_INIT_TOKEN in HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
+      exit 1
+    else
+      variable_write "GITLAB_INIT_TOKEN" "${GITLAB_INIT_TOKEN}"
+    fi
+  fi
+  DEBUG "Using init token: ${ORANGE}${GITLAB_INIT_TOKEN}${NOFORMAT}"
+}
 
 check_runas_root() {
   if [ "$(id -u)" == "0" ]; then

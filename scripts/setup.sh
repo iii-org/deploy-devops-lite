@@ -80,7 +80,7 @@ env_exist_check() {
     if [[ -s $III_ENV ]]; then
       INFO "⏭️ Environment file is not empty, skip generating..."
       NOTICE "💡 If you wish to ${RED}re-install${NOFORMAT} ${WHITE}III DevOps Community${NOFORMAT}, run:"
-      NOTICE "   ${WHITE}rm $III_ENV && $PROJECT_DIR/setup.sh${NOFORMAT}"
+      NOTICE "   ${WHITE}$PROJECT_DIR/run.sh clean && $PROJECT_DIR/run.sh${NOFORMAT}"
       INFO "🛑 Stopping setup..."
       exit 0
     else

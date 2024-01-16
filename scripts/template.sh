@@ -350,21 +350,6 @@ main() {
   INFO "Import templates done!"
 }
 
-get_init_token() {
-  if [[ ! -n "${GITLAB_INIT_TOKEN:-}" ]]; then
-    # If not set, get from HEAD.env
-    if [[ ! -f "${PROJECT_DIR}/generate/HEAD.env" ]]; then
-      ERROR "Cannot find HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
-      exit 1
-    fi
-    source "${PROJECT_DIR}/generate/HEAD.env"
-    if [[ ! -n "${GITLAB_INIT_TOKEN:-}" ]]; then
-      ERROR "Cannot find GITLAB_INIT_TOKEN in HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
-      exit 1
-    fi
-  fi
-}
-
 while [[ "$#" -gt 0 ]]; do
   case $1 in
   -h | --help) usage ;;
