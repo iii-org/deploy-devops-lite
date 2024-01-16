@@ -11,7 +11,7 @@ IMPORT_ALL=1                               # 1: Install all scripts, 0: Install 
 IMPORT_TEMPLATES=()                        # List o
 UPDATE_REDIS=1                             # 0: Skip update redis, 1: Update redis
 GITHUB_TEMPLATE_USER="iiidevops-templates" # https://github.com/iiidevops-templates
-GITLAB_RUNNER="${DOCKER_COMPOSER:?} exec runner"
+GITLAB_RUNNER="${DOCKER_COMPOSE_COMMAND:?} exec runner"
 
 # Only for IP mode
 if [[ "${MODE:-}" = "IP" ]]; then
@@ -350,6 +350,21 @@ main() {
   INFO "Import templates done!"
 }
 
+get_init_token() {
+  if [[ ! -n "${GITLAB_INIT_TOKEN:-}" ]]; then
+    # If not set, get from HEAD.env
+    if [[ ! -f "${PROJECT_DIR}/generate/HEAD.env" ]]; then
+      ERROR "Cannot find HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
+      exit 1
+    fi
+    source "${PROJECT_DIR}/generate/HEAD.env"
+    if [[ ! -n "${GITLAB_INIT_TOKEN:-}" ]]; then
+      ERROR "Cannot find GITLAB_INIT_TOKEN in HEAD.env, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
+      exit 1
+    fi
+  fi
+}
+
 while [[ "$#" -gt 0 ]]; do
   case $1 in
   -h | --help) usage ;;
@@ -378,5 +393,6 @@ if ! $GITLAB_RUNNER curl -s -k "${URL_GITLAB}/api/v4/version" >/dev/null; then
   exit 1
 fi
 
+get_init_token
 INFO "Importing templates to GitLab, init token is: ${WHITE}${GITLAB_INIT_TOKEN}${NOFORMAT}"
 main

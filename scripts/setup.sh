@@ -224,7 +224,6 @@ start_services() {
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
     --no-deps \
-    --quiet-pull \
     --remove-orphans
 
   INFO "🌟 Services started!"

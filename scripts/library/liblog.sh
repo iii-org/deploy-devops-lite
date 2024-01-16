@@ -87,21 +87,17 @@ FAILED() {
 
 _LOG_STARTED() {
   if [[ -n "${PARENT_PID:-}" ]]; then
-    DEBUG "Parent ID exist: ${ORANGE}${PARENT_PID}${NOFORMAT}"
+    DEBUG " [PID] Parent: ${ORANGE}${PARENT_PID}${NOFORMAT}"
+    DEBUG " [PID] Self: ${ORANGE}$$${NOFORMAT}"
     return
   fi
 
   printf "%$(tput cols)s\n" | tr " " "=" >>"${LOG_LOGGING}"
   echo "New logging started at: $(date +"%Y/%m/%d %H:%M:%S [%z]")" >>"${LOG_LOGGING}"
 
-  #  tail -f "${LOG_OUTPUT}" --pid=$$ &
-  #  export LOG_PROCESS=$!
-  #
-  #  exec &>>"${LOG_OUTPUT}"
-
   PARENT_PID=$$
   export PARENT_PID
-  DEBUG "Parent PID: ${ORANGE}${PARENT_PID}${NOFORMAT}"
+  DEBUG "Parent process started in: ${ORANGE}${PARENT_PID}${NOFORMAT}"
 }
 
 collect_device_info() {

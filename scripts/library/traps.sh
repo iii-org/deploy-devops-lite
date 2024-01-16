@@ -12,7 +12,15 @@ trap_exit() {
   fi
 
   if [[ "$return_value" -eq 0 ]]; then
-    INFO "Script executed successfully"
+    DEBUG "Stopping script...[${ORANGE}$$${NOFORMAT}]"
+
+    if [[ -n "${PARENT_PID:-}" ]]; then
+      DEBUG " -> Parent PID: ${ORANGE}${PARENT_PID}${NOFORMAT}"
+    fi
+
+    if [[ "${PARENT_PID:-}" -eq "$$" ]]; then
+      INFO "Script executed successfully"
+    fi
   fi
 
   exit "$return_value"
