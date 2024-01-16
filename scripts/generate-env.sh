@@ -22,11 +22,11 @@ port_validator() {
   local port="$1"
   if [[ "$port" =~ ^[0-9]+$ ]]; then
     if [[ "$port" -lt 1 || "$port" -gt 65535 ]]; then
-      ERROR "Port number must be between 1 and 65535."
+      WARN "Port number must be between 1 and 65535."
       return 1
     fi
   else
-    ERROR "Port number must be a number."
+    WARN "Port number must be a number."
     return 1
   fi
 }
@@ -35,24 +35,24 @@ password_validator() {
   local password="$1"
   # If password is equal to '{{PASSWORD}}', then it's not set
   if [[ "$password" = '{{PASSWORD}}' ]]; then
-    ERROR "Password is not set."
+    WARN "Password is not set."
     return 1
   fi
 
   if [[ ${#password} -lt 8 ]]; then
-    ERROR "Password must be at least 8 characters."
+    WARN "Password must be at least 8 characters."
     return 1
   fi
 
   if [[ "${#password}" -gt 20 ]]; then
-    ERROR "Password must be less than 20 characters."
+    WARN "Password must be less than 20 characters."
     return 1
   fi
 
   if [[ "$password" =~ [[:lower:]] && "$password" =~ [[:upper:]] && "$password" =~ [[:digit:]] && "$password" =~ [[:punct:]] ]]; then
     return 0
   else
-    ERROR "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+    WARN "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     return 1
   fi
 }
@@ -60,21 +60,21 @@ password_validator() {
 account_validator() {
   local string="$1"
   if [[ ${#string} -lt 2 ]]; then
-    ERROR "Account must be at least 2 characters."
+    WARN "Account must be at least 2 characters."
     return 1
   fi
   if [[ ${#string} -gt 32 ]]; then
-    ERROR "Account must be less than 32 characters."
+    WARN "Account must be less than 32 characters."
     return 1
   fi
   if [[ "$string" = "admin" ]]; then
-    ERROR "Account name is not allowed to be admin."
+    WARN "Account name is not allowed to be admin."
     return 1
   fi
   # Account should only allow alphanumeric characters and underscore
   if [[ ! "$string" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,30}[a-zA-Z0-9]$ ]]; then
-    ERROR "Account must only contain alphanumeric characters and underscore."
-    ERROR " (rule: ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,30}[a-zA-Z0-9]$)"
+    WARN "Account must only contain alphanumeric characters and underscore."
+    WARN " (rule: ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,30}[a-zA-Z0-9]$)"
     return 1
   fi
 }
@@ -88,7 +88,7 @@ option_validator() {
       return 0
     fi
   done
-  ERROR "Invalid option. Must be one of: ${WHITE}${options[*]}${NOFORMAT}"
+  WARN "Invalid option. Must be one of: ${WHITE}${options[*]}${NOFORMAT}"
   return 1
 }
 
@@ -99,17 +99,17 @@ ip_validator() {
     # shellcheck disable=SC2206
     local -a a=($ip)
     if [[ ${#a[@]} -ne 4 ]]; then
-      ERROR "IP address must be in the form of x.x.x.x"
+      WARN "IP address must be in the form of x.x.x.x"
       return 1
     fi
     for i in "${a[@]}"; do
       if [[ "$i" -lt 0 || "$i" -gt 255 ]]; then
-        ERROR "Maximum value of each octet is 255"
+        WARN "Maximum value of each octet is 255"
         return 1
       fi
     done
   else
-    ERROR "IP address must be in the form of x.x.x.x"
+    WARN "IP address must be in the form of x.x.x.x"
     return 1
   fi
 }
@@ -119,7 +119,7 @@ email_validator() {
   if [[ "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
     return 0
   else
-    ERROR "Email address is not valid."
+    WARN "Email address is not valid."
     return 1
   fi
 }
@@ -127,7 +127,7 @@ email_validator() {
 socket_validator() {
   local socket="$1"
   if [[ ! -S "$socket" ]]; then
-    ERROR "Socket file does not exist."
+    WARN "Socket file does not exist."
     return 1
   fi
 }
@@ -276,7 +276,7 @@ ask_option() {
       if [[ "$option" -ge 1 ]] && [[ "$option" -le ${#options[@]} ]]; then
         option=${options[$((option - 1))]} # translate index to option
       else
-        ERROR "Invalid index. Please try again."
+        WARN "Invalid index. Please try again."
         continue
       fi
     fi
@@ -315,7 +315,7 @@ sync_passwords() {
   )
 
   for password in "${random_list[@]}"; do
-    if [[ "${!password:-}" = '{{PASSWORD}}' ]]; then
+    if [[ "${!password:-}" = '' ]] || [[ "${!password:-}" = '{{PASSWORD}}' ]]; then
       variable_write "$password" "$(generate_random_string 32)" true
     fi
   done
