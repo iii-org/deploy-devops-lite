@@ -1,7 +1,6 @@
-.initialized
+.checked
 
-HEAD.env
-redmine.sql
+generate/
 
 .idea/
 *.log

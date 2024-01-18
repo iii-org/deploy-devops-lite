@@ -8,7 +8,7 @@ source "$base_dir"/common.sh
 source "$base_dir"/library/ascii.sh
 source "$base_dir"/library/libio.sh
 
-COMMAND_CHECK_FLAG="$base_dir"/.checked
+COMMAND_CHECK_FLAG="${PROJECT_DIR}"/.checked
 
 usage() {
   cat <<EOF
