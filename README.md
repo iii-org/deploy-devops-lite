@@ -54,6 +54,7 @@ program.
 
 ### Step 3. Run the deployment program
 
+> [!NOTE]\
 > This step will take up to 10 minutes to complete.
 
 In this step, we will run the setup script.  
@@ -84,7 +85,9 @@ The upgrade script will automatically fetch the latest version of the deployment
 
 ## Uninstall
 
-> The uninstall script will remove all the docker containers, images, and volumes, it will **REMOVE ALL THE DATA**.
+> [!WARNING]\
+> The uninstall script will remove all the docker containers, images, and volumes.    
+> It will **REMOVE ALL THE DATA**.  
 > Please make sure you have backed up all the data.
 
 Run `./run.sh clean` to uninstall the III DevOps Community.
