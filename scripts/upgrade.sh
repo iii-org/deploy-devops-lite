@@ -51,7 +51,6 @@ migrate_old_generated() {
 }
 
 rerun_command() {
-  local target="${1:-}"
   if [[ "${BRANCH}" != "master" ]]; then
     INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh ${target} --branch ${BRANCH}${NOFORMAT}"
   else
@@ -80,7 +79,12 @@ migrate_old_env() {
     INFO "variable_write function not found, which is upgrade from old version."
     INFO "Re run upgrade script to generate new .env file."
     INFO "Run this command to upgrade:"
-    rerun_command "upgrade"
+    INFO "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
+    if [[ "${BRANCH}" != "master" ]]; then
+      INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
+    else
+      INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade${NOFORMAT}"
+    fi
     exit 0
   fi
 
@@ -114,7 +118,7 @@ migrate_old_env() {
   rm "${PROJECT_DIR}/generate/.env"
   INFO "Old environment file is migrated to new version."
   INFO "Please re-run command to start services."
-  rerun_command
+  INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh${NOFORMAT}"
   exit 0
 }
 
@@ -223,6 +227,9 @@ update_via_tar() {
 
   INFO "Removing old files..."
   rm -rf "${PROJECT_DIR}"
+
+  WARNING "${WHITE}${PROJECT_DIR}${NOFORMAT} is removed, refresh your shell by running:"
+  WARNING "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
 
   INFO "Copying files..."
   cp -rT deploy-devops-lite-${BRANCH}/ "${PROJECT_DIR}"
