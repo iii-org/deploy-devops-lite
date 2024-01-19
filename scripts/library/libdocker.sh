@@ -59,7 +59,7 @@ docker_get_version() {
   if docker compose version &>/dev/null; then
     # Docker Compose version v2.19.1
     DOCKER_COMPOSER="docker compose"
-    DOCKER_COMPOSE_VERSION="$(docker compose version | grep -oP '(?<=version )[^,]+')"
+    DOCKER_COMPOSE_VERSION="$(docker compose version --short)"
   elif docker-compose --version &>/dev/null; then
     # docker-compose version X.Y.Z, build <identifier>
     DOCKER_COMPOSER="docker-compose"

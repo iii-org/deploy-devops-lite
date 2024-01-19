@@ -136,6 +136,50 @@ fetch_latest_upgrade_script() {
   INFO "${GREEN}[OK]${NOFORMAT} Upgrade script is up-to-date!"
 }
 
+# version_compare compares two version strings (either SemVer (Major.Minor.Path),
+# or CalVer (YY.MM) version strings. It returns 0 (success) if version A is newer
+# or equal than version B, or 1 (fail) otherwise. Patch releases and pre-release
+# (-alpha/-beta) are not taken into account
+#
+# examples:
+#
+# version_compare 23.0.0 20.10 // 0 (success)
+# version_compare 23.0 20.10   // 0 (success)
+# version_compare 20.10 19.03  // 0 (success)
+# version_compare 20.10 20.10  // 0 (success)
+# version_compare 19.03 20.10  // 1 (fail)
+version_compare() (
+  yy_a="$(echo "$1" | cut -d'.' -f1)"
+  yy_b="$(echo "$2" | cut -d'.' -f1)"
+  if [ "$yy_a" -lt "$yy_b" ]; then
+    return 1
+  fi
+  if [ "$yy_a" -gt "$yy_b" ]; then
+    return 0
+  fi
+  mm_a="$(echo "$1" | cut -d'.' -f2)"
+  mm_b="$(echo "$2" | cut -d'.' -f2)"
+
+  # trim leading zeros to accommodate CalVer
+  mm_a="${mm_a#0}"
+  mm_b="${mm_b#0}"
+
+  if [ "${mm_a:-0}" -lt "${mm_b:-0}" ]; then
+    return 1
+  fi
+
+  return 0
+)
+
+docker_version_check() {
+  DOCKER_COMPOSE_VERSION="$(docker compose version --short)"
+
+  # If docker compose version below 2.20, failed the upgrade
+  if version_compare "2.20" "$DOCKER_COMPOSE_VERSION"; then
+    FAILED "Docker compose version is too old, please upgrade to 2.20 or above."
+  fi
+}
+
 done_script() {
   cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
   migrate_old_env
@@ -150,6 +194,8 @@ done_script() {
   else
     docker_get_version
   fi
+
+  docker_version_check
 
   $DOCKER_COMPOSE_COMMAND pull
   $DOCKER_COMPOSE_COMMAND up \
