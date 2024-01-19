@@ -50,6 +50,15 @@ migrate_old_generated() {
   fi
 }
 
+rerun_command() {
+  local target="${1:-}"
+  if [[ "${BRANCH}" != "master" ]]; then
+    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh ${target} --branch ${BRANCH}${NOFORMAT}"
+  else
+    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh ${target}${NOFORMAT}"
+  fi
+}
+
 migrate_old_env() {
   if [ ! -f "${PROJECT_DIR}/generate/.env" ]; then
     return
@@ -71,11 +80,7 @@ migrate_old_env() {
     INFO "variable_write function not found, which is upgrade from old version."
     INFO "Re run upgrade script to generate new .env file."
     INFO "Run this command to upgrade:"
-    if [[ "${BRANCH}" != "master" ]]; then
-      INFO "▶ ${YELLOW}./run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
-    else
-      INFO "▶ ${YELLOW}./run.sh upgrade${NOFORMAT}"
-    fi
+    rerun_command "upgrade"
     exit 0
   fi
 
@@ -107,7 +112,10 @@ migrate_old_env() {
   rpl_rw "DOCKER_SOCKET"
 
   rm "${PROJECT_DIR}/generate/.env"
-  INFO "Done!"
+  INFO "Old environment file is migrated to new version."
+  INFO "Please re-run command to start services."
+  rerun_command
+  exit 0
 }
 
 fetch_latest_upgrade_script() {
