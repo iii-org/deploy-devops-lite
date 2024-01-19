@@ -53,6 +53,7 @@ old_env_detect() {
     wget -q -O ${DEBUG_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/liblog.sh"
     # shellcheck source=scripts/library/liblog.sh
     source "${DEBUG_SCRIPT}"
+    mkdir "${PROJECT_DIR}/logs"
     unset DEBUG_SCRIPT
   else
     INFO "Log is already loaded"
