@@ -1,6 +1,10 @@
-# Deploy Devops Lite
+# III DevOps Community
 
-[English](README.md) | [繁體中文](README.zh_TW.md)
+[English](README.md) | [繁體中文](docs/README.zh_TW.md)
+
+## Table of Contents
+
+[toc]
 
 ## System requirements
 
@@ -10,13 +14,15 @@
     - 2 vCPU
     - 8 GB RAM
     - 60 GB disk space (SSD recommended)
+- IO speed
+    - 300 MB/s
 
 ### Before we start...
 
-We should prepare the info we need to deploy the devops lite.
+We need to prepare the following information before we start the deployment program.
 
-- [ ] The IP address of the server (e.g. 61.67.2.30)
-- [ ] The account and password of the server (not root but have sudo permission) (e.g. iiidouser)
+- [ ] The IP address of the server (Any IP address that can be accessed by the browser)
+- [ ] The account and password of the server (not root but **must** have sudo permission) (e.g. `ubuntu`)
 
 ## Installation
 
@@ -25,33 +31,21 @@ We should prepare the info we need to deploy the devops lite.
 - Fetching the latest version of the deployment program
 
     ```shell
-    git clone https://github.com/iii-org/deploy-devops-lite.git Lite
+    git clone https://github.com/iii-org/deploy-devops-lite.git IIIDevOps
     ```
 
-- Or, download the [upgrade.sh](https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh)
-
-  ```shell
-  wget https://raw.githubusercontent.com/iii-org/deploy-devops-lite/master/script/upgrade.sh -O upgrade.sh
-  chmod +x upgrade.sh
-  
-  ./upgrade.sh
-  ```
-
-### Step 2. Setting up the environment variables
+### Step 2. Setting up the environment variables (Optional)
 
 - If you wish setting up the environment variables before running the deployment program, you can run the following
 
     ```shell
     # Change to the project root directory
-    cd Lite
-    ./script/generate_env.sh all
+    cd IIIDevOps
+    ./scripts/generate-env.sh all
     ```
 
-- IP_ADDR: Set the current server IP address (e.g. `10.0.0.6`)
-- III_ADMIN_LOGIN: Set the admin account of the DevOps Lite, cannot be `admin` or `root` (e.g. `sysadmin`)
-- III_ADMIN_EMAIL: Set the email of the admin account (e.g. `sysadmin@iiidevops.org`)
-- III_ADMIN_PASSWORD: Set the password of the admin account (Should be at least 8 characters, including uppercase,
-  lowercase, numbers, and special characters)
+During the execution of the script, it will prompt you to enter the environment variables.  
+If the question followed by a default value, you can press `<Enter>` to use the default value.
 
 You can check the environment variables in the `.env` file.
 
@@ -70,19 +64,27 @@ them.
 To run the script, make sure you are in the project root directory, and run the following command
 
 ```shell
-./setup.sh
+./run.sh
 ```
 
 If any error occurs, it will show the message starting with `[ERROR]` and exit the script.  
-If the script runs successfully, it will show the message below
+If the script runs successfully, it will show the message something like
 
 ```
-[NOTICE] Script executed successfully
+[INFO] XX:XX:XX Script executed successfully
 ```
 
-You can open the browser and visit `http://<IP_ADDRESS>` to check if the DevOps Lite has been deployed successfully.
+You can open the browser and visit `http://<IP_ADDRESS>` to check if the III DevOps Community has been deployed
+successfully.
 
 ## Upgrade
 
-Run `script/upgrade.sh` to upgrade the DevOps Lite.  
-The script will automatically pull the latest code from the repository and run the deployment program.
+Run `./run.sh upgrade` to upgrade the III DevOps Community.  
+The upgrade script will automatically fetch the latest version of the deployment program and run it.
+
+## Uninstall
+
+> The uninstall script will remove all the docker containers, images, and volumes, it will **REMOVE ALL THE DATA**.
+> Please make sure you have backed up all the data.
+
+Run `./run.sh clean` to uninstall the III DevOps Community.

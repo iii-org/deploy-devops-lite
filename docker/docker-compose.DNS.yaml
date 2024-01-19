@@ -1,0 +1,108 @@
+# THIS FILE IS EXTENDS BY docker-compose.yaml
+
+services:
+  traefik:
+    extends:
+      service: traefik
+      file: docker-compose.base.yaml
+
+  gitlab:
+    extends:
+      service: gitlab
+      file: docker-compose.base.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitlab.rule=Host(`gitlab-demo.idevsecops.tw`)"
+      - "traefik.http.routers.gitlab.tls=true"
+      - "traefik.http.routers.gitlab.entrypoints=websecure"
+      - "traefik.http.routers.gitlab.service=gitlab"
+      - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab-demo.idevsecops.tw'
+        prometheus_monitoring['enable'] = false
+        gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
+        unicorn['worker_processes'] = 2
+        sidekiq['concurrency'] = 9
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+    hostname: "gitlab-demo.idevsecops.tw"
+
+  runner:
+    extends:
+      service: runner
+      file: docker-compose.base.yaml
+    environment:
+      - CI_SERVER_URL=http://gitlab/
+      - DOCKER_NETWORK_MODE=iiidevops-lite-network
+
+  sonarqube-db:
+    extends:
+      service: sonarqube-db
+      file: docker-compose.base.yaml
+
+  sonarqube:
+    extends:
+      service: sonarqube
+      file: docker-compose.base.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarqube.rule=Host(`sonarqube-demo.idevsecops.tw`)"
+      - "traefik.http.routers.sonarqube.tls=true"
+      - "traefik.http.routers.sonarqube.entrypoints=websecure"
+      - "traefik.http.routers.sonarqube.service=sonarqube"
+      - "traefik.http.services.sonarqube.loadbalancer.server.port=9000"
+
+  redmine-db:
+    extends:
+      service: redmine-db
+      file: docker-compose.base.yaml
+
+  redmine:
+    extends:
+      service: redmine
+      file: docker-compose.base.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redmine.rule=Host(`redmine-demo.idevsecops.tw`)"
+      - "traefik.http.routers.redmine.tls=true"
+      - "traefik.http.routers.redmine.entrypoints=websecure"
+      - "traefik.http.routers.redmine.service=redmine"
+      - "traefik.http.services.redmine.loadbalancer.server.port=3000"
+
+  redis:
+    extends:
+      service: redis
+      file: docker-compose.base.yaml
+
+  iii-devops-lite-db:
+    extends:
+      service: iii-devops-lite-db
+      file: docker-compose.base.yaml
+
+  iii-devops-lite-api:
+    extends:
+      service: iii-devops-lite-api
+      file: docker-compose.base.yaml
+
+  iii-devops-lite-api-worker:
+    extends:
+      service: iii-devops-lite-api-worker
+      file: docker-compose.base.yaml
+
+  iii-devops-lite-api-beat:
+    extends:
+      service: iii-devops-lite-api-beat
+      file: docker-compose.base.yaml
+
+  iii-devops-lite-ui:
+    extends:
+      service: iii-devops-lite-ui
+      file: docker-compose.base.yaml
+    labels:
+      - "autoheal=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.devops.rule=Host(`demo.idevsecops.tw`)"
+      - "traefik.http.routers.devops.tls=true"
+      - "traefik.http.routers.devops.entrypoints=websecure"
+      - "traefik.http.routers.devops.service=devops"
+      - "traefik.http.services.devops.loadbalancer.server.port=80"

@@ -1,0 +1,7 @@
+# FILE HOLDER to prevent error when run docker command
+
+services:
+  alpine:
+    image: alpine
+    container_name: alpine
+    command: echo "WRONG CONFIG"

@@ -5,14 +5,43 @@ set -euo pipefail
 # Load common functions
 base_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$base_dir"/common.sh
+docker_get_version
 
 IMPORT_ALL=1                               # 1: Install all scripts, 0: Install only selected scripts
 IMPORT_TEMPLATES=()                        # List o
 UPDATE_REDIS=1                             # 0: Skip update redis, 1: Update redis
 GITHUB_TEMPLATE_USER="iiidevops-templates" # https://github.com/iiidevops-templates
-GITLAB_URL=gitlab:${GITLAB_PORT}
-GITLAB_INIT_TOKEN=""
-GITLAB_RUNNER="docker compose exec runner"
+GITLAB_RUNNER="${DOCKER_COMPOSE_COMMAND:?} exec runner"
+
+# Only for IP mode
+if [[ "${MODE:-}" = "IP" ]]; then
+  DOMAIN_GITLAB="gitlab:${GITLAB_PORT}"
+  URL_GITLAB="http://${DOMAIN_GITLAB}"
+fi
+
+usage() {
+  cat <<EOF
+Usage: ${0##*/} [OPTIONS]...
+
+Add GitLab template to III DevOps.
+
+Options:
+  -h, --help                Print this help and exit
+  -T, --token               GitLab init token. If not set, will auto get from HEAD.env
+  -t, --template            III DevOps GitLab template. Default: all
+
+Example:
+  ${0##*/}
+    # Running all template in templates and use GitLab init token from HEAD.env
+
+  ${0##*/} -T 1234567890abcdef1234 -t "gitlab-ci-templates"
+    # Running template gitlab-ci-templates and pass GitLab init token
+
+  ${0##*/} -t "gitlab-ci-templates" -t "gitlab-ci-templates-2"
+    # Running two templates and use GitLab init token from HEAD.env
+EOF
+  exit 21
+}
 
 gitlab_runner() {
   local timeout=120
@@ -22,7 +51,7 @@ gitlab_runner() {
       exit 1
     fi
 
-    if $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
+    if $GITLAB_RUNNER curl -s -k "${URL_GITLAB}/api/v4/version" >/dev/null; then
       break
     fi
 
@@ -66,7 +95,7 @@ gitlab_get_id_or_path() {
 gitlab_get_group_id() {
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request GET "http://gitlab:$GITLAB_PORT/api/v4/groups?search=$1" \
+      --request GET "${URL_GITLAB}/api/v4/groups?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
 
@@ -79,7 +108,7 @@ gitlab_get_group_id() {
 gitlab_get_project() {
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
+      --request GET "${URL_GITLAB}/api/v4/projects?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
 
@@ -97,7 +126,7 @@ gitlab_get_project() {
 gitlab_get_project_id() {
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request GET "http://gitlab:$GITLAB_PORT/api/v4/projects?search=$1" \
+      --request GET "${URL_GITLAB}/api/v4/projects?search=$1" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
 
@@ -112,7 +141,7 @@ gitlab_get_group_projects() {
 
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request GET "http://gitlab:$GITLAB_PORT/api/v4/groups/$id_or_path/projects?per_page=100" \
+      --request GET "${URL_GITLAB}/api/v4/groups/$id_or_path/projects?per_page=100" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json"
   )
@@ -126,7 +155,7 @@ gitlab_create_group() {
   data="{\"name\": \"$1\", \"path\": \"$1\", \"visibility\": \"public\"}"
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request POST "http://gitlab:$GITLAB_PORT/api/v4/groups" \
+      --request POST "${URL_GITLAB}/api/v4/groups" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json" \
       --data "$data"
@@ -135,7 +164,7 @@ gitlab_create_group() {
   # Check response, if already exist, skip
   # Example string: {"message":"Failed to save group {:path=>[\"has already been taken\"]}"}
   if [[ "$GITLAB_RESPONSE" =~ "has already been taken" ]]; then
-    INFO "Group \e[97m$1\e[0m already exist, skip"
+    INFO "Group ${WHITE}$1${NOFORMAT} already exist, skip"
     return
   fi
 
@@ -143,7 +172,7 @@ gitlab_create_group() {
   # Example string: {"id":4,"web_url":"http://10.20.0.94:32080/groups/local-templates","name":"local-templates","path":"local-templates","description":"","visibility":"public","share_with_group_lock":false,"require_two_factor_authentication":false,"two_factor_grace_period":48,"project_creation_level":"developer","auto_devops_enabled":null,"subgroup_creation_level":"maintainer","emails_disabled":null,"mentions_disabled":null,"lfs_enabled":true,"default_branch_protection":2,"avatar_url":null,"request_access_enabled":true,"full_name":"local-templates","full_path":"local-templates","created_at":"2023-03-07T02:34:33.678Z","parent_id":null,"shared_with_groups":[],"projects":[],"shared_projects":[]}
   r_id="$(echo "$GITLAB_RESPONSE" | jq -r '.id')"
   if [ -n "$r_id" ] && [ "$r_id" != "null" ]; then
-    INFO "Group \e[97m$1\e[0m created"
+    INFO "Group ${WHITE}$1${NOFORMAT} created"
   else
     gitlab_parse_error "$GITLAB_RESPONSE"
   fi
@@ -160,20 +189,20 @@ gitlab_create_project() {
   # Deprecated: Use builds_access_level instead of jobs_enabled
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request POST "http://gitlab:$GITLAB_PORT/api/v4/projects" \
+      --request POST "${URL_GITLAB}/api/v4/projects" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN" \
       --header "Content-Type: application/json" \
       --data '{"name": "'"$1"'", "namespace_id": "'"$2"'", "visibility": "public", "jobs_enabled": "'"$default_jobs_enabled"'"}'
   )
 
   if [[ "$GITLAB_RESPONSE" =~ "has already been taken" ]]; then
-    INFO "Project \e[97m$1\e[0m already exist, skip"
+    INFO "Project ${WHITE}$1${NOFORMAT} already exist, skip"
     return
   fi
 
   r_id="$(echo "$GITLAB_RESPONSE" | jq -r '.id')"
   if [ -n "$r_id" ] && [ "$r_id" != "null" ]; then
-    INFO "Project \e[97m$1\e[0m created"
+    INFO "Project ${WHITE}$1${NOFORMAT} created"
   else
     gitlab_parse_error "$GITLAB_RESPONSE"
   fi
@@ -184,38 +213,16 @@ gitlab_delete_project() {
 
   GITLAB_RESPONSE=$(
     $GITLAB_RUNNER curl -s -k \
-      --request DELETE "http://gitlab:$GITLAB_PORT/api/v4/projects/$id_or_path" \
+      --request DELETE "${URL_GITLAB}/api/v4/projects/$id_or_path" \
       --header "PRIVATE-TOKEN: $GITLAB_INIT_TOKEN"
   )
 
   gitlab_parse_error "$GITLAB_RESPONSE"
 }
 
-usage() {
-  echo "Add GitLab templates."
-  echo
-  echo "Usage: $(basename "$0") [OPTIONS] ..."
-  echo
-  echo "Options:"
-  echo "  -h,  --help      print this help"
-  echo "  -T,  --token     GitLab init token, if not set, will auto get from HEAD.env"
-  echo "  -t,  --template  The template to add to gitlab"
-  echo ""
-  echo "Example:"
-  echo "  $(basename "$0")"
-  echo "    # Running all template in templates and use GitLab init token from HEAD.env"
-  echo
-  echo "  $(basename "$0") -T 1234567890abcdef1234 -t \"gitlab-ci-templates\""
-  echo "    # Running template gitlab-ci-templates and pass GitLab init token"
-  echo
-  echo "  $(basename "$0") -t \"gitlab-ci-templates\" -t \"gitlab-ci-templates-2\""
-  echo "    # Running two templates and use GitLab init token from HEAD.env"
-  exit 21
-}
-
 prepare_gitlab_groups() {
   local gitlab_instance_credentials
-  gitlab_instance_credentials="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@$GITLAB_URL"
+  gitlab_instance_credentials="http://root:$(url_encode "$GITLAB_ROOT_PASSWORD")@${DOMAIN_GITLAB}"
 
   $GITLAB_RUNNER sh -c "if [ -f ~/.git-credentials ]; then \
     if grep -q \"$gitlab_instance_credentials\" ~/.git-credentials; then \
@@ -234,7 +241,7 @@ prepare_gitlab_groups() {
 }
 
 main() {
-  local output_log="${project_dir:?}"/.executed_to_runner.log
+  local output_log="${PROJECT_DIR:?}"/.executed_to_runner.log
 
   if [ -f "$output_log" ]; then
     rm "$output_log"
@@ -247,7 +254,7 @@ main() {
 
   if [ "$IMPORT_ALL" -eq 1 ]; then
     # Set _templates to each directory in template directory
-    while IFS='' read -r line; do _templates+=("$line"); done < <(ls -d "$project_dir"/templates/*)
+    while IFS='' read -r line; do _templates+=("$line"); done < <(ls -d "${PROJECT_DIR}"/templates/*)
     # All: Delete all projects in group
     response_json="$(gitlab_get_group_projects "$GITHUB_TEMPLATE_USER")"
 
@@ -262,8 +269,8 @@ main() {
   else
     # Delete projects in gitlab
     for template in "${IMPORT_TEMPLATES[@]}"; do
-      if [ -d "$project_dir"/templates/"$template" ]; then
-        INFO "Importing template: \e[97m$template\e[0m"
+      if [ -d "${PROJECT_DIR}"/templates/"$template" ]; then
+        INFO "Importing template: ${WHITE}$template${NOFORMAT}"
         project="$(gitlab_get_project "$template")"
         project_id="$(echo "$project" | jq -r '.id')"
 
@@ -274,9 +281,9 @@ main() {
         fi
 
         # Add to array
-        _templates+=("$project_dir"/templates/"$template")
+        _templates+=("${PROJECT_DIR}"/templates/"$template")
       else
-        ERROR "Cannot find template: \e[97m$template\e[0m"
+        ERROR "Cannot find template: ${WHITE}$template${NOFORMAT}"
         # Remove from array
         IMPORT_TEMPLATES=("${IMPORT_TEMPLATES[@]/$template/}")
       fi
@@ -304,20 +311,20 @@ main() {
       if [ ! -d .git ]; then
         # If not exist, init git
         RUNNER_COMMANDS+="git init; "
-        RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+        RUNNER_COMMANDS+="git remote add origin ${URL_GITLAB}/$GITHUB_TEMPLATE_USER/$dir_name.git; "
         RUNNER_COMMANDS+="git add .; "
         RUNNER_COMMANDS+="git commit -m \"Initial commit\"; "
         RUNNER_COMMANDS+="git push -u origin master; "
       else
-        # If git remote url is $GITLAB_URL, skip
-        if [ "$(git remote get-url origin)" = "http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git" ]; then
-          INFO "Git remote \e[97m$dir_name\e[0m already set, skip change remote url"
+        # If git remote url is same, skip
+        if [ "$(git remote get-url origin)" = "${URL_GITLAB}/$GITHUB_TEMPLATE_USER/$dir_name.git" ]; then
+          INFO "Git remote ${WHITE}$dir_name${NOFORMAT} already set, skip change remote url"
           RUNNER_COMMANDS+="git add .; "
           RUNNER_COMMANDS+="git commit -m \"Update template\"; "
         else
           # If exist, change remote url
           RUNNER_COMMANDS+="git remote rename origin old-origin; "
-          RUNNER_COMMANDS+="git remote add origin http://$GITLAB_URL/$GITHUB_TEMPLATE_USER/$dir_name.git; "
+          RUNNER_COMMANDS+="git remote add origin ${URL_GITLAB}/$GITHUB_TEMPLATE_USER/$dir_name.git; "
         fi
 
         RUNNER_COMMANDS+="git push -u origin --all; "
@@ -327,7 +334,7 @@ main() {
       echo "[RUNNER] $RUNNER_COMMANDS" >>"$output_log"
 
       # Return to root directory
-      cd "$project_dir" || ERROR "Cannot cd to $project_dir"
+      cd "${PROJECT_DIR}" || ERROR "Cannot cd to ${PROJECT_DIR}"
 
       # Execute commands in runner
       gitlab_runner sh -c "$RUNNER_COMMANDS" >>"$output_log"
@@ -365,24 +372,12 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-# Check if GITLAB_INIT_TOKEN is set
-if [ -z "$GITLAB_INIT_TOKEN" ]; then
-  # Check if file exist
-  if [ ! -f "$project_dir"/HEAD.env ]; then
-    ERROR "Cannot find HEAD.env, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
-    exit 1
-  fi
-
-  . "$project_dir"/HEAD.env
-
-  GITLAB_INIT_TOKEN="${GITLAB_PRIVATE_TOKEN:?Missing GITLAB_PRIVATE_TOKEN in HEAD.env}"
-fi
-
 # Check if GitLab is running
-if ! $GITLAB_RUNNER curl -s -k "http://$GITLAB_URL/api/v4/version" >/dev/null; then
-  ERROR "GitLab is not running, please run \e[97m${project_dir}/setup.sh\e[0m to start project"
+if ! $GITLAB_RUNNER curl -s -k "${URL_GITLAB}/api/v4/version" >/dev/null; then
+  ERROR "GitLab is not running, please run ${WHITE}${PROJECT_DIR}/run.sh${NOFORMAT} to start services."
   exit 1
 fi
 
-INFO "Importing templates to GitLab, init token is: \e[97m$GITLAB_INIT_TOKEN\e[0m"
+get_init_token
+INFO "Importing templates to GitLab, init token is: ${WHITE}${GITLAB_INIT_TOKEN}${NOFORMAT}"
 main
