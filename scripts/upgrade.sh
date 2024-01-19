@@ -51,12 +51,27 @@ old_env_detect() {
 
     INFO "Fetching log script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
     wget -q -O ${DEBUG_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/liblog.sh"
+    # Make sure logs folder exists
+    mkdir -p "${PROJECT_DIR}/logs"
     # shellcheck source=scripts/library/liblog.sh
     source "${DEBUG_SCRIPT}"
-    mkdir "${PROJECT_DIR}/logs"
     unset DEBUG_SCRIPT
   else
     INFO "Log is already loaded"
+  fi
+
+  # Check if docker_get_version function exists
+  if ! type docker_get_version >/dev/null 2>&1; then
+    local DOCKER_SCRIPT
+    DOCKER_SCRIPT="$(mktemp)"
+
+    INFO "Fetching docker script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
+    wget -q -O ${DOCKER_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/libdocker.sh"
+    # shellcheck source=scripts/library/libdocker.sh
+    source "${DOCKER_SCRIPT}"
+    unset DOCKER_SCRIPT
+  else
+    INFO "Docker script already loaded"
   fi
 }
 
