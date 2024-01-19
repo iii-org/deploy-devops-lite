@@ -21,60 +21,6 @@ EOF
   exit 21
 }
 
-old_env_detect() {
-  if [[ -n "${project_dir:-}" ]]; then
-    PROJECT_DIR="${project_dir}"
-  fi
-
-  if [[ -n "${bin_dir:-}" ]]; then
-    BINARY_DIR="${bin_dir}"
-  fi
-
-  # Load color.sh
-  if [[ -z "${WHITE:-}" ]]; then
-    local COLOR_SCRIPT
-    COLOR_SCRIPT="$(mktemp)"
-
-    INFO "Fetching color script from ${BRANCH} branch..."
-    wget -q -O ${COLOR_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/libcolor.sh"
-    # shellcheck source=scripts/library/libcolor.sh
-    source "${COLOR_SCRIPT}"
-    unset COLOR_SCRIPT
-  else
-    INFO "Color is already loaded"
-  fi
-
-  # Check if DEBUG function exists
-  if ! type DEBUG >/dev/null 2>&1; then
-    local DEBUG_SCRIPT
-    DEBUG_SCRIPT="$(mktemp)"
-
-    INFO "Fetching log script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
-    wget -q -O ${DEBUG_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/liblog.sh"
-    # Make sure logs folder exists
-    mkdir -p "${PROJECT_DIR}/logs"
-    # shellcheck source=scripts/library/liblog.sh
-    source "${DEBUG_SCRIPT}"
-    unset DEBUG_SCRIPT
-  else
-    INFO "Log is already loaded"
-  fi
-
-  # Check if docker_get_version function exists
-  if ! type docker_get_version >/dev/null 2>&1; then
-    local DOCKER_SCRIPT
-    DOCKER_SCRIPT="$(mktemp)"
-
-    INFO "Fetching docker script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
-    wget -q -O ${DOCKER_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/libdocker.sh"
-    # shellcheck source=scripts/library/libdocker.sh
-    source "${DOCKER_SCRIPT}"
-    unset DOCKER_SCRIPT
-  else
-    INFO "Docker script already loaded"
-  fi
-}
-
 migrate_old_generated() {
   if [[ -f "${PROJECT_DIR}/HEAD.env" ]]; then
     # Old version, update to generate folder
@@ -239,6 +185,7 @@ update_via_tar() {
 
   # TODO: RELEASE API: https://api.github.com/repos/iii-org/deploy-devops-lite/releases/latest
   INFO "Downloading latest release..."
+  DEBUG "URL:" "https://github.com/iii-org/deploy-devops-lite/archive/refs/heads/${BRANCH}.tar.gz"
   wget -q -O release.tar.gz "https://github.com/iii-org/deploy-devops-lite/archive/refs/heads/${BRANCH}.tar.gz"
 
   INFO "Extracting files..."
@@ -287,7 +234,60 @@ main() {
     shift $(($# > 0 ? 1 : 0))
   done
 
-  old_env_detect
+  {
+    if [[ -n "${project_dir:-}" ]]; then
+      PROJECT_DIR="${project_dir}"
+    fi
+
+    if [[ -n "${bin_dir:-}" ]]; then
+      BINARY_DIR="${bin_dir}"
+    fi
+
+    # Load color.sh
+    if [[ -z "${WHITE:-}" ]]; then
+      local COLOR_SCRIPT
+      COLOR_SCRIPT="$(mktemp)"
+
+      INFO "Fetching color script from ${BRANCH} branch..."
+      wget -q -O ${COLOR_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/libcolor.sh"
+      # shellcheck source=scripts/library/libcolor.sh
+      source "${COLOR_SCRIPT}"
+      unset COLOR_SCRIPT
+    else
+      INFO "Color is already loaded"
+    fi
+
+    # Check if DEBUG function exists
+    if ! type DEBUG >/dev/null 2>&1; then
+      # Skip download new scripts upgrade.sh
+      SCRIPT_UPGRADE=true
+      local DEBUG_SCRIPT
+      DEBUG_SCRIPT="$(mktemp)"
+
+      INFO "Fetching log script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
+      wget -q -O ${DEBUG_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/liblog.sh"
+
+      # shellcheck source=scripts/library/liblog.sh
+      source "${DEBUG_SCRIPT}"
+      unset DEBUG_SCRIPT
+    else
+      INFO "Log is already loaded"
+    fi
+
+    # Check if docker_get_version function exists
+    if ! type docker_get_version >/dev/null 2>&1; then
+      local DOCKER_SCRIPT
+      DOCKER_SCRIPT="$(mktemp)"
+
+      INFO "Fetching docker script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
+      wget -q -O ${DOCKER_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/library/libdocker.sh"
+      # shellcheck source=scripts/library/libdocker.sh
+      source "${DOCKER_SCRIPT}"
+      unset DOCKER_SCRIPT
+    else
+      INFO "Docker script already loaded"
+    fi
+  }
   DEBUG "Target branch: ${WHITE}${BRANCH}${NOFORMAT}"
   fetch_latest_upgrade_script
   migrate_old_generated

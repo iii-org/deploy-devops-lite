@@ -49,6 +49,11 @@ msg() {
     printf "$prefix_string %b\n" "${*:2}"
 
     timestamp=$(date +"%m/%d %H:%M:%S")
+
+    if [[ ! -d "${LOG_FOLDER}" ]]; then
+      mkdir -p "${LOG_FOLDER}"
+    fi
+
     echo -e "${timestamp} ${LOG_LEVEL_MAP[${level}]} ${message}" >>"${LOG_LOGGING}"
   fi
 }
