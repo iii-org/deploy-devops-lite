@@ -99,7 +99,7 @@ fetch_latest_upgrade_script() {
   UPGRADE_SCRIPT="$(mktemp)"
   INFO "Temp script location: ${WHITE}${UPGRADE_SCRIPT}${NOFORMAT}"
 
-  INFO "Fetching latest upgrade script from ${BRANCH} branch..."
+  INFO "Fetching latest upgrade script from ${WHITE}${BRANCH}${NOFORMAT} branch..."
   wget -q -O ${UPGRADE_SCRIPT} "https://raw.githubusercontent.com/iii-org/deploy-devops-lite/${BRANCH}/scripts/upgrade.sh"
 
   INFO "Check if upgrade script is changed..."
@@ -107,7 +107,7 @@ fetch_latest_upgrade_script() {
     INFO "${YELLOW}[NEW]${NOFORMAT} Upgrade script is changed!"
     mv ${UPGRADE_SCRIPT} ${OLD_SCRIPT}
     chmod +x ${OLD_SCRIPT}
-    SCRIPT_UPGRADE=true BRANCH=${BRANCH} ${OLD_SCRIPT} || exit 0
+    SCRIPT_UPGRADE=true ${OLD_SCRIPT} --branch ${BRANCH} || exit 0
     exit 0
   fi
 
