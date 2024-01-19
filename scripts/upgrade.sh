@@ -220,8 +220,13 @@ update_via_tar() {
   cp -rT deploy-devops-lite-${BRANCH}/ "${PROJECT_DIR}"
 
   if [[ -d "${backup_location}/generate" ]]; then
-    INFO "Copying old generated files..."
+    INFO "▶ Reverting old generated files..."
     cp -rT "${backup_location}/generate" "${PROJECT_DIR}/generate"
+  fi
+
+  if [[ -d "${backup_location}/.env" ]]; then
+    INFO "▶ Reverting old .env files..."
+    cp "${backup_location}/.env" "${PROJECT_DIR}/.env"
   fi
 
   INFO "Cleaning up..."
