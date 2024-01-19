@@ -51,11 +51,10 @@ migrate_old_generated() {
 }
 
 rerun_command() {
-  INFO "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
   if [[ "${BRANCH}" != "master" ]]; then
-    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
+    INFO "▶ ${YELLOW}cd ~ && cd - && ./run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
   else
-    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade${NOFORMAT}"
+    INFO "▶ ${YELLOW}cd ~ && cd - && ./run.sh upgrade${NOFORMAT}"
   fi
 }
 
