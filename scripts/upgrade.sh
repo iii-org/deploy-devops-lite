@@ -107,7 +107,7 @@ fetch_latest_upgrade_script() {
     INFO "${YELLOW}[NEW]${NOFORMAT} Upgrade script is changed!"
     mv ${UPGRADE_SCRIPT} ${OLD_SCRIPT}
     chmod +x ${OLD_SCRIPT}
-    SCRIPT_UPGRADE=true ${OLD_SCRIPT} || exit 0
+    SCRIPT_UPGRADE=true BRANCH=${BRANCH} ${OLD_SCRIPT} || exit 0
     exit 0
   fi
 
@@ -144,7 +144,8 @@ update_via_git() {
   fi
 
   INFO "Checkout to ${BRANCH} branch..."
-  git checkout "${BRANCH}"
+  # Git checkout should ignore upgrade.sh changed
+  git checkout "${BRANCH}" -- scripts/upgrade.sh
 
   INFO "Updating git remotes..."
   git remote update
