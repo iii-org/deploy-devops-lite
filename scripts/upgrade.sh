@@ -276,7 +276,7 @@ main() {
       source "${COLOR_SCRIPT}"
       unset COLOR_SCRIPT
     else
-      INFO "Color is already loaded"
+      DEBUG "Color is already loaded"
     fi
 
     # Check if DEBUG function exists
@@ -293,7 +293,7 @@ main() {
       source "${DEBUG_SCRIPT}"
       unset DEBUG_SCRIPT
     else
-      INFO "Log is already loaded"
+      DEBUG "Log is already loaded"
     fi
 
     # Check if docker_get_version function exists
@@ -307,7 +307,7 @@ main() {
       source "${DOCKER_SCRIPT}"
       unset DOCKER_SCRIPT
     else
-      INFO "Docker script already loaded"
+      DEBUG "Docker script already loaded"
     fi
   }
   DEBUG "Target branch: ${WHITE}${BRANCH}${NOFORMAT}"
