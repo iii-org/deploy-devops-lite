@@ -123,6 +123,12 @@ done_script() {
   echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
   sleep 5
 
+  if [[ -n "${DOCKER_COMPOSE_COMMAND:-}" ]]; then
+    INFO "Using docker compose command: ${GREEN}${DOCKER_COMPOSE_COMMAND}${NOFORMAT}"
+  else
+    docker_get_version
+  fi
+
   $DOCKER_COMPOSE_COMMAND pull
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
