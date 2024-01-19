@@ -218,7 +218,6 @@ main() {
       ;;
     --branch)
       BRANCH="${2:-$BRANCH}"
-      DEBUG "Target branch: ${WHITE}${BRANCH}${NOFORMAT}"
       shift
       ;;
     *)
@@ -228,6 +227,7 @@ main() {
     shift $(($# > 0 ? 1 : 0))
   done
 
+  DEBUG "Target branch: ${WHITE}${BRANCH}${NOFORMAT}"
   fetch_latest_upgrade_script
   migrate_old_generated
 
