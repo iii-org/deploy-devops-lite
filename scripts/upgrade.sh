@@ -51,10 +51,11 @@ migrate_old_generated() {
 }
 
 rerun_command() {
+  INFO "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
   if [[ "${BRANCH}" != "master" ]]; then
-    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh ${target} --branch ${BRANCH}${NOFORMAT}"
+    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
   else
-    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh ${target}${NOFORMAT}"
+    INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade${NOFORMAT}"
   fi
 }
 
@@ -79,12 +80,7 @@ migrate_old_env() {
     INFO "variable_write function not found, which is upgrade from old version."
     INFO "Re run upgrade script to generate new .env file."
     INFO "Run this command to upgrade:"
-    INFO "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
-    if [[ "${BRANCH}" != "master" ]]; then
-      INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
-    else
-      INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh upgrade${NOFORMAT}"
-    fi
+    rerun_command
     exit 0
   fi
 
@@ -118,7 +114,7 @@ migrate_old_env() {
   rm "${PROJECT_DIR}/generate/.env"
   INFO "Old environment file is migrated to new version."
   INFO "Please re-run command to start services."
-  INFO "▶ ${YELLOW}${PROJECT_DIR}/run.sh${NOFORMAT}"
+  rerun_command
   exit 0
 }
 
