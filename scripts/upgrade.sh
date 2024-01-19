@@ -216,7 +216,7 @@ main() {
       usage
       ;;
     --branch)
-      BRANCH="${2}"
+      BRANCH="${2:-$BRANCH}"
       DEBUG "Target branch: ${WHITE}${BRANCH}${NOFORMAT}"
       shift
       ;;
