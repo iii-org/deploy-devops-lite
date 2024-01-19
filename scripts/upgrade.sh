@@ -151,8 +151,6 @@ done_script() {
     docker_get_version
   fi
 
-  docker_version_check
-
   $DOCKER_COMPOSE_COMMAND pull
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
