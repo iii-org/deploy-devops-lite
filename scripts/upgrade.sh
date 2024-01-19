@@ -66,6 +66,28 @@ migrate_old_env() {
   }
 
   INFO "Generate new version of .env..."
+
+  if ! type variable_write >/dev/null 2>&1; then
+    INFO "variable_write function not found, which is upgrade from old version."
+    INFO "Re run upgrade script to generate new .env file."
+    INFO "Run this command to upgrade:"
+    if [[ "${BRANCH}" != "master" ]]; then
+      INFO "▶ ${YELLOW}./run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
+    else
+      INFO "▶ ${YELLOW}./run.sh upgrade${NOFORMAT}"
+    fi
+    exit 0
+  fi
+
+  DEBUG "Env file: $ENVIRONMENT_FILE"
+
+  # Copy example .env to generate folder
+  if [[ ! -f "$ENVIRONMENT_FILE" ]]; then
+    # Make sure .env file is exist
+    # So when we loaded the .env file, it will not throw error
+    cp "$ENVIRONMENT_FILE".example "$ENVIRONMENT_FILE"
+  fi
+
   # Using old .env generate new .env
   variable_write "MODE" "IP"
   rpl_rw "GITLAB_ROOT_PASSWORD" true
