@@ -139,7 +139,7 @@ update_via_git() {
   cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
 
   INFO "Checking git status..."
-  if ! git diff-index --quiet HEAD --; then
+  if git diff-index --quiet HEAD --; then
     FAILED "There are uncommitted changes, please commit or stash them first."
   fi
 
