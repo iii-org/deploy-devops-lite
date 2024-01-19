@@ -96,6 +96,10 @@ _LOG_STARTED() {
     return
   fi
 
+  if [[ ! -d "${LOG_FOLDER}" ]]; then
+    mkdir -p "${LOG_FOLDER}"
+  fi
+
   printf "%$(tput cols)s\n" | tr " " "=" >>"${LOG_LOGGING}"
   echo "New logging started at: $(date +"%Y/%m/%d %H:%M:%S [%z]")" >>"${LOG_LOGGING}"
 
