@@ -159,6 +159,9 @@ done_script() {
   echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
   sleep 5
 
+  DEBUG "Current working directory: ${WHITE}$(pwd)${NOFORMAT}"
+  DEBUG "File list: $(ls -alh)"
+
   $DOCKER_COMPOSE_COMMAND pull
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
