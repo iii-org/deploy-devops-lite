@@ -41,8 +41,9 @@ migrate_old_generated() {
 
     INFO "Remove old files..."
     # Remove old files
-    rm -rf "${PROJECT_DIR}"
-    mkdir "${PROJECT_DIR}"
+    cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
+    rm -rf -- ..?* .[!.]* *
+    cd -
 
     INFO "Copy old files to new folder..."
     # Copy old files to new folder
@@ -52,9 +53,9 @@ migrate_old_generated() {
 
 rerun_command() {
   if [[ "${BRANCH}" != "master" ]]; then
-    INFO "▶ ${YELLOW}cd ~ && cd - && ./run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
+    INFO "▶ ${YELLOW}./run.sh upgrade --branch ${BRANCH}${NOFORMAT}"
   else
-    INFO "▶ ${YELLOW}cd ~ && cd - && ./run.sh upgrade${NOFORMAT}"
+    INFO "▶ ${YELLOW}./run.sh upgrade${NOFORMAT}"
   fi
 }
 
@@ -147,16 +148,16 @@ done_script() {
   cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
   migrate_old_env
 
-  INFO "Restarting docker compose"
-  INFO "If you wish to start up your self, you are safe to exit now."
-  echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
-  sleep 5
-
   if [[ -n "${DOCKER_COMPOSE_COMMAND:-}" ]]; then
     INFO "Using docker compose command: ${GREEN}${DOCKER_COMPOSE_COMMAND}${NOFORMAT}"
   else
     docker_get_version
   fi
+
+  INFO "Restarting docker compose"
+  INFO "If you wish to start up your self, you are safe to exit now."
+  echo -e "Press \e[96mCtrl+C\e[0m to exit, sleep 5 seconds to continue..."
+  sleep 5
 
   $DOCKER_COMPOSE_COMMAND pull
   $DOCKER_COMPOSE_COMMAND up \
@@ -221,10 +222,9 @@ update_via_tar() {
   tar -xzf release.tar.gz
 
   INFO "Removing old files..."
-  rm -rf "${PROJECT_DIR}"
-
-  WARNING "${WHITE}${PROJECT_DIR}${NOFORMAT} is removed, refresh your shell by running:"
-  WARNING "▶ ${YELLOW}cd ~ && cd -${NOFORMAT}"
+  cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
+  rm -rf -- ..?* .[!.]* *
+  cd -
 
   INFO "Copying files..."
   cp -rT deploy-devops-lite-${BRANCH}/ "${PROJECT_DIR}"
