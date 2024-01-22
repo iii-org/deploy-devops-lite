@@ -122,8 +122,15 @@ version_compare() (
 docker_version_check() {
   DOCKER_COMPOSE_VERSION="$(docker compose version --short)"
 
-  # If docker compose version below 2.20, failed the upgrade
+  # If docker compose version below 2.20, failed the script
   if version_compare "2.20" "$DOCKER_COMPOSE_VERSION"; then
     FAILED "Docker compose version is too old, please upgrade to 2.20 or above."
+  fi
+
+  # If docker compose version is 2.24.*, failed the script
+  if [[ "$DOCKER_COMPOSE_VERSION" =~ ^2\.24\..* ]]; then
+    ERROR "Error docker compose version, please downgrade to 2.20 - 2.23."
+    ERROR "See: https://github.com/docker/compose/issues/11379"
+    exit 0
   fi
 }
