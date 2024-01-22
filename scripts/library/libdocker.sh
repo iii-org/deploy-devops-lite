@@ -129,8 +129,8 @@ docker_version_check() {
 
   # If docker compose version is 2.24.*, failed the script
   if [[ "$DOCKER_COMPOSE_VERSION" =~ ^2\.24\..* ]]; then
-    ERROR "Error docker compose version, please downgrade to 2.20 - 2.23."
-    ERROR "See: https://github.com/docker/compose/issues/11379"
+    ERROR "You are using wrong docker compose version, please downgrade to 2.20 - 2.23."
+    ERROR "See: https://github.com/docker/compose/issues/11379 for more information."
     exit 0
   fi
 }
