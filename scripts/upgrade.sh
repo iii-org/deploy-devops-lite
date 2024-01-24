@@ -232,26 +232,17 @@ update_via_tar() {
 
   INFO "Removing old files..."
   cd "${PROJECT_DIR}" || FAILED "Failed to change directory to ${PROJECT_DIR}"
-  rm -rf -- ..?* .[!.]* *
+  find . -mindepth 1 -maxdepth 1 \
+    -not -name 'generate' \
+    -not -name 'logs' \
+    -not -name '.env' \
+    -not -name '.version' \
+    -exec rm -rf {} \;
+
   cd -
 
   INFO "Copying files..."
   cp -rT deploy-devops-lite-${BRANCH}/ "${PROJECT_DIR}"
-
-  if [[ -d "${backup_location}/generate" ]]; then
-    INFO "▶ Reverting old generated files..."
-    cp -rT "${backup_location}/generate" "${PROJECT_DIR}/generate"
-  fi
-
-  if [[ -f "${backup_location}/.env" ]]; then
-    INFO "▶ Reverting old .env files..."
-    cp "${backup_location}/.env" "${PROJECT_DIR}/.env"
-  fi
-
-  if [[ -f "${PROJECT_DIR}/.version" ]]; then
-    INFO "▶ Reverting old version marker..."
-    cp "${backup_location}/.version" "${PROJECT_DIR}/.version"
-  fi
 
   INFO "Cleaning up..."
   rm -rf deploy-devops-lite-${BRANCH}
