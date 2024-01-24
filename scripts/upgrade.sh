@@ -160,6 +160,9 @@ done_script() {
   sleep 5
 
   $DOCKER_COMPOSE_COMMAND pull
+  # Fix mount permission issue
+  $DOCKER_COMPOSE_COMMAND restart
+  # Remove unused containers and update containers
   $DOCKER_COMPOSE_COMMAND up \
     --detach \
     --remove-orphans
