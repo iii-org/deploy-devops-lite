@@ -382,4 +382,10 @@ get_init_token
 # Waiting for GitLab to start
 check_service_up "GitLab" "-X GET $(get_service_url "gitlab")/users/sign_in"
 INFO "Importing templates to GitLab, init token is: ${WHITE}${GITLAB_INIT_TOKEN}${NOFORMAT}"
+
+# Sleep random 30-90 seconds for GitLab to start services
+RANDOM_SLEEP_SECOND=$((RANDOM % 60 + 30))
+INFO "Sleep random second: ${RANDOM_SLEEP_SECOND}"
+sleep "${RANDOM_SLEEP_SECOND}"
+
 main

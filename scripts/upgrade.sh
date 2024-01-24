@@ -135,6 +135,12 @@ fetch_latest_upgrade_script() {
   INFO "Check if upgrade script is changed..."
   if ! diff -q ${OLD_SCRIPT} ${UPGRADE_SCRIPT} >/dev/null; then
     INFO "${YELLOW}[NEW]${NOFORMAT} Upgrade script is changed!"
+
+    # Force remove .version for upgrade script
+    if [[ -f "${PROJECT_DIR}/.version" ]]; then
+      rm "${PROJECT_DIR}/.version"
+    fi
+
     mv ${UPGRADE_SCRIPT} ${OLD_SCRIPT}
     chmod +x ${OLD_SCRIPT}
     SCRIPT_UPGRADE=true ${OLD_SCRIPT} --branch ${BRANCH} || exit 0
@@ -242,6 +248,11 @@ update_via_tar() {
     cp "${backup_location}/.env" "${PROJECT_DIR}/.env"
   fi
 
+  if [[ -f "${PROJECT_DIR}/.version" ]]; then
+    INFO "▶ Reverting old version marker..."
+    cp "${backup_location}/.version" "${PROJECT_DIR}/.version"
+  fi
+
   INFO "Cleaning up..."
   rm -rf deploy-devops-lite-${BRANCH}
   rm release.tar.gz
@@ -339,10 +350,10 @@ main() {
   fi
 
   updatelatest_version_fn() {
-    echo "${REMOTE_HASH}" >"${PROJECT_DIR}/.version-latest"
+    echo "${REMOTE_HASH}" >"${PROJECT_DIR}/.version"
 
     INFO "Validating updated hash file..."
-    if [[ $(cat "${PROJECT_DIR}/.version-latest") == "${REMOTE_HASH}" ]]; then
+    if [[ $(cat "${PROJECT_DIR}/.version") == "${REMOTE_HASH}" ]]; then
       INFO "Hash file is valid, updating..."
       update_via_tar
     else
@@ -357,13 +368,13 @@ main() {
 
   # Check if .git exists
   if [ ! -d "${PROJECT_DIR}"/.git ]; then
-    if [[ -f "${PROJECT_DIR}/.version-latest" ]]; then
+    if [[ -f "${PROJECT_DIR}/.version" ]]; then
       INFO "Checking version..."
-      INFO "Last update check is at ${GREEN}$(date -r "${PROJECT_DIR}/.version-latest" +"%Y-%m-%d %H:%M:%S")${NOFORMAT}"
-      LOCAL_HASH=$(cat "${PROJECT_DIR}/.version-latest")
+      INFO "Last update check is at ${GREEN}$(date -r "${PROJECT_DIR}/.version" +"%Y-%m-%d %H:%M:%S")${NOFORMAT}"
+      LOCAL_HASH=$(cat "${PROJECT_DIR}/.version")
 
-      # Check if .version-latest is not empty, and file should modified less than 1 hour
-      if [[ -s "${PROJECT_DIR}/.version-latest" ]] && [[ $(find "${PROJECT_DIR}/.version-latest" -mmin -60) ]]; then
+      # Check if .version is not empty, and file should modified less than 1 hour
+      if [[ -s "${PROJECT_DIR}/.version" ]] && [[ $(find "${PROJECT_DIR}/.version" -mmin -60) ]]; then
         INFO "Last update check is less than 1 hour, skipping update check"
         exit 0
       else
@@ -380,8 +391,8 @@ main() {
         else
           INFO "Already up-to-date"
 
-          # Remember to update .version-latest last modified time
-          touch "${PROJECT_DIR}/.version-latest"
+          # Remember to update .version last modified time
+          touch "${PROJECT_DIR}/.version"
           exit 0
         fi
       fi
