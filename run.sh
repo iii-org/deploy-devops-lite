@@ -62,7 +62,9 @@ if [[ ! -d "${LOG_FOLDER}" ]]; then
 fi
 
 if [[ -f "${LOG_FOLDER}/${target}.log" ]]; then
-  rm -f "${LOG_FOLDER}/${target}.log"
+  # Get file generate time
+  file_time=$(stat -c %Y "${LOG_FOLDER}/${target}.log")
+  mv "${LOG_FOLDER}/${target}.log" "${LOG_FOLDER}/${target}.$(date -d @$file_time +%Y%m%d%H%M%S).log"
 fi
 
 script --quiet -c "$script_command" "${LOG_FOLDER}/${target}.log"
