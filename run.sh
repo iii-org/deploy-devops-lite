@@ -67,4 +67,7 @@ if [[ -f "${LOG_FOLDER}/${target}.log" ]]; then
   mv "${LOG_FOLDER}/${target}.log" "${LOG_FOLDER}/${target}.$(date -d @$file_time +%Y%m%d%H%M%S).log"
 fi
 
+# Make sure change the working directory to the script's location
+cd "$base_dir" || { echo "Cannot change directory to $base_dir" && exit 1; }
+
 script --quiet -c "$script_command" "${LOG_FOLDER}/${target}.log"
