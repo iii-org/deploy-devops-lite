@@ -123,7 +123,7 @@ docker_version_check() {
   DOCKER_COMPOSE_VERSION="$(docker compose version --short)"
 
   # If docker compose version below 2.20, failed the script
-  if version_compare "2.20" "$DOCKER_COMPOSE_VERSION"; then
+  if ! version_compare "$DOCKER_COMPOSE_VERSION" "2.20"; then
     FAILED "Docker compose version is too old, please upgrade to 2.20 or above."
   fi
 
