@@ -379,5 +379,7 @@ if ! $GITLAB_RUNNER curl -s -k "${URL_GITLAB}/api/v4/version" >/dev/null; then
 fi
 
 get_init_token
+# Waiting for GitLab to start
+check_service_up "GitLab" "-X GET $(get_service_url "gitlab")/users/sign_in"
 INFO "Importing templates to GitLab, init token is: ${WHITE}${GITLAB_INIT_TOKEN}${NOFORMAT}"
 main
