@@ -335,9 +335,57 @@ main() {
     sudo chown -R "$user":"$user" "${PROJECT_DIR}"
   fi
 
+  updatelatest_version_fn() {
+    echo "${REMOTE_HASH}" >"${PROJECT_DIR}/.version-latest"
+
+    INFO "Validating updated hash file..."
+    if [[ $(cat "${PROJECT_DIR}/.version-latest") == "${REMOTE_HASH}" ]]; then
+      INFO "Hash file is valid, updating..."
+      update_via_tar
+    else
+      ERROR "Can not update hash file, aborting..."
+      exit 0
+    fi
+  }
+
+  fetch_remote_hash() {
+    REMOTE_HASH=$(curl -s https://api.github.com/repos/iii-org/deploy-devops-lite/commits/"${BRANCH}" | jq -r '.sha')
+  }
+
   # Check if .git exists
   if [ ! -d "${PROJECT_DIR}"/.git ]; then
-    update_via_tar
+    if [[ -f "${PROJECT_DIR}/.version-latest" ]]; then
+      INFO "Checking version..."
+      INFO "Last update check is at ${GREEN}$(date -r "${PROJECT_DIR}/.version-latest" +"%Y-%m-%d %H:%M:%S")${NOFORMAT}"
+      LOCAL_HASH=$(cat "${PROJECT_DIR}/.version-latest")
+
+      # Check if .version-latest is not empty, and file should modified less than 1 hour
+      if [[ -s "${PROJECT_DIR}/.version-latest" ]] && [[ $(find "${PROJECT_DIR}/.version-latest" -mmin -60) ]]; then
+        INFO "Last update check is less than 1 hour, skipping update check"
+        exit 0
+      else
+        INFO "Fetching the latest commit hash..."
+        fetch_remote_hash
+
+        if [[ "${REMOTE_HASH}" != "${LOCAL_HASH}" ]]; then
+          INFO "${GREEN}[NEW]${NOFORMAT} version is available!"
+          INFO "Remote hash: ${YELLOW}${REMOTE_HASH}${NOFORMAT}"
+          INFO "Local hash: ${YELLOW}${LOCAL_HASH}${NOFORMAT}"
+
+          updatelatest_version_fn
+
+        else
+          INFO "Already up-to-date"
+
+          # Remember to update .version-latest last modified time
+          touch "${PROJECT_DIR}/.version-latest"
+          exit 0
+        fi
+      fi
+    else
+      fetch_remote_hash
+      updatelatest_version_fn
+    fi
   else
     update_via_git
   fi
