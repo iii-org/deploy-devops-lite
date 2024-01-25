@@ -24,8 +24,16 @@ main() {
 
   WARN "${ORANGE}This script will remove all data in docker volumes.${NOFORMAT}"
   WARN "${ORANGE}Please make sure you have backed up your data.${NOFORMAT}"
-  echo -e "Press ${RED}Ctrl+C${NOFORMAT} to cancel, sleep 5 seconds to continue..."
-  sleep 5
+
+  local answer
+  read -rp "Continue? Type \"yes\" to continue: " answer
+
+  if [[ "$answer" =~ ^[yY][eE][sS]$ ]]; then
+    INFO "🚀 Continue..."
+  else
+    INFO "🚫 Cancelled!"
+    exit 1
+  fi
 
   DOCKER_SOCKET="$(detect_docker_socket)" $DOCKER_COMPOSE_COMMAND down -v
 
