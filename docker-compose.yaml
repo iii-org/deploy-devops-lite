@@ -1,5 +1,6 @@
 include:
   - path: docker/docker-compose.${MODE:-NONE}.yaml
+    project_directory: .
 
 volumes:
   gitlab-data:

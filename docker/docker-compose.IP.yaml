@@ -4,7 +4,7 @@ services:
   gitlab:
     extends:
       service: gitlab
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
     hostname: "${IP_ADDR}"
     environment:
       GITLAB_OMNIBUS_CONFIG: |
@@ -20,7 +20,7 @@ services:
   runner:
     extends:
       service: runner
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
     environment:
       - CI_SERVER_URL=http://gitlab:${GITLAB_PORT}/
       - DOCKER_NETWORK_MODE=iiidevops-lite-network
@@ -28,52 +28,52 @@ services:
   sonarqube-db:
     extends:
       service: sonarqube-db
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   sonarqube:
     extends:
       service: sonarqube
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   redmine-db:
     extends:
       service: redmine-db
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   redmine:
     extends:
       service: redmine
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   redis:
     extends:
       service: redis
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   iii-devops-lite-db:
     extends:
       service: iii-devops-lite-db
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   iii-devops-lite-api:
     extends:
       service: iii-devops-lite-api
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   iii-devops-lite-api-worker:
     extends:
       service: iii-devops-lite-api-worker
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   iii-devops-lite-api-beat:
     extends:
       service: iii-devops-lite-api-beat
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
 
   iii-devops-lite-ui:
     extends:
       service: iii-devops-lite-ui
-      file: docker-compose.base.yaml
+      file: docker/docker-compose.base.yaml
     labels:
       - "autoheal=true"
     ports:
