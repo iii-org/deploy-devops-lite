@@ -10,6 +10,9 @@
 
 - Operating system
     - Ubuntu 20.04
+- Docker
+    - Docker Engine 20.10+
+    - Compose 2.20+
 - Hardware requirements
     - 2 vCPU
     - 8 GB RAM
