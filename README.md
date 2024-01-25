@@ -34,7 +34,7 @@ We need to prepare the following information before we start the deployment prog
 - Fetching the latest version of the deployment program
 
     ```shell
-    git clone https://github.com/iii-org/deploy-devops-lite.git IIIDevOps
+    git clone https://github.com/iii-org/deploy-devops-lite.git DevOps
     ```
 
 ### Step 2. Setting up the environment variables (Optional)
@@ -43,7 +43,7 @@ We need to prepare the following information before we start the deployment prog
 
     ```shell
     # Change to the project root directory
-    cd IIIDevOps
+    cd DevOps
     ./scripts/generate-env.sh all
     ```
 

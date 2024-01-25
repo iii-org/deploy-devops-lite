@@ -34,7 +34,7 @@
 - 取得最新版本的部署程式
 
     ```shell
-    git clone https://github.com/iii-org/deploy-devops-lite.git IIIDevOps
+    git clone https://github.com/iii-org/deploy-devops-lite.git DevOps
     ```
 
 ### 步驟 2. 設定環境變數 (可選)
@@ -43,7 +43,7 @@
 
     ```shell
     # 切換到專案根目錄
-    cd IIIDevOps
+    cd DevOps
     ./scripts/generate-env.sh all
     ```
 
