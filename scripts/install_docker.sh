@@ -58,6 +58,10 @@ dockerd-rootless-setuptool.sh install
 
 BIN="$(dirname "$(command -v dockerd-rootless.sh)")"
 
+# Allow user to ping inside container
+echo "net.ipv4.ping_group_range = 0 2147483647" > /etc/sysctl.d/99-docker-rootless.conf
+sudo sysctl --system
+
 # Set cap_net_bind_service capability to allow binding to privileged ports (e.g. 80, 443)
 sudo setcap cap_net_bind_service=ep "$(which rootlesskit)"
 systemctl --user restart docker
