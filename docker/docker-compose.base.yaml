@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorg/devops-lite-api:ce-0.5.0
+    image: iiiorg/devops-lite-api:ce-0.6.0
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/HEAD.env
@@ -223,7 +223,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:ce-0.5.1
+    image: iiiorg/devops-lite-ui:ce-0.6.0
     container_name: "iii-devops-lite-ui"
     restart: always
     depends_on:
