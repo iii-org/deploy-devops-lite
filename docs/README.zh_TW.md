@@ -91,3 +91,25 @@
 > 請確保你已經備份所有的資料。
 
 執行 `./run.sh clean` 來移除 III DevOps Community。
+
+## 已知問題
+
+- Docker Compose 版本問題
+    - 版本: 2.24.1
+        - 出現訊息: xxx array items[0,1] must be unique
+        - 參考: https://github.com/docker/compose/issues/11371
+        - 解法: 降級 docker-compose 版本到 2.21
+    - 版本: 2.24.4
+        - 出現訊息: Circular reference in xxx yaml
+        - 參考: https://github.com/docker/compose/issues/11430
+        - 解法: 降級 docker-compose 版本到 2.21
+
+### 降級 docker-compose 套件
+
+```shell
+# 查看可用的版本
+apt list -a docker-compose-plugin
+
+# 安裝特定版本
+sudo apt install docker-compose-plugin=2.21.0-1~ubuntu.20.04~focal
+```
