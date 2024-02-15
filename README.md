@@ -1,10 +1,19 @@
-# III DevOps Community
+<p align="center">
+  <p align="center">
+   <img width="128px" src="docs/icons/iii_logo.png" />
+  </p>
+	<h1 align="center"><b>III DevOps Community</b></h1>
+	<p align="center">
+		All-in-One Project Management and Development Platform
+    <br />
+    <a href="https://www.iii-devsecops.org"><strong>www.iii-devsecops.org »</strong></a>
+  </p>
+</p>
+
+<br/>
 
 [English](README.md) | [繁體中文](docs/README.zh_TW.md)
 
-## Table of Contents
-
-[toc]
 
 ## System requirements
 
