@@ -169,6 +169,7 @@ download_docker_compose() {
   fi
 
   INFO "Downloading docker compose 2.24.6"
+  mkdir -p $HOME/.local/bin
   wget "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -O $HOME/.local/bin/docker-compose
 
   chmod_and_set_env
