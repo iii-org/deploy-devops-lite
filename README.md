@@ -110,10 +110,11 @@ Run `./run.sh clean` to uninstall the III DevOps Community.
         - Message: xxx array items[0,1] must be unique
         - See: https://github.com/docker/compose/issues/11371
         - Solution: Downgrade the docker-compose version to 2.21
-    - version: 2.24.4
+    - version: 2.24.4, 2.24.5
         - Message: Circular reference in xxx yaml
         - See: https://github.com/docker/compose/issues/11430
         - Solution: Downgrade the docker-compose version to 2.21
+        - Fix: 2.24.6
 
 ### Downgrade docker compose plugin
 

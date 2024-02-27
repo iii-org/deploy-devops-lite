@@ -107,10 +107,11 @@
         - 出現訊息: xxx array items[0,1] must be unique
         - 參考: https://github.com/docker/compose/issues/11371
         - 解法: 降級 docker-compose 版本到 2.21
-    - 版本: 2.24.4
+    - 版本: 2.24.4, 2.24.5
         - 出現訊息: Circular reference in xxx yaml
         - 參考: https://github.com/docker/compose/issues/11430
         - 解法: 降級 docker-compose 版本到 2.21
+        - 修復版本：2.24.6
 
 ### 降級 docker-compose 套件
 
