@@ -99,8 +99,6 @@ services:
     image: sonarqube:8.9.7-community
     container_name: "sonarqube"
     restart: always
-    depends_on:
-      - sonarqube-db
     ports:
       - "${SQ_PORT}:9000"
     environment:
@@ -126,8 +124,6 @@ services:
     image: redmine:4.2.10
     container_name: "redmine"
     restart: always
-    depends_on:
-      - redmine-db
     ports:
       - "${REDMINE_PORT}:3000"
     volumes:
@@ -176,17 +172,6 @@ services:
       service: api-base
     container_name: "iii-devops-lite-api"
     restart: on-failure
-    depends_on:
-      gitlab:
-        condition: service_started
-      sonarqube:
-        condition: service_started
-      redmine:
-        condition: service_started
-      redis:
-        condition: service_started
-      iii-devops-lite-db:
-        condition: service_healthy
     ports:
       - "${III_PORT}:10009"
     volumes:
@@ -200,9 +185,6 @@ services:
     extends:
       service: api-base
     container_name: "iii-devops-lite-api-worker"
-    depends_on:
-      - redis
-      - iii-devops-lite-api
     command: celery -A apis.api.celery worker -P eventlet --loglevel=INFO
     volumes:
       - ${III_ENV}:/usr/src/app/env/HEAD.env
@@ -213,9 +195,6 @@ services:
     extends:
       service: api-base
     container_name: "iii-devops-lite-api-beat"
-    depends_on:
-      - redis
-      - iii-devops-lite-api
     command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
     volumes:
       - ${III_ENV}:/usr/src/app/env/HEAD.env
@@ -226,8 +205,6 @@ services:
     image: iiiorg/devops-lite-ui:ce-0.6.0
     container_name: "iii-devops-lite-ui"
     restart: always
-    depends_on:
-      - iii-devops-lite-api
     environment:
       API_URL: http://iii-devops-lite-api:10009/
     healthcheck:
