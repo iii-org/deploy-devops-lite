@@ -45,30 +45,16 @@ We need to prepare the following information before we start the deployment prog
     git clone https://github.com/iii-org/deploy-devops-lite.git DevOps
     ```
 
-### Step 2. Setting up the environment variables (Optional)
-
-- If you wish setting up the environment variables before running the deployment program, you can run the following
-
-    ```shell
-    # Change to the project root directory
-    cd DevOps
-    ./scripts/generate-env.sh all
-    ```
-
-During the execution of the script, it will prompt you to enter the environment variables.  
-If the question followed by a default value, you can press `<Enter>` to use the default value.
-
-You can check the environment variables in the `.env` file.
-
-Or you can simply skip this step, it will prompt you to enter the environment variables when you run the deployment
-program.
-
-### Step 3. Run the deployment program
+### Step 2. Run the deployment program
 
 > [!NOTE]\
 > This step will take up to 10 minutes to complete.
 
 In this step, we will run the setup script.  
+During the execution of the script, it will prompt you to enter the environment variables.  
+If the question followed by a default value, you can press `<Enter>` to use the default value.
+
+You can check the environment variables in the `.env` file.  
 For the packages we haven't installed, the script will automatically install and configure them.  
 For the environment variables we haven't set up in the previous step, the script will check and prompt you to enter
 them.
