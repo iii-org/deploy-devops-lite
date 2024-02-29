@@ -36,6 +36,18 @@ docker_permission_check() {
   fi
 }
 
+docker_check_sudo() {
+  # If user is not in docker group, check if docker rootless is enabled
+  if ! groups | grep -q docker; then
+    # Check socket is owned by current user
+    if [[ "$(stat -c '%U' "$socket")" == "$USER" ]]; then
+      DOCKER_WITHOUT_SUDO=true
+    fi
+  else
+    DOCKER_WITHOUT_SUDO=true
+  fi
+}
+
 docker_get_version() {
   local socket
   socket="$(detect_docker_socket)"
@@ -46,15 +58,7 @@ docker_get_version() {
     return
   fi
 
-  # If user is not in docker group, check if docker rootless is enabled
-  if ! groups | grep -q docker; then
-    # Check socket is owned by current user
-    if [[ "$(stat -c '%U' "$socket")" == "$USER" ]]; then
-      DOCKER_WITHOUT_SUDO=true
-    fi
-  else
-    DOCKER_WITHOUT_SUDO=true
-  fi
+  docker_check_sudo
 
   if docker compose version &>/dev/null; then
     # Docker Compose version v2.19.1
@@ -127,10 +131,46 @@ docker_version_check() {
     FAILED "Docker compose version is too old, please upgrade to 2.20 or above."
   fi
 
-#  # If docker compose version is 2.24.*, failed the script
-#  if [[ "$DOCKER_COMPOSE_VERSION" =~ ^2\.24\..* ]]; then
-#    ERROR "You are using wrong docker compose version, please downgrade to 2.20 - 2.23."
-#    ERROR "See: https://github.com/docker/compose/issues/11379 for more information."
-#    exit 0
-#  fi
+  # Check if docker compose version is 2.24.4 or 2.24.5
+  if [[ "$DOCKER_COMPOSE_VERSION" =~ ^2\.24\.[45]$ ]]; then
+    WARN "You are using buggy docker compose version, please upgrade to 2.24.6 or above."
+    WARN "Reference: https://github.com/docker/compose/issues/11430"
+    WARN "           https://github.com/docker/compose/issues/11516"
+    download_docker_compose
+  fi
+
+  #  # If docker compose version is 2.24.*, failed the script
+  #  if [[ "$DOCKER_COMPOSE_VERSION" =~ ^2\.24\..* ]]; then
+  #    ERROR "You are using wrong docker compose version, please downgrade to 2.20 - 2.23."
+  #    ERROR "See: https://github.com/docker/compose/issues/11379 for more information."
+  #    exit 0
+  #  fi
+}
+
+download_docker_compose() {
+
+  chmod_and_set_env() {
+    DOCKER_COMPOSE_COMMAND="$HOME/.local/bin/docker-compose"
+    chmod +x $HOME/.local/bin/docker-compose
+
+    if ! $DOCKER_WITHOUT_SUDO; then
+      DOCKER_COMPOSE_COMMAND="sudo $DOCKER_COMPOSE_COMMAND"
+    fi
+
+    DOCKER_COMPOSE_VERSION="$(${DOCKER_COMPOSE_COMMAND} version --short)"
+  }
+
+  docker_check_sudo
+
+  if [[ -f $HOME/.local/bin/docker-compose ]]; then
+    INFO "Docker compose already exists, skip downloading"
+    chmod_and_set_env
+    return
+  fi
+
+  INFO "Downloading docker compose 2.24.6"
+  mkdir -p $HOME/.local/bin
+  wget "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -O $HOME/.local/bin/docker-compose
+
+  chmod_and_set_env
 }

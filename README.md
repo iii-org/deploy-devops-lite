@@ -14,7 +14,6 @@
 
 [English](README.md) | [繁體中文](docs/README.zh_TW.md)
 
-
 ## System requirements
 
 - Operating system
@@ -103,3 +102,26 @@ The upgrade script will automatically fetch the latest version of the deployment
 > Please make sure you have backed up all the data.
 
 Run `./run.sh clean` to uninstall the III DevOps Community.
+
+## Known issues
+
+- Docker compose related
+    - version: 2.24.1
+        - Message: xxx array items[0,1] must be unique
+        - See: https://github.com/docker/compose/issues/11371
+        - Solution: Downgrade the docker-compose version to 2.21
+    - version: 2.24.4, 2.24.5
+        - Message: Circular reference in xxx yaml
+        - See: https://github.com/docker/compose/issues/11430
+        - Solution: Downgrade the docker-compose version to 2.21
+        - Fix: 2.24.6
+
+### Downgrade docker compose plugin
+
+```shell
+# List all the available versions
+apt list -a docker-compose-plugin
+
+# Install the specific version
+sudo apt install docker-compose-plugin=2.21.0-1~ubuntu.20.04~focal
+```

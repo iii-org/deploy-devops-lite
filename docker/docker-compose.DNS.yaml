@@ -44,6 +44,8 @@ services:
     extends:
       service: sonarqube
       file: docker/docker-compose.base.yaml
+    depends_on:
+      - sonarqube-db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarqube.rule=Host(`sonarqube.example.tw`)"
@@ -61,6 +63,8 @@ services:
     extends:
       service: redmine
       file: docker/docker-compose.base.yaml
+    depends_on:
+      - redmine-db
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.redmine.rule=Host(`redmine.example.tw`)"
@@ -83,21 +87,40 @@ services:
     extends:
       service: iii-devops-lite-api
       file: docker/docker-compose.base.yaml
+    depends_on:
+      gitlab:
+        condition: service_started
+      sonarqube:
+        condition: service_started
+      redmine:
+        condition: service_started
+      redis:
+        condition: service_started
+      iii-devops-lite-db:
+        condition: service_healthy
 
   iii-devops-lite-api-worker:
     extends:
       service: iii-devops-lite-api-worker
       file: docker/docker-compose.base.yaml
+    depends_on:
+      - redis
+      - iii-devops-lite-api
 
   iii-devops-lite-api-beat:
     extends:
       service: iii-devops-lite-api-beat
       file: docker/docker-compose.base.yaml
+    depends_on:
+      - redis
+      - iii-devops-lite-api
 
   iii-devops-lite-ui:
     extends:
       service: iii-devops-lite-ui
       file: docker/docker-compose.base.yaml
+    depends_on:
+      - iii-devops-lite-api
     labels:
       - "autoheal=true"
       - "traefik.enable=true"

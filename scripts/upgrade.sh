@@ -188,9 +188,12 @@ update_via_git() {
     FAILED "There are uncommitted changes, please commit or stash them first."
   fi
 
+  # Get remote name
+  REMOTE_NAME=$(git remote)
+
   INFO "Checkout to ${BRANCH} branch..."
   # Git checkout should ignore upgrade.sh changed
-  git checkout "${BRANCH}" -- scripts/upgrade.sh
+  git checkout "${REMOTE_NAME}/${BRANCH}" -- scripts/upgrade.sh
 
   INFO "Updating git remotes..."
   git remote update
