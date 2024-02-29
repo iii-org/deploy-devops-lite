@@ -25,7 +25,7 @@
     - 2 vCPU
     - 8 GB RAM
     - 60 GB 磁碟空間 (建議使用 SSD)
-- IO 速度
+- 磁碟 IO 速度
     - 300 MB/s
 
 ### 在開始之前...
@@ -37,7 +37,7 @@
 
 ## 安裝
 
-### 步驟 1. 下載部署程式並安裝 docker 與其他系統套件
+### 步驟 1. 下載部署程式
 
 - 取得最新版本的部署程式
 
@@ -45,7 +45,7 @@
     git clone https://github.com/iii-org/deploy-devops-lite.git DevOps
     ```
 
-### 步驟 2. 執行部署程式
+### 步驟 2. 執行部署程式（包含自動安裝 docker 與其他必要的系統套件）
 
 > [!NOTE]\
 > 這個步驟會花費最多 10 分鐘的時間。
@@ -53,13 +53,13 @@
 在這個步驟中，我們將會執行設定腳本。  
 如果問題後面有預設值，你可以按下 `<Enter>` 來使用預設值。
 
-你可以在 `.env` 檔案中檢查環境變數。  
-對於我們還沒安裝的套件，腳本會自動安裝並設定它們。  
-對於我們在前一個步驟中還沒設定的環境變數，腳本會檢查並提示你輸入它們。
+對於我們需要的環境變數，如果尚未設定腳本會檢查並提示你輸入它們。  
+你輸入的結果會設定到 `.env` 檔案中作為使用的環境變數。
 
-要執行腳本，請確定你在專案根目錄，然後執行以下指令
+請進入部署程式目錄，然後執行安裝腳本
 
 ```shell
+cd DevOps
 ./run.sh
 ```
 
@@ -70,34 +70,33 @@
 [INFO] XX:XX:XX Script executed successfully
 ```
 
-你可以打開瀏覽器並訪問 `http://<IP_ADDRESS>` 來檢查 III DevOps Community 是否已經成功部署。
+你可以打開瀏覽器並連上 `http://<IP_ADDRESS>` 來檢查 III DevOps Community 是否已經成功部署。
 
 ## 升級
 
-執行 `./run.sh upgrade` 來升級 III DevOps Community。  
+進入部署程式目錄並執行 `./run.sh upgrade` 來升級 III DevOps Community。  
 升級腳本會自動取得最新版本的部署程式並執行。
 
 ## 移除
 
 > [!WARNING]\
 > 移除腳本會移除所有的 docker 容器、映像檔與儲存空間。  
-> 它會 **移除所有的資料**  
+> 它會 **移除你已經建立的所有資料**  
 > 請確保你已經備份所有的資料。
 
 執行 `./run.sh clean` 來移除 III DevOps Community。
 
 ## 已知問題
 
-- Docker Compose 版本問題
+- Docker Compose 版本問題（安裝腳本將嘗試下載可執行的版本進行自動修復）
     - 版本: 2.24.1
         - 出現訊息: xxx array items[0,1] must be unique
         - 參考: https://github.com/docker/compose/issues/11371
-        - 解法: 降級 docker-compose 版本到 2.21
+        - 解法: 降級 docker-compose 版本到 2.21 或升級 docker-compose 版本到 2.24.6 以上
     - 版本: 2.24.4, 2.24.5
         - 出現訊息: Circular reference in xxx yaml
         - 參考: https://github.com/docker/compose/issues/11430
-        - 解法: 降級 docker-compose 版本到 2.21
-        - 修復版本：2.24.6
+        - 解法: 降級 docker-compose 版本到 2.21 或升級 docker-compose 版本到 2.24.6 以上
 
 ### 降級 docker-compose 套件
 

@@ -25,7 +25,7 @@
     - 2 vCPU
     - 8 GB RAM
     - 60 GB disk space (SSD recommended)
-- IO speed
+- Disk IO speed
     - 300 MB/s
 
 ### Before we start...
@@ -37,7 +37,7 @@ We need to prepare the following information before we start the deployment prog
 
 ## Installation
 
-### Step 1. Download deployment program and install docker and other system packages
+### Step 1. Download deployment program 
 
 - Fetching the latest version of the deployment program
 
@@ -45,7 +45,7 @@ We need to prepare the following information before we start the deployment prog
     git clone https://github.com/iii-org/deploy-devops-lite.git DevOps
     ```
 
-### Step 2. Run the deployment program
+### Step 2. Run the deployment program (including automatic installation of Docker and other necessary system packages)
 
 > [!NOTE]\
 > This step will take up to 10 minutes to complete.
@@ -54,14 +54,13 @@ In this step, we will run the setup script.
 During the execution of the script, it will prompt you to enter the environment variables.  
 If the question followed by a default value, you can press `<Enter>` to use the default value.
 
-You can check the environment variables in the `.env` file.  
-For the packages we haven't installed, the script will automatically install and configure them.  
-For the environment variables we haven't set up in the previous step, the script will check and prompt you to enter
-them.
+For the environment variables we need, the script will check and prompt you to enter them if they are not already set.  
+The results you enter will be set in the `.env` file as the environment variables used.
 
-To run the script, make sure you are in the project root directory, and run the following command
+Make sure you are in the deployment program directory, and run the script as following command
 
 ```shell
+cd DevOps
 ./run.sh
 ```
 
@@ -72,35 +71,33 @@ If the script runs successfully, it will show the message something like
 [INFO] XX:XX:XX Script executed successfully
 ```
 
-You can open the browser and visit `http://<IP_ADDRESS>` to check if the III DevOps Community has been deployed
-successfully.
+You can open the browser and visit `http://<IP_ADDRESS>` to check if the III DevOps Community has been deployed successfully.
 
 ## Upgrade
 
-Run `./run.sh upgrade` to upgrade the III DevOps Community.  
+Enter the deployment program directory and run `./run.sh upgrade` to upgrade the III DevOps Community.  
 The upgrade script will automatically fetch the latest version of the deployment program and run it.
 
 ## Uninstall
 
 > [!WARNING]\
 > The uninstall script will remove all the docker containers, images, and volumes.    
-> It will **REMOVE ALL THE DATA**.  
+> It will **REMOVE ALL YOUR DATA**.  
 > Please make sure you have backed up all the data.
 
 Run `./run.sh clean` to uninstall the III DevOps Community.
 
 ## Known issues
 
-- Docker compose related
+- Docker compose related (The installation script will try to download the correct version for automatic repair)
     - version: 2.24.1
         - Message: xxx array items[0,1] must be unique
         - See: https://github.com/docker/compose/issues/11371
-        - Solution: Downgrade the docker-compose version to 2.21
+        - Solution: Downgrade docker-compose version to 2.21 or upgrade docker-compose version to 2.24.6 or above
     - version: 2.24.4, 2.24.5
         - Message: Circular reference in xxx yaml
         - See: https://github.com/docker/compose/issues/11430
-        - Solution: Downgrade the docker-compose version to 2.21
-        - Fix: 2.24.6
+        - Solution: Downgrade docker-compose version to 2.21 or upgrade docker-compose version to 2.24.6 or above
 
 ### Downgrade docker compose plugin
 
