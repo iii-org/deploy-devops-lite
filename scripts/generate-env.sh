@@ -49,14 +49,19 @@ password_validator() {
     return 1
   fi
 
-  if [[ "$password" =~ [[:lower:]] && "$password" =~ [[:upper:]] && "$password" =~ [[:digit:]] && "$password" =~ [[:punct:]] ]]; then
-    return 0
-  else
+  if ! [[ "$password" =~ [[:lower:]] && "$password" =~ [[:upper:]] && "$password" =~ [[:digit:]] && "$password" =~ [[:punct:]] ]]; then
     WARN "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     return 1
   fi
 
   password=$(echo "$password" | tr '[:upper:]' '[:lower:]')
+
+  # Check if password contain 'gitlab' or 'devops'
+  if [[ "$password" =~ gitlab ]] || [[ "$password" =~ devops ]]; then
+    WARN "You are using a weak password. Please try another one."
+    WARN "See: https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
+    return 1
+  fi
 
   local hashed_pwd
   hashed_pwd=$(echo -n "$password" | sha256sum | cut -d ' ' -f 1)
