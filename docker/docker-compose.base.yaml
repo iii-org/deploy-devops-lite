@@ -62,13 +62,14 @@ services:
 
   gitlab:
     <<: *default-logging
-    image: gitlab/gitlab-ce:13.12.15-ce.0
+    image: gitlab/gitlab-ce:16.9.1-ce.0
     container_name: "gitlab"
     restart: always
     volumes:
       - "gitlab-config:/etc/gitlab"
       - "gitlab-logs:/var/log/gitlab"
       - "gitlab-data:/var/opt/gitlab"
+    shm_size: '256m'
     healthcheck:
       disable: false
 

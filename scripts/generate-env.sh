@@ -55,6 +55,18 @@ password_validator() {
     WARN "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     return 1
   fi
+
+  password=$(echo "$password" | tr '[:upper:]' '[:lower:]')
+
+  local hashed_pwd
+  hashed_pwd=$(echo -n "$password" | sha256sum | cut -d ' ' -f 1)
+
+  if grep -q "^$hashed_pwd$" $base_dir/digests/digests_*; then
+    WARN "You are using a weak password. Please try another one."
+    return 1
+  else
+    return 0
+  fi
 }
 
 account_validator() {
