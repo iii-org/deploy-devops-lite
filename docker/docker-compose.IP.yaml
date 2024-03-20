@@ -11,7 +11,6 @@ services:
         external_url 'http://${IP_ADDR}:${GITLAB_PORT}'
         prometheus_monitoring['enable'] = false
         gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
-        unicorn['worker_processes'] = 2
         sidekiq['concurrency'] = 9
         gitlab_rails['gitlab_default_projects_features_container_registry'] = false
     ports:
