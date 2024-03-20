@@ -68,6 +68,7 @@ password_validator() {
 
   if grep -q "^$hashed_pwd$" $base_dir/digests/digests_*; then
     WARN "You are using a weak password. Please try another one."
+    WARN "See: https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
     return 1
   else
     return 0
