@@ -145,11 +145,17 @@ setup_gitlab() {
   local RESPONSE
   RESPONSE="$(
     $DOCKER_COMPOSE_COMMAND exec gitlab \
-      gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$INIT_TOKEN'); token.save!"
+      gitlab-rails runner - <<EOF
+token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token');
+token.set_token('$INIT_TOKEN');
+token.expires_at='$(date -d '+365 day' '+%Y-%m-%d')';
+token.save!;
+EOF
   )"
 
   if [[ -z "$RESPONSE" ]]; then
     INFO "🔑 GitLab init token is: ${ORANGE}$INIT_TOKEN${NOFORMAT}"
+    INFO "🔧 Token expired at: $(date -d '+365 day' '+%Y-%m-%d')"
     INFO "🛠️ You can test it via:"
     INFO "   ${YELLOW}curl -H \"PRIVATE-TOKEN: $INIT_TOKEN\" \"$gitlab_url/api/v4/users\"${NOFORMAT}"
     variable_write "GITLAB_INIT_TOKEN" "$INIT_TOKEN"
