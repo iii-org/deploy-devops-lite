@@ -141,7 +141,7 @@ setup_gitlab() {
   INFO "🔧 Setting up GitLab..."
 
   local INIT_TOKEN
-  INIT_TOKEN="$(generate_random_string 20)"
+  INIT_TOKEN="glpat-$(generate_random_string 20)"
   local RESPONSE
   RESPONSE="$(
     $DOCKER_COMPOSE_COMMAND exec gitlab \
