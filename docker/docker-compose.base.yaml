@@ -208,6 +208,7 @@ services:
     restart: always
     environment:
       API_URL: http://iii-devops-lite-api:10009/
+      API_WS_URL: http://iii-devops-lite-api:10009/
     healthcheck:
       test: curl --fail http://localhost/prod-api/swagger-ui/ || exit 1
       interval: 10s
