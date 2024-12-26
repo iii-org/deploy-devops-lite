@@ -181,6 +181,13 @@ requirements_check() {
   # Copy static files
   if [[ ! -f "$PROJECT_DIR"/generateredis.conf ]]; then
     cp "$PROJECT_DIR"/sample/redis.conf "$PROJECT_DIR"/generate
+    echo "" >> "$PROJECT_DIR"/generate/redis.conf
+    if [[ -n "$III_REDIS_PASSWORD" ]]; then
+      echo "" >> "$PROJECT_DIR"/generate/redis.conf
+      echo "requirepass $III_REDIS_PASSWORD" >> "$PROJECT_DIR"/generate/redis.conf
+    else
+      FAILED "❌ Redis password is not set!"
+    fi
   fi
 
   if [[ ! -f "$PROJECT_DIR"/generate/redmine-configuration.yml ]]; then
@@ -251,7 +258,7 @@ after_script() {
   INFO "🎉 ${WHITE}III DevOps Community${NOFORMAT} is ready!"
   INFO "🎉 You can now visit ${WHITE}$(get_service_url "ui")${NOFORMAT} to start using it!"
   INFO "GitLab: ${WHITE}$(get_service_url "gitlab")${NOFORMAT}"
-  INFO "Redmine: ${WHITE}$(get_service_url "redmine")${NOFORMAT}"
+  # INFO "Redmine: ${WHITE}$(get_service_url "redmine")${NOFORMAT}"
   INFO "SonarQube: ${WHITE}$(get_service_url "sonarqube")${NOFORMAT}"
 }
 
@@ -275,9 +282,10 @@ main() {
   requirements_check
   start_services
   setup_sonarqube
-  setup_redmine
+  # setup_redmine
   setup_gitlab
   gen_API_env
+  start_services # Restart services to apply new environment variables
   after_script
 }
 
