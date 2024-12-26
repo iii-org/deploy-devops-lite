@@ -304,6 +304,17 @@ sync_passwords() {
       variable_write "$password" "${III_ADMIN_PASSWORD:-}" true
     fi
   done
+  
+  INFO "🔄 Generating III_SECRET_KEY"
+  local III_SECRET_KEY
+  III_SECRET_KEY="$(openssl rand -hex 32)"
+  if [[ -z "${III_SECRET_KEY:-}" ]]; then
+    ERROR "Cannot generate III_SECRET_KEY"
+    exit 1
+  else
+    variable_write "III_SECRET_KEY" "$III_SECRET_KEY" true
+    INFO "✅ III_SECRET_KEY generated!"
+  fi
 
   INFO "✅ Passwords sync finished!"
   INFO "🔄 Generating random db passwords..."
@@ -312,6 +323,7 @@ sync_passwords() {
     "SQ_DB_PASSWORD"
     "III_DB_PASSWORD"
     "REDMINE_DB_PASSWORD"
+    "III_REDIS_PASSWORD"
   )
 
   for password in "${random_list[@]}"; do
