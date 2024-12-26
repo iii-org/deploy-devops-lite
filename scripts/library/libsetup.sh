@@ -30,7 +30,7 @@ check_service_up() {
   local url="$2"
   local url_params="${*:3}"
 
-  local timeout=300
+  local timeout=600
   local STATUS_CODE
 
   INFO "⏳ Waiting for $service_name to be ready..."
@@ -136,16 +136,17 @@ setup_gitlab() {
   gitlab_url="$(get_service_url "gitlab")"
 
   check_service_up "GitLab" \
-    "-X GET ${gitlab_url}/users/sign_in"
+    "-X GET ${gitlab_url}/-/readiness?all=1"
 
   INFO "🔧 Setting up GitLab..."
 
   local INIT_TOKEN
   INIT_TOKEN="$(generate_random_string 20)"
   local RESPONSE
+  expires_at=$(date -d "+1 year" +"%Y-%m-%d")
   RESPONSE="$(
     $DOCKER_COMPOSE_COMMAND exec gitlab \
-      gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token'); token.set_token('$INIT_TOKEN'); token.save!"
+      gitlab-rails runner "token = User.admins.last.personal_access_tokens.create(scopes: ['api', 'read_user', 'read_repository'], name: 'IIIdevops_init_token', expires_at: '$expires_at'); token.set_token('$INIT_TOKEN'); token.save!"
   )"
 
   if [[ -z "$RESPONSE" ]]; then
@@ -162,15 +163,27 @@ setup_gitlab() {
   # Create shared runner
   INFO "🔧 Creating shared runner..."
   local REGISTRATOR_TOKEN
-  REGISTRATOR_TOKEN="$(
-    $DOCKER_COMPOSE_COMMAND exec gitlab \
-      gitlab-rails runner -e production "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token"
-  )"
+  REGISTRATOR_TOKEN=$(
+    curl --silent --show-error --request POST \
+      --header "PRIVATE-TOKEN: $INIT_TOKEN" \
+      --header "Content-Type: application/json" \
+      --data '{
+        "runner_type": "instance_type",
+        "description": "shared-runner",
+        "tag_list": ["shared-runner"],
+        "run_untagged": true,
+        "locked": false,
+        "access_level": "not_protected"
+      }' \
+      "$gitlab_url/api/v4/user/runners" | jq -r '.token'
+  )
 
-  if [[ "${#REGISTRATOR_TOKEN}" -ne 20 ]]; then
-    ERROR "❌ Failed to get GitLab shared runner registration token"
-    ERROR "$REGISTRATOR_TOKEN"
+  # Check if the token was successfully retrieved
+  if [ -z "$REGISTRATOR_TOKEN" ]; then
+    echo "Failed to retrieve registrator token."
     exit 1
+  else
+    echo "Registrator token retrieved successfully: $REGISTRATOR_TOKEN"
   fi
 
   INFO "🔑 GitLab shared runner registration token is: ${ORANGE}$REGISTRATOR_TOKEN${NOFORMAT}"
@@ -182,18 +195,12 @@ setup_gitlab() {
   $DOCKER_COMPOSE_COMMAND exec runner \
     gitlab-runner register -n \
     --url "$gitlab_url" \
-    --registration-token "$REGISTRATOR_TOKEN" \
+    --token "$REGISTRATOR_TOKEN" \
     --executor "docker" \
-    --docker-image alpine:latest \
-    --description "shared-runner" \
-    --tag-list "shared-runner" \
-    --run-untagged="true" \
-    --locked="false" \
-    --access-level="not_protected"
+    --docker-image alpine:latest
 
   INFO "✅ Registered shared runner"
-  "${BINARY_DIR:?}"/template.sh --token "$GITLAB_INIT_TOKEN" --init
-
+  
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \
     -H "PRIVATE-TOKEN: $REGISTRATOR_TOKEN" >/dev/null
