@@ -317,13 +317,15 @@ sync_passwords() {
   fi
 
   INFO "✅ Passwords sync finished!"
-  INFO "🔄 Generating random db passwords..."
+  INFO "🔄 Generating random db passwords and minio keys..."
 
   local random_list=(
     "SQ_DB_PASSWORD"
     "III_DB_PASSWORD"
     "REDMINE_DB_PASSWORD"
     "III_REDIS_PASSWORD"
+    "MINIO_ACCESS_KEY"
+    "MINIO_SECRET_KEY"
   )
 
   for password in "${random_list[@]}"; do
