@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:3ee52cae
+    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:17e194fe
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -48,7 +48,7 @@ services:
       GITLAB__INIT_TOKEN: ${GITLAB_INIT_TOKEN}
       GITLAB__URL: ${GITLAB_URL}
       PLUGINS: "true"
-      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
+      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
         "https://admin.socket.io", "https://devopsui-mono-v3-sso.ingress.dev7.iiidevops.org", "https://devopsui-mono-v3-lite.nyanako.com"]'
       PROJECT__DOMAIN: ${IP_ADDR}
       PROJECT__ENVIRONMENT: development
@@ -170,6 +170,21 @@ services:
       - ${REDIS_CONF}:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
 
+  minio:
+    <<: *default-logging
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    container_name: "minio"
+    restart: always
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server --console-address ":9001" /data
+
   iii-devops-lite-db:
     <<: *default-logging
     image: postgres:15
@@ -205,7 +220,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:57dc8ce8-lite
+    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:0c61f014-lite
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:

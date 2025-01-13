@@ -20,6 +20,9 @@ volumes:
   redmine-files:
     driver: local
 
+  minio-data:
+    driver: local
+
   iii-devops-lite-db-data:
     driver: local
   iii-devops-lite-file:

@@ -55,6 +55,11 @@ services:
       service: redis
       file: docker/docker-compose.base.yaml
 
+  minio:
+    extends:
+      service: minio
+      file: docker/docker-compose.base.yaml
+
   iii-devops-lite-db:
     extends:
       service: iii-devops-lite-db
