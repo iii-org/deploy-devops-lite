@@ -283,6 +283,7 @@ main() {
   start_services
   setup_sonarqube
   # setup_redmine
+  setup_minio
   setup_gitlab
   gen_API_env
   start_services # Restart services to apply new environment variables

@@ -73,6 +73,7 @@ get_service_authority() {
   service_port_map["sonarqube"]="$PORT_SONARQUBE"
   service_port_map["api"]="$PORT_III_API"
   service_port_map["ui"]="$PORT_III_UI"
+  service_port_map["minio"]="$PORT_MINIO"
 
   if [[ "$MODE" == "IP" ]]; then
     echo "$IP_ADDR:${service_port_map[$service_name]}"
@@ -134,6 +135,7 @@ setup_gitlab_variable() {
 setup_gitlab() {
   local gitlab_url
   gitlab_url="$(get_service_url "gitlab")"
+  minio_url="$(get_service_url "minio")"
 
   check_service_up "GitLab" \
     "-X GET ${gitlab_url}/-/readiness?all=1"
@@ -213,9 +215,19 @@ setup_gitlab() {
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?auto_devops_enabled=false" \
     -H "PRIVATE-TOKEN: $REGISTRATOR_TOKEN" >/dev/null
 
+  $DOCKER_COMPOSE_COMMAND exec runner /bin/bash -c "
+  cp /etc/gitlab-runner/config.toml /etc/gitlab-runner/config.toml.backup
+  sed -i \"/\[runners\.cache\]/,/\[runners\.docker\]/ c\  [runners.cache]\\n    MaxUploadedArchiveSize = 0\\n    Type = \\\"s3\\\"\\n    Path = \\\"gitlab-runner\\\"\\n    Shared = true\\n    [runners.cache.s3]\\n      ServerAddress = \\\"${minio_url#http://}\\\"\\n      AccessKey = \\\"${MINIO_ACCESS_KEY}\\\"\\n      SecretKey = \\\"${MINIO_SECRET_KEY}\\\"\\n      BucketName = \\\"runner-cache\\\"\\n      BucketLocation = \\\"us-east-1\\\"\\n      Insecure = true\\n    [runners.cache.gcs]\\n    [runners.cache.azure]\\n  [runners.docker]\" /etc/gitlab-runner/config.toml
+  "
+
+  INFO "🔧 Configured GitLab runner cache"
+  $DOCKER_COMPOSE_COMMAND exec runner /bin/bash -c "cat /etc/gitlab-runner/config.toml"
+
+  $DOCKER_COMPOSE_COMMAND restart runner
+
+  setup_gitlab_variable "DEVOPS_API" "$(get_service_url "api")" false
   setup_gitlab_variable "SONAR_TOKEN" "$SONARQUBE_ADMIN_TOKEN"
-  setup_gitlab_variable "SONAR_HOST_URL" "$(get_service_url "sonarqube")" false
-  setup_gitlab_variable "API_ORIGIN" "$(get_service_url "api")" false
+  setup_gitlab_variable "SONAR_URL" "$(get_service_url "sonarqube")" false
 
   INFO "✅ GitLab setup finished!"
 }
@@ -364,4 +376,20 @@ setup_sonarqube() {
   fi
 
   INFO "✅ SonarQube setup finished!"
+}
+
+setup_minio() {
+  local minio_url
+  minio_url="$(get_service_url "minio")"
+
+  INFO "🔧 Setting up Minio..."
+
+  # Create bucket
+  INFO "📁 Creating bucket..."
+  $DOCKER_COMPOSE_COMMAND exec minio bash -c  "
+    mc alias set myminio $minio_url $MINIO_ACCESS_KEY $MINIO_SECRET_KEY && \
+    mc mb myminio/runner-cache
+  "
+
+  INFO "✅ Minio setup finished!"
 }
