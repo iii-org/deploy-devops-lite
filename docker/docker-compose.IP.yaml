@@ -74,8 +74,8 @@ services:
         condition: service_started
       sonarqube:
         condition: service_started
-      redmine:
-        condition: service_started
+      # redmine:
+      #   condition: service_started
       redis:
         condition: service_started
       iii-devops-lite-db:
