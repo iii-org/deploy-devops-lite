@@ -15,10 +15,10 @@ volumes:
   sonarqube-data:
     driver: local
 
-  redmine-db-data:
-    driver: local
-  redmine-files:
-    driver: local
+  # redmine-db-data:
+  #   driver: local
+  # redmine-files:
+  #   driver: local
 
   minio-data:
     driver: local
