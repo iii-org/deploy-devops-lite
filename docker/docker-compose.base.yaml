@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:3d490c5b
+    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:57b1ae5e
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -127,9 +127,9 @@ services:
     ports:
       - "${SQ_PORT}:9000"
     environment:
-      SONARQUBE_JDBC_USERNAME: postgres
-      SONARQUBE_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
-      SONARQUBE_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: postgres
+      SONAR_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
 
   # redmine-db:
   #   <<: *default-logging
@@ -221,7 +221,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:312e193b-lite
+    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:95cfccd1-lite
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
