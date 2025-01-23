@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:17e194fe
+    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:3d490c5b
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -42,13 +42,14 @@ services:
       DATABASE__PASSWORD: ${III_DB_PASSWORD}
       DATABASE__SERVER: ${IP_ADDR}
       DATABASE__USER: postgres
+      FORWARDED_ALLOW_IPS: "172.18.0.0/16"
       GITLAB__ADMIN__PASSWORD: ${GITLAB_ROOT_PASSWORD}
       GITLAB__ADMIN__USERNAME: root
       GITLAB__ENABLED: "true"
       GITLAB__INIT_TOKEN: ${GITLAB_INIT_TOKEN}
       GITLAB__URL: ${GITLAB_URL}
       PLUGINS: "true"
-      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
+      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", "http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
         "https://admin.socket.io", "https://devopsui-mono-v3-sso.ingress.dev7.iiidevops.org", "https://devopsui-mono-v3-lite.nyanako.com"]'
       PROJECT__DOMAIN: ${IP_ADDR}
       PROJECT__ENVIRONMENT: development
@@ -220,12 +221,12 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:0c61f014-lite
+    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:312e193b-lite
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
-      API_URL: http://${IP_ADDR}:10009/
-      API_WS_URL: http://${IP_ADDR}:10009/
+      API_URL: http://iii-devops-lite-api:8080/
+      API_WS_URL: http://iii-devops-lite-api:8080/
       CE_CUSTOM_TITLE: "III CUSTOM DevSecOps Community"
     healthcheck:
       test: curl --fail http://localhost/prod-api/docs || exit 1
