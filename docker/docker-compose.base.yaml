@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: harbor.dev7.iiidevops.org/devops-fastapi/develop:57b1ae5e
+    image: iiiorgiiiorg/devops-lite-api:ce-1.0.0
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -63,7 +63,7 @@ services:
       PROJECT__SECRET_KEY: ${III_SECRET_KEY}
       PROJECT__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
       PROJECT__TLS_ENABLED: "true"
-      PROJECT__TYPE: SSO
+      PROJECT__TYPE: CE
       PROJECT__WEBSOCKET__ADMIN: "true"
       PROJECT__WEBSOCKET__PASSWORD: password
       PROJECT__WEBSOCKET__USERNAME: admin
@@ -221,13 +221,13 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: harbor.dev7.iiidevops.org/devopsui-mono/v3:95cfccd1-lite
+    image: iiiorg/devops-lite-ui:ce-1.0.0
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
       API_URL: http://iii-devops-lite-api:8080/
       API_WS_URL: http://iii-devops-lite-api:8080/
-      CE_CUSTOM_TITLE: "III CUSTOM DevSecOps Community"
+      CE_CUSTOM_TITLE: "III DevSecOps Community"
     healthcheck:
       test: curl --fail http://localhost/prod-api/docs || exit 1
       interval: 10s
