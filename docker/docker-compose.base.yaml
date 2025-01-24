@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorgiiiorg/devops-lite-api:ce-1.0.0
+    image: iiiorg/devops-fastapi:ce-1.0.0
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
