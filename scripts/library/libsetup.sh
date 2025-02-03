@@ -143,7 +143,7 @@ setup_gitlab() {
   INFO "🔧 Setting up GitLab..."
 
   local INIT_TOKEN
-  INIT_TOKEN="$(generate_random_string 20)"
+  INIT_TOKEN="glpat-$(generate_random_string 20)"
   local RESPONSE
   expires_at=$(date -d "+1 year" +"%Y-%m-%d")
   RESPONSE="$(
@@ -153,6 +153,7 @@ setup_gitlab() {
 
   if [[ -z "$RESPONSE" ]]; then
     INFO "🔑 GitLab init token is: ${ORANGE}$INIT_TOKEN${NOFORMAT}"
+    INFO "📅 Token expired at: $expires_at"
     INFO "🛠️ You can test it via:"
     INFO "   ${YELLOW}curl -H \"PRIVATE-TOKEN: $INIT_TOKEN\" \"$gitlab_url/api/v4/users\"${NOFORMAT}"
     variable_write "GITLAB_INIT_TOKEN" "$INIT_TOKEN"
