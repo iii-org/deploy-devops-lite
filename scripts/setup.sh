@@ -97,7 +97,7 @@ docker_running_check() {
   if [[ "$containers_count" -gt 0 ]]; then
     INFO "❗ ${YELLOW}Detected existing containers!${NOFORMAT}"
     INFO "❗ If you wish to ${RED}re-install${NOFORMAT} ${WHITE}III DevOps Community${NOFORMAT}, run:"
-    INFO "   ${WHITE}$DOCKER_COMPOSE_COMMAND down -v && $PROJECT_DIR/setup.sh${NOFORMAT}"
+    INFO "   ${WHITE}$DOCKER_COMPOSE_COMMAND down -v && ./run.sh${NOFORMAT}"
     INFO "🛑 Stopping setup..."
     exit 0
   fi
