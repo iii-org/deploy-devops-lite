@@ -64,6 +64,7 @@ cd DevOps
 ./run.sh
 ```
 
+If you haven't installed Docker yet, this script will automatically install Docker for you and will terminate after the installation is complete. You will need to re-run `./run.sh`.
 If any error occurs, it will show the message starting with `[ERROR]` and exit the script.  
 If the script runs successfully, it will show the message something like
 
