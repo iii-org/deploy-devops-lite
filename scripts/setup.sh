@@ -62,8 +62,10 @@ command_check() {
   install_command "jq"
 
   if ! command_exists docker; then
-    INFO "Install docker rootless base on https://get.docker.com/"
+    INFO "Install docker on https://get.docker.com/"
     "$BINARY_DIR"/install_docker.sh
+    INFO "🛑 Stopping setup..."
+    exit 0
   fi
 
   touch "$COMMAND_CHECK_FLAG"
