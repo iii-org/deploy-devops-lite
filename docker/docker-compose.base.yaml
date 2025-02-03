@@ -30,51 +30,77 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorg/devops-lite-api:ce-0.6.0
+    image: iiiorg/devops-fastapi:ce-1.0.0
     restart: always
     volumes:
-      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/.env
       - ${DOCKER_SOCKET}:/var/run/docker.sock
     # We don't share depends_on with other services, because it's docker limit
     environment:
-      ADMIN_INIT_EMAIL: ${III_ADMIN_EMAIL}
-      ADMIN_INIT_LOGIN: ${III_ADMIN_LOGIN}
-      ADMIN_INIT_PASSWORD: ${III_ADMIN_PASSWORD}
-      DEPLOYER_NODE_IP: ${IP_ADDR}
-      GITLAB_ADMIN_ACCOUNT: root
-      GITLAB_ADMIN_PASSWORD: ${GITLAB_ROOT_PASSWORD}
-      GITLAB_BASE_URL: http://gitlab:${GITLAB_PORT}
-      GITLAB_EXTERNAL_BASE_URL: ${GITLAB_URL}
-      JSON_AS_ASCII: false
-      REDIS_BASE_URL: redis:6379
-      REDMINE_ADMIN_ACCOUNT: admin
-      REDMINE_ADMIN_PASSWORD: ${REDMINE_DB_PASSWORD}
-      REDMINE_EXTERNAL_BASE_URL: ${REDMINE_URL}
-      REDMINE_INTERNAL_BASE_URL: http://redmine:3000
-      SONARQUBE_EXTERNAL_BASE_URL: ${SQ_URL}
-      SONARQUBE_INTERNAL_BASE_URL: http://sonarqube:9000/api
-      SQLALCHEMY_ACCOUNT: postgres
-      SQLALCHEMY_DATABASE: devopsdb
-      SQLALCHEMY_HOST: iii-devops-lite-db:5432
-      SQLALCHEMY_PASSWORD: ${III_DB_PASSWORD}
-      SQLALCHEMY_TRACK_MODIFICATIONS: false
-      WTF_CSRF_CHECK_DEFAULT: false
+      DATABASE__DATABASE: develop-ce
+      DATABASE__PORT: ${III_DB_PORT}
+      DATABASE__PASSWORD: ${III_DB_PASSWORD}
+      DATABASE__SERVER: ${IP_ADDR}
+      DATABASE__USER: postgres
+      FORWARDED_ALLOW_IPS: "172.18.0.0/16"
+      GITLAB__ADMIN__PASSWORD: ${GITLAB_ROOT_PASSWORD}
+      GITLAB__ADMIN__USERNAME: root
+      GITLAB__ENABLED: "true"
+      GITLAB__INIT_TOKEN: ${GITLAB_INIT_TOKEN}
+      GITLAB__URL: ${GITLAB_URL}
+      PLUGINS: "true"
+      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", "http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
+        "https://admin.socket.io", "https://devopsui-mono-v3-sso.ingress.dev7.iiidevops.org", "https://devopsui-mono-v3-lite.nyanako.com"]'
+      PROJECT__DOMAIN: ${IP_ADDR}
+      PROJECT__ENVIRONMENT: development
+      PROJECT__INIT__FIRSTNAME: admin
+      PROJECT__INIT__LASTNAME: 初始管理者
+      PROJECT__INIT__USERNAME: ${III_ADMIN_LOGIN}
+      PROJECT__INIT__EMAIL: ${III_ADMIN_EMAIL}
+      PROJECT__INIT__PASSWORD: ${III_ADMIN_PASSWORD}
+      PROJECT__LOG_LEVEL: DEBUG
+      PROJECT__NAME: DevOps API
+      PROJECT__SECRET_KEY: ${III_SECRET_KEY}
+      PROJECT__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
+      PROJECT__TLS_ENABLED: "true"
+      PROJECT__TYPE: CE
+      PROJECT__WEBSOCKET__ADMIN: "true"
+      PROJECT__WEBSOCKET__PASSWORD: password
+      PROJECT__WEBSOCKET__USERNAME: admin
+      REDIS__HOST: ${IP_ADDR}
+      REDIS__PASSWORD: ${III_REDIS_PASSWORD}
+      REDIS__PORT: "31852"
+      SMTP__FROM_EMAIL: ""
+      SMTP__FROM_NAME: ""
+      SMTP__HOST: ""
+      SMTP__PASSWORD: ""
+      SMTP__PORT: "587"
+      SMTP__RESET_TOKEN_EXPIRE_HOURS: "48"
+      SMTP__SSL: "false"
+      SMTP__TLS: "true"
+      SMTP__USER: ""
+      SONARQUBE__TOKEN: ${SONARQUBE_ADMIN_TOKEN}
+      SONARQUBE__URL: ${SQ_URL}
+      UVICORN_HOST: 127.0.0.1
+      UVICORN_PORT: "8000"
+      UVICORN_RELOAD: "false"
 
   gitlab:
     <<: *default-logging
-    image: gitlab/gitlab-ce:13.12.15-ce.0
+    image: gitlab/gitlab-ce:17.6.2-ce.0
     container_name: "gitlab"
     restart: always
     volumes:
       - "gitlab-config:/etc/gitlab"
       - "gitlab-logs:/var/log/gitlab"
       - "gitlab-data:/var/opt/gitlab"
+    shm_size: '256m'
     healthcheck:
       disable: false
 
   runner:
     <<: *default-logging
-    image: gitlab/gitlab-runner:alpine-v15.10.0
+    image: gitlab/gitlab-runner:alpine-v17.6.0
     container_name: "gitlab-runner"
     restart: always
     volumes:
@@ -96,59 +122,74 @@ services:
 
   sonarqube:
     <<: *default-logging
-    image: sonarqube:8.9.7-community
+    image: sonarqube:9.9.6-community
     container_name: "sonarqube"
     restart: always
     ports:
       - "${SQ_PORT}:9000"
     environment:
-      SONARQUBE_JDBC_USERNAME: postgres
-      SONARQUBE_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
-      SONARQUBE_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: postgres
+      SONAR_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
 
-  redmine-db:
-    <<: *default-logging
-    image: postgres:12
-    container_name: "redmine-db"
-    restart: always
-    volumes:
-      - redmine-db-data:/var/lib/postgresql/data
-      - ${REDMINE_SQL}:/tmp/redmine.sql
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
-      POSTGRES_DB: redmine_database
+  # redmine-db:
+  #   <<: *default-logging
+  #   image: postgres:12
+  #   container_name: "redmine-db"
+  #   restart: always
+  #   volumes:
+  #     - redmine-db-data:/var/lib/postgresql/data
+  #     - ${REDMINE_SQL}:/tmp/redmine.sql
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
+  #     POSTGRES_DB: redmine_database
 
-  redmine:
-    <<: *default-logging
-    image: redmine:4.2.10
-    container_name: "redmine"
-    restart: always
-    ports:
-      - "${REDMINE_PORT}:3000"
-    volumes:
-      - ${REDMINE_CONF}:/usr/src/redmine/config/configuration.yml
-      - redmine-files:/usr/src/redmine/files
-    environment:
-      REDMINE_DB_POSTGRES: redmine-db
-      REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
-      REDMINE_DB_DATABASE: redmine_database
-      REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
+  # redmine:
+  #   <<: *default-logging
+  #   image: redmine:4.2.10
+  #   container_name: "redmine"
+  #   restart: always
+  #   ports:
+  #     - "${REDMINE_PORT}:3000"
+  #   volumes:
+  #     - ${REDMINE_CONF}:/usr/src/redmine/config/configuration.yml
+  #     - redmine-files:/usr/src/redmine/files
+  #   environment:
+  #     REDMINE_DB_POSTGRES: redmine-db
+  #     REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
+  #     REDMINE_DB_DATABASE: redmine_database
+  #     REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
   redis:
     <<: *default-logging
-    image: redis:6.2.11
+    image: redis:7.4.0
     container_name: "redis"
     restart: always
     ports:
-      - "31999:6379"
+      - "31852:6379"
     volumes:
       - ${REDIS_CONF}:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
 
+  minio:
+    <<: *default-logging
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    container_name: "minio"
+    restart: always
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server --console-address ":9001" /data
+
   iii-devops-lite-db:
     <<: *default-logging
-    image: postgres:12
+    image: postgres:15
     container_name: "iii-devops-lite-db"
     restart: always
     ports:
@@ -158,7 +199,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${III_DB_PASSWORD}
-      POSTGRES_DB: postgres
+      POSTGRES_DB: develop-ce
 
     healthcheck:
       test: [ "CMD-SHELL", "bash -c 'pg_isready -U $$POSTGRES_USER'" ]
@@ -173,44 +214,23 @@ services:
     container_name: "iii-devops-lite-api"
     restart: on-failure
     ports:
-      - "${III_PORT}:10009"
+      - "${III_PORT}:8080"
     volumes:
-      - ${III_ENV}:/usr/src/app/env/HEAD.env
+      - ${III_ENV}:/usr/src/app/env/.env
       - ${DOCKER_SOCKET}:/var/run/docker.sock
-      - iii-devops-lite-file:/opt/nfs
       - iii-devops-lite-log:/logs
-
-  iii-devops-lite-api-worker:
-    <<: *default-logging
-    extends:
-      service: api-base
-    container_name: "iii-devops-lite-api-worker"
-    command: celery -A apis.api.celery worker -P eventlet --loglevel=INFO
-    volumes:
-      - ${III_ENV}:/usr/src/app/env/HEAD.env
-      - ${DOCKER_SOCKET}:/var/run/docker.sock
-
-  iii-devops-lite-api-beat:
-    <<: *default-logging
-    extends:
-      service: api-base
-    container_name: "iii-devops-lite-api-beat"
-    command: celery -A apis.api.celery beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
-    volumes:
-      - ${III_ENV}:/usr/src/app/env/HEAD.env
-      - ${DOCKER_SOCKET}:/var/run/docker.sock 
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:ce-0.6.0
+    image: iiiorg/devops-lite-ui:ce-1.0.0
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
-      API_URL: http://iii-devops-lite-api:10009/
-      API_WS_URL: http://iii-devops-lite-api:10009/
+      API_URL: http://iii-devops-lite-api:8080/
+      API_WS_URL: http://iii-devops-lite-api:8080/
       CE_CUSTOM_TITLE: "III DevSecOps Community"
     healthcheck:
-      test: curl --fail http://localhost/prod-api/swagger-ui/ || exit 1
+      test: curl --fail http://localhost/prod-api/docs || exit 1
       interval: 10s
       timeout: 1s
       retries: 5

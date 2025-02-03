@@ -11,9 +11,10 @@ services:
         external_url 'http://${IP_ADDR}:${GITLAB_PORT}'
         prometheus_monitoring['enable'] = false
         gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD}'
-        unicorn['worker_processes'] = 2
+        puma['worker_processes'] = 2
         sidekiq['concurrency'] = 9
         gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+        gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
     ports:
       - "${GITLAB_PORT}:${GITLAB_PORT}"
 
@@ -37,21 +38,26 @@ services:
     depends_on:
       - sonarqube-db
 
-  redmine-db:
-    extends:
-      service: redmine-db
-      file: docker/docker-compose.base.yaml
+  # redmine-db:
+  #   extends:
+  #     service: redmine-db
+  #     file: docker/docker-compose.base.yaml
 
-  redmine:
-    extends:
-      service: redmine
-      file: docker/docker-compose.base.yaml
-    depends_on:
-      - redmine-db
+  # redmine:
+  #   extends:
+  #     service: redmine
+  #     file: docker/docker-compose.base.yaml
+  #   depends_on:
+  #     - redmine-db
 
   redis:
     extends:
       service: redis
+      file: docker/docker-compose.base.yaml
+
+  minio:
+    extends:
+      service: minio
       file: docker/docker-compose.base.yaml
 
   iii-devops-lite-db:
@@ -68,28 +74,12 @@ services:
         condition: service_started
       sonarqube:
         condition: service_started
-      redmine:
-        condition: service_started
+      # redmine:
+      #   condition: service_started
       redis:
         condition: service_started
       iii-devops-lite-db:
         condition: service_healthy
-
-  iii-devops-lite-api-worker:
-    extends:
-      service: iii-devops-lite-api-worker
-      file: docker/docker-compose.base.yaml
-    depends_on:
-      - redis
-      - iii-devops-lite-api
-
-  iii-devops-lite-api-beat:
-    extends:
-      service: iii-devops-lite-api-beat
-      file: docker/docker-compose.base.yaml
-    depends_on:
-      - redis
-      - iii-devops-lite-api
 
   iii-devops-lite-ui:
     extends:
@@ -100,4 +90,6 @@ services:
     labels:
       - "autoheal=true"
     ports:
-      - "80:80"
+      - target: 80
+        published: 80
+        mode: host
