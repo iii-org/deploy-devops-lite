@@ -49,11 +49,29 @@ password_validator() {
     return 1
   fi
 
-  if [[ "$password" =~ [[:lower:]] && "$password" =~ [[:upper:]] && "$password" =~ [[:digit:]] && "$password" =~ [[:punct:]] ]]; then
-    return 0
-  else
+  if ! [[ "$password" =~ [[:lower:]] && "$password" =~ [[:upper:]] && "$password" =~ [[:digit:]] && "$password" =~ [[:punct:]] ]]; then
     WARN "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     return 1
+  fi
+
+  password=$(echo "$password" | tr '[:upper:]' '[:lower:]')
+
+  # Check if password contain 'gitlab' or 'devops'
+  if [[ "$password" =~ gitlab ]] || [[ "$password" =~ devops ]]; then
+    WARN "You are using a weak password. Please try another one."
+    WARN "See: https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
+    return 1
+  fi
+
+  local hashed_pwd
+  hashed_pwd=$(echo -n "$password" | sha256sum | cut -d ' ' -f 1)
+
+  if grep -q "^$hashed_pwd$" $base_dir/digests/digests_*; then
+    WARN "You are using a weak password. Please try another one."
+    WARN "See: https://docs.gitlab.com/ee/user/profile/user_passwords.html#block-weak-passwords"
+    return 1
+  else
+    return 0
   fi
 }
 
@@ -304,14 +322,28 @@ sync_passwords() {
       variable_write "$password" "${III_ADMIN_PASSWORD:-}" true
     fi
   done
+  
+  INFO "🔄 Generating III_SECRET_KEY"
+  local III_SECRET_KEY
+  III_SECRET_KEY="$(openssl rand -hex 32)"
+  if [[ -z "${III_SECRET_KEY:-}" ]]; then
+    ERROR "Cannot generate III_SECRET_KEY"
+    exit 1
+  else
+    variable_write "III_SECRET_KEY" "$III_SECRET_KEY" true
+    INFO "✅ III_SECRET_KEY generated!"
+  fi
 
   INFO "✅ Passwords sync finished!"
-  INFO "🔄 Generating random db passwords..."
+  INFO "🔄 Generating random db passwords and minio keys..."
 
   local random_list=(
     "SQ_DB_PASSWORD"
     "III_DB_PASSWORD"
     "REDMINE_DB_PASSWORD"
+    "III_REDIS_PASSWORD"
+    "MINIO_ACCESS_KEY"
+    "MINIO_SECRET_KEY"
   )
 
   for password in "${random_list[@]}"; do

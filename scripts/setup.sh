@@ -62,8 +62,10 @@ command_check() {
   install_command "jq"
 
   if ! command_exists docker; then
-    INFO "Install docker rootless base on https://get.docker.com/"
+    INFO "Install docker on https://get.docker.com/"
     "$BINARY_DIR"/install_docker.sh
+    INFO "🛑 Stopping setup..."
+    exit 0
   fi
 
   touch "$COMMAND_CHECK_FLAG"
@@ -97,7 +99,7 @@ docker_running_check() {
   if [[ "$containers_count" -gt 0 ]]; then
     INFO "❗ ${YELLOW}Detected existing containers!${NOFORMAT}"
     INFO "❗ If you wish to ${RED}re-install${NOFORMAT} ${WHITE}III DevOps Community${NOFORMAT}, run:"
-    INFO "   ${WHITE}$DOCKER_COMPOSE_COMMAND down -v && $PROJECT_DIR/setup.sh${NOFORMAT}"
+    INFO "   ${WHITE}$DOCKER_COMPOSE_COMMAND down -v && ./run.sh${NOFORMAT}"
     INFO "🛑 Stopping setup..."
     exit 0
   fi
@@ -181,6 +183,13 @@ requirements_check() {
   # Copy static files
   if [[ ! -f "$PROJECT_DIR"/generateredis.conf ]]; then
     cp "$PROJECT_DIR"/sample/redis.conf "$PROJECT_DIR"/generate
+    echo "" >> "$PROJECT_DIR"/generate/redis.conf
+    if [[ -n "$III_REDIS_PASSWORD" ]]; then
+      echo "" >> "$PROJECT_DIR"/generate/redis.conf
+      echo "requirepass $III_REDIS_PASSWORD" >> "$PROJECT_DIR"/generate/redis.conf
+    else
+      FAILED "❌ Redis password is not set!"
+    fi
   fi
 
   if [[ ! -f "$PROJECT_DIR"/generate/redmine-configuration.yml ]]; then
@@ -251,7 +260,7 @@ after_script() {
   INFO "🎉 ${WHITE}III DevOps Community${NOFORMAT} is ready!"
   INFO "🎉 You can now visit ${WHITE}$(get_service_url "ui")${NOFORMAT} to start using it!"
   INFO "GitLab: ${WHITE}$(get_service_url "gitlab")${NOFORMAT}"
-  INFO "Redmine: ${WHITE}$(get_service_url "redmine")${NOFORMAT}"
+  # INFO "Redmine: ${WHITE}$(get_service_url "redmine")${NOFORMAT}"
   INFO "SonarQube: ${WHITE}$(get_service_url "sonarqube")${NOFORMAT}"
 }
 
@@ -275,9 +284,11 @@ main() {
   requirements_check
   start_services
   setup_sonarqube
-  setup_redmine
+  # setup_redmine
+  setup_minio
   setup_gitlab
   gen_API_env
+  start_services # Restart services to apply new environment variables
   after_script
 }
 
