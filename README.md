@@ -64,7 +64,7 @@ cd DevOps
 ./run.sh
 ```
 
-If you haven't installed Docker yet, this script will automatically install Docker for you and will terminate after the installation is complete. You will need to re-run `./run.sh`.
+If you haven't installed Docker yet, this script will automatically install Docker for you and will terminate after the installation is complete. You will need to re-run `./run.sh`.  
 If any error occurs, it will show the message starting with `[ERROR]` and exit the script.  
 If the script runs successfully, it will show the message something like
 
@@ -73,6 +73,36 @@ If the script runs successfully, it will show the message something like
 ```
 
 You can open the browser and visit `http://<IP_ADDRESS>` to check if the III DevOps Community has been deployed successfully.
+
+## Install Worker on Another Server
+
+You can set up a worker node on another server to distribute the workload. Follow these steps to install a worker:
+
+1. On the main server where III DevOps is installed, run the worker setup script:
+   ```shell
+   cd scripts
+   ./worker.sh
+   ```
+
+2. Choose setup type:
+   - Option 1: Remote worker (setup on a different machine)
+   - Option 2: Local worker (setup on the same machine)
+
+3. For remote worker setup:
+   - Enter the remote server's SSH user and IP address
+   - The script will:
+     - Verify SSH connection
+     - Copy necessary files
+     - Configure the worker environment
+     - Set up docker compose files
+
+4. Once the setup is complete:
+   - SSH into the worker server
+   - Navigate to the deploy-devops-lite directory
+   - Start the worker using `docker-compose up -d`
+   - Monitor logs using `docker-compose logs -f`
+
+The worker node will automatically connect to the main server and start processing jobs.
 
 ## Upgrade
 
