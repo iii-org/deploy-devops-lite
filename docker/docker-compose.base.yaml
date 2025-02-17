@@ -234,3 +234,13 @@ services:
       interval: 10s
       timeout: 1s
       retries: 5
+
+  iii-devops-lite-worker:
+    <<: *default-logging
+    extends:
+      service: api-base
+    container_name: "iii-devops-lite-worker"
+    restart: always
+    volumes:
+      - ${DOCKER_SOCKET}:/var/run/docker.sock
+    command: ["/docker-entrypoint.sh", "worker"]

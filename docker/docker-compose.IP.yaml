@@ -93,3 +93,8 @@ services:
       - target: 80
         published: 80
         mode: host
+
+  iii-devops-lite-worker:
+    extends:
+      service: iii-devops-lite-worker
+      file: docker/docker-compose.base.yaml

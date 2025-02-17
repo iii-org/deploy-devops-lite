@@ -1,0 +1,7 @@
+# THIS FILE IS EXTENDS BY docker-compose.yaml
+
+services:
+  iii-devops-lite-worker:
+    extends:
+      service: iii-devops-lite-worker
+      file: docker/docker-compose.base.yaml
