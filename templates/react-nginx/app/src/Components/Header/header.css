@@ -1,0 +1,15 @@
+.header {
+    /* background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%); */
+    padding: 1.5em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header h1 {
+    color: rgb(114, 101, 126);
+    text-transform: uppercase;
+    font-size: 3em;
+    font-weight: 300;
+}

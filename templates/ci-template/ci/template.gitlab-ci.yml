@@ -1,0 +1,12 @@
+stages:
+  - initial
+  - scan
+  - build
+  - deploy
+  - test
+  - userjobs
+
+include:
+  - local: 'jobs/01-01-initial.gitlab-ci.yml'
+  - local: 'jobs/02-01.semgrep.gitlab-ci.yml'
+  - local: 'jobs/02-02.sonarqube.gitlab-ci.yml'

@@ -1,0 +1,38 @@
+Integration--initial pipeline:
+  stage: initial
+  image:
+    name: iiiorg/iiidevops-cli:v3
+  variables:
+    iiidevops: initial-pipeline
+  script:
+#    - >-
+#      CREDENTIAL="$(
+#        jq -n --arg username "${BOT_USERNAME}" --arg password "${BOT_PASSWORD}" \
+#          '.username = $username | .password = $password'
+#      )"
+#    - >-
+#      LOGIN="$(
+#        curl -sL --fail -X POST ${API_URL}/user/login \
+#          -H "Content-Type: application/json" \
+#          -d "${CREDENTIAL}"
+#      )"
+#    - TOKEN="$(echo "${LOGIN}" | jq -r '.data.token')"
+#    - >-
+#      curl -sL -X POST "${API_URL}/project/issues_commit_by_name" \
+#        -H "Content-Type: application/json" \
+#        -F "project_name=\"${CI_PROJECT_NAME}\""
+#    - >-
+#      curl -sL -X POST "${API_URL}/project/commit_test_summary" \
+#        -H "Authorization: Bearer $TOKEN" \
+#        -F "pipeline_id=\"${CI_PIPELINE_ID}\"" \
+#        -F "project_name=\"${CI_PROJECT_NAME}\"" \
+#        -F "branch=\"${CI_COMMIT_BRANCH}\"" \
+#        -F "commit_id=\"${CI_COMMIT_SHORT_SHA}\""
+    - count-src.pl
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      when: always
