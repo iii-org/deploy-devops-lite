@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorg/devops-fastapi:ce-1.0.0
+    image: harbor.dev7.iiidevops.org/devops-fastapi/devops-fastapi:develop
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -42,48 +42,43 @@ services:
       DATABASE__PASSWORD: ${III_DB_PASSWORD}
       DATABASE__SERVER: ${IP_ADDR}
       DATABASE__USER: postgres
+      EMAIL_FROM_EMAIL: ""
+      EMAIL_FROM_NAME: ""
+      EMAIL_SMTP_HOST: ""
+      EMAIL_SMTP_PASSWORD: ""
+      EMAIL_SMTP_PORT: "587"
+      EMAIL_SMTP_TLS: "true"
+      EMAIL_SMTP_USER: ""
       FORWARDED_ALLOW_IPS: "172.18.0.0/16"
       GITLAB__ADMIN__PASSWORD: ${GITLAB_ROOT_PASSWORD}
       GITLAB__ADMIN__USERNAME: root
       GITLAB__ENABLED: "true"
       GITLAB__INIT_TOKEN: ${GITLAB_INIT_TOKEN}
       GITLAB__URL: ${GITLAB_URL}
-      PLUGINS: "true"
+      INIT__FIRSTNAME: admin
+      INIT__LASTNAME: 初始管理者
+      INIT__USERNAME: ${III_ADMIN_LOGIN}
+      INIT__EMAIL: ${III_ADMIN_EMAIL}
+      INIT__PASSWORD: ${III_ADMIN_PASSWORD}
+      LOG__LEVEL: DEBUG
+      PLUGINS__ENABLED: "true"
       PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", "http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
         "https://admin.socket.io", "https://devopsui-mono-v3-sso.ingress.dev7.iiidevops.org", "https://devopsui-mono-v3-lite.nyanako.com"]'
-      PROJECT__DOMAIN: ${IP_ADDR}
       PROJECT__ENVIRONMENT: development
-      PROJECT__INIT__FIRSTNAME: admin
-      PROJECT__INIT__LASTNAME: 初始管理者
-      PROJECT__INIT__USERNAME: ${III_ADMIN_LOGIN}
-      PROJECT__INIT__EMAIL: ${III_ADMIN_EMAIL}
-      PROJECT__INIT__PASSWORD: ${III_ADMIN_PASSWORD}
-      PROJECT__LOG_LEVEL: DEBUG
-      PROJECT__NAME: DevOps API
+      PROJECT__FRONTEND_URL: http://${IP_ADDR}
       PROJECT__SECRET_KEY: ${III_SECRET_KEY}
-      PROJECT__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
-      PROJECT__TLS_ENABLED: "true"
+      PROJECT__TITLE: DevOps API
       PROJECT__TYPE: CE
-      PROJECT__WEBSOCKET__ADMIN: "true"
-      PROJECT__WEBSOCKET__PASSWORD: password
-      PROJECT__WEBSOCKET__USERNAME: admin
       REDIS__HOST: ${IP_ADDR}
       REDIS__PASSWORD: ${III_REDIS_PASSWORD}
       REDIS__PORT: "31852"
-      SMTP__FROM_EMAIL: ""
-      SMTP__FROM_NAME: ""
-      SMTP__HOST: ""
-      SMTP__PASSWORD: ""
-      SMTP__PORT: "587"
-      SMTP__RESET_TOKEN_EXPIRE_HOURS: "48"
-      SMTP__SSL: "false"
-      SMTP__TLS: "true"
-      SMTP__USER: ""
+      SENTRY__ENABLED: "true"
+      SENTRY__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
       SONARQUBE__TOKEN: ${SONARQUBE_ADMIN_TOKEN}
       SONARQUBE__URL: ${SQ_URL}
-      UVICORN_HOST: 127.0.0.1
-      UVICORN_PORT: "8000"
-      UVICORN_RELOAD: "false"
+      WEBSOCKET__ADMIN: "true"
+      WEBSOCKET__PASSWORD: password
+      WEBSOCKET__USERNAME: admin
 
   gitlab:
     <<: *default-logging
@@ -222,7 +217,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:ce-1.0.0
+    image: harbor.dev7.iiidevops.org/devopsui-mono/devopsui-mono:lite
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
@@ -230,7 +225,7 @@ services:
       API_WS_URL: http://iii-devops-lite-api:8080/
       CE_CUSTOM_TITLE: "III DevSecOps Community"
     healthcheck:
-      test: curl --fail http://localhost/prod-api/docs || exit 1
+      test: ["CMD-SHELL", "curl -f http://localhost/prod-api/docs || exit 1"]
       interval: 10s
       timeout: 1s
       retries: 5
