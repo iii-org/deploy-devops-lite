@@ -30,7 +30,7 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: harbor.dev7.iiidevops.org/devops-fastapi/devops-fastapi:develop
+    image: iiiorg/devops-fastapi:ce-1.1.0
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
@@ -82,7 +82,7 @@ services:
 
   gitlab:
     <<: *default-logging
-    image: gitlab/gitlab-ce:17.6.2-ce.0
+    image: gitlab/gitlab-ce:17.8.7-ce.0
     container_name: "gitlab"
     restart: always
     volumes:
@@ -95,7 +95,7 @@ services:
 
   runner:
     <<: *default-logging
-    image: gitlab/gitlab-runner:alpine-v17.6.0
+    image: gitlab/gitlab-runner:alpine-v17.8.5
     container_name: "gitlab-runner"
     restart: always
     volumes:
@@ -126,35 +126,6 @@ services:
       SONAR_JDBC_USERNAME: postgres
       SONAR_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
-
-  # redmine-db:
-  #   <<: *default-logging
-  #   image: postgres:12
-  #   container_name: "redmine-db"
-  #   restart: always
-  #   volumes:
-  #     - redmine-db-data:/var/lib/postgresql/data
-  #     - ${REDMINE_SQL}:/tmp/redmine.sql
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
-  #     POSTGRES_DB: redmine_database
-
-  # redmine:
-  #   <<: *default-logging
-  #   image: redmine:4.2.10
-  #   container_name: "redmine"
-  #   restart: always
-  #   ports:
-  #     - "${REDMINE_PORT}:3000"
-  #   volumes:
-  #     - ${REDMINE_CONF}:/usr/src/redmine/config/configuration.yml
-  #     - redmine-files:/usr/src/redmine/files
-  #   environment:
-  #     REDMINE_DB_POSTGRES: redmine-db
-  #     REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
-  #     REDMINE_DB_DATABASE: redmine_database
-  #     REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
 
   redis:
     <<: *default-logging
@@ -217,7 +188,7 @@ services:
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: harbor.dev7.iiidevops.org/devopsui-mono/devopsui-mono:lite
+    image: iiiorg/devops-lite-ui:ce-1.1.0
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
