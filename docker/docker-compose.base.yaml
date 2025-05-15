@@ -38,7 +38,7 @@ services:
     # We don't share depends_on with other services, because it's docker limit
     environment:
       DATABASE__DATABASE: develop-ce
-      DATABASE__PORT: ${III_DB_PORT}
+      DATABASE__PORT: 5432
       DATABASE__PASSWORD: ${III_DB_PASSWORD}
       DATABASE__SERVER: iii-devops-lite-db
       DATABASE__USER: postgres
@@ -70,7 +70,7 @@ services:
       PROJECT__TYPE: CE
       REDIS__HOST: redis
       REDIS__PASSWORD: ${III_REDIS_PASSWORD}
-      REDIS__PORT: "31852"
+      REDIS__PORT: 6379
       SENTRY__ENABLED: "true"
       SENTRY__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
       SONARQUBE__TOKEN: ${SONARQUBE_ADMIN_TOKEN}
@@ -128,11 +128,9 @@ services:
 
   redis:
     <<: *default-logging
-    image: redis:7.4.0
+    image: redis:7.4
     container_name: "redis"
     restart: always
-    ports:
-      - "31852:6379"
     volumes:
       - ${REDIS_CONF}:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
