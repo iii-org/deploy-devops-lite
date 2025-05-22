@@ -182,6 +182,7 @@ services:
       - ${III_ENV}:/usr/src/app/env/.env
       - ${DOCKER_SOCKET}:/var/run/docker.sock:ro
       - iii-devops-lite-log:/logs
+      - iii-devops-lite-file:/code/.attachments
 
   iii-devops-lite-ui:
     <<: *default-logging
