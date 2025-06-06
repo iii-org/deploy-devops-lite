@@ -191,6 +191,8 @@ ask_password() {
       continue
     fi
 
+    python3 $base_dir/check_pw.py "$result" --name "admin 初始管理者" --username "$III_ADMIN_LOGIN" --email "$III_ADMIN_EMAIL" || continue
+
     if password_validator "$result"; then
       break
     fi

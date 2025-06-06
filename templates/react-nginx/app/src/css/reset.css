@@ -1,0 +1,35 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  
+}
+
+body {
+  background-image: linear-gradient(to top, #dad4ec 0%, #dad4ec 1%, #f3e7e9 100%);
+}
+
+a {
+  text-decoration: none;
+}
+
+button, input {
+  border: 0;
+  outline: 0;
+  border-radius: 8px;
+  padding: 0px 16px;
+  height: 45px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+input {
+  color: #888
+}
+
+button {
+  transition: 0.15s ease;
+  color: white;
+  cursor: pointer;
+}

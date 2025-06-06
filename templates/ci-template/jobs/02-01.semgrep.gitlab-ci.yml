@@ -1,0 +1,161 @@
+# Read more about this feature here: https://docs.gitlab.com/ee/user/application_security/sast/
+#
+# Configure SAST with CI/CD variables (https://docs.gitlab.com/ee/ci/variables/index.html).
+# List of available variables: https://docs.gitlab.com/ee/user/application_security/sast/index.html#available-cicd-variables
+
+variables:
+  # Setting this variable will affect all Security templates
+  # (SAST, Dependency Scanning, ...)
+  SECURE_ANALYZERS_PREFIX: "$CI_TEMPLATE_REGISTRY_HOST/security-products"
+  SAST_IMAGE_SUFFIX: ""
+
+  SAST_EXCLUDED_ANALYZERS: ""
+  SAST_EXCLUDED_PATHS: "spec, test, tests, tmp"
+  SCAN_KUBERNETES_MANIFESTS: "false"
+
+.rules:
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: '$PLG_SEMGREP == "false"'
+      when: never
+    - if: "$CI_COMMIT_MESSAGE =~ /.*\\(store\\)$/"
+      when: never
+    - if: "$CI_COMMIT_BRANCH =~ $III_SEMGREP"
+      when: always
+
+.prefixloader:
+  before_script:
+    - |
+      apk update
+      apk add curl jq
+    - >-
+      curl --fail -sL -X POST ${DEVOPS_API}/v3/summaries/semgrep \
+        -H "Authorization: Bearer ${DEVOPS_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "$( \
+          jq -n --arg branch "${CI_COMMIT_BRANCH}" \
+            --arg commit_id "${CI_COMMIT_SHORT_SHA}" \
+            --arg job_id "${CI_JOB_ID}" \
+            '.branch = $branch | .commit_id = $commit_id | .job_id = $job_id' \
+          )"
+  after_script:
+    - |
+      if [ -f gl-sast-report.json ]; then
+        echo "gl-sast-report.json exists, uploading result"
+
+        curl --fail -sL -X POST ${DEVOPS_API}/v3/summaries/semgrep/result \
+          -H "Authorization: Bearer ${DEVOPS_TOKEN}" \
+          -H "Content-Type: multipart/form-data; boundary=WebAppBoundary${CI_COMMIT_SHORT_SHA}" \
+          -F "job_id=${CI_JOB_ID}" \
+          -F "pipeline_id=${CI_PIPELINE_ID}" \
+          -F "report=@./gl-sast-report.json"
+      else
+        echo "gl-sast-report.json does not exist, skipping upload"
+      fi
+
+sast:
+  stage: scan
+  artifacts:
+    paths:
+      - gl-sast-report.json
+  rules:
+    - when: never
+  variables:
+    SEARCH_MAX_DEPTH: 4
+  script:
+    - echo "$CI_JOB_NAME is used for configuration only, and its script should not be executed"
+    - exit 1
+
+.sast-analyzer:
+  extends: sast
+  allow_failure: true
+  # `rules` must be overridden explicitly by each child job
+  # see https://gitlab.com/gitlab-org/gitlab/-/issues/218444
+  script:
+    - /analyzer run
+
+kubesec-sast:
+  extends: .sast-analyzer
+  image:
+    name: "$SAST_ANALYZER_IMAGE"
+  variables:
+    SAST_ANALYZER_IMAGE_TAG: 5
+    SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/kubesec:$SAST_ANALYZER_IMAGE_TAG"
+  rules:
+    - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
+      when: never
+    - if: $SAST_EXCLUDED_ANALYZERS =~ /kubesec/
+      when: never
+    - if: $CI_COMMIT_BRANCH &&
+        $SCAN_KUBERNETES_MANIFESTS == 'true'
+
+pmd-apex-sast:
+  extends: .sast-analyzer
+  image:
+    name: "$SAST_ANALYZER_IMAGE"
+  variables:
+    SAST_ANALYZER_IMAGE_TAG: 5
+    SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/pmd-apex:$SAST_ANALYZER_IMAGE_TAG"
+  rules:
+    - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
+      when: never
+    - if: $SAST_EXCLUDED_ANALYZERS =~ /pmd-apex/
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - '**/*.cls'
+
+Test--Semgrep SAST code scan:
+  extends:
+    - .sast-analyzer
+    - .prefixloader
+  image:
+    name: "$SAST_ANALYZER_IMAGE"
+  variables:
+    iiidevops: semgrep
+    SEARCH_MAX_DEPTH: 20
+    SAST_ANALYZER_IMAGE_TAG: 5
+    SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/semgrep:$SAST_ANALYZER_IMAGE_TAG$SAST_IMAGE_SUFFIX"
+  rules:
+    - !reference [.rules, rules]
+    - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
+      when: never
+    - if: $SAST_EXCLUDED_ANALYZERS =~ /semgrep/
+      when: never
+
+sobelow-sast:
+  extends: .sast-analyzer
+  image:
+    name: "$SAST_ANALYZER_IMAGE"
+  variables:
+    SAST_ANALYZER_IMAGE_TAG: 5
+    SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/sobelow:$SAST_ANALYZER_IMAGE_TAG"
+  rules:
+    - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
+      when: never
+    - if: $SAST_EXCLUDED_ANALYZERS =~ /sobelow/
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - '**/mix.exs'
+
+spotbugs-sast:
+  extends: .sast-analyzer
+  image:
+    name: "$SAST_ANALYZER_IMAGE"
+  variables:
+    SAST_ANALYZER_IMAGE_TAG: 5
+    SAST_ANALYZER_IMAGE: "$SECURE_ANALYZERS_PREFIX/spotbugs:$SAST_ANALYZER_IMAGE_TAG"
+  rules:
+    - if: $SAST_EXCLUDED_ANALYZERS =~ /spotbugs/
+      when: never
+    - if: $SAST_EXPERIMENTAL_FEATURES == 'true'
+      exists:
+        - '**/AndroidManifest.xml'
+      when: never
+    - if: $SAST_DISABLED == 'true' || $SAST_DISABLED == '1'
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - '**/*.groovy'

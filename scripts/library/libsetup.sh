@@ -203,7 +203,9 @@ setup_gitlab() {
     --docker-image alpine:latest
 
   INFO "✅ Registered shared runner"
-  
+
+  "${BINARY_DIR:?}"/template.sh --token "$GITLAB_INIT_TOKEN" --init
+
   $DOCKER_COMPOSE_COMMAND exec runner \
     curl -s -k -X PUT "$gitlab_url/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" \
     -H "PRIVATE-TOKEN: $REGISTRATOR_TOKEN" >/dev/null

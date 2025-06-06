@@ -1,0 +1,92 @@
+.sonarqube-base:
+  stage: scan
+  image:
+    name: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+    entrypoint: [ "" ]
+  variables:
+    GIT_STRATEGY: none # Do not clone the repository, use cache
+    SONAR_IMAGE: $CHART_NORMAL_IMAGE
+    SONAR_IMAGE_TAG: $CHART_NORMAL_TAG
+    CHART_NORMAL_IMAGE: "sonarsource/sonar-scanner-cli"
+    CHART_NORMAL_TAG: "4.6"
+    CHART_GRADLE_IMAGE: "gradle"
+    CHART_GRADLE_TAG: "jdk11"
+    CHART_MAVEN_IMAGE: "maven"
+    CHART_MAVEN_TAG: "3.6.3-openjdk-11"
+    CHART_ASP_IMAGE: "mcr.microsoft.com/dotnet/sdk"
+    CHART_ASP_TAG: "6.0"
+    SONAR_HOST_URL: $SONAR_URL
+    SONAR_LOGIN: $SONAR_TOKEN
+    PROJECT_NAME: "${CI_PROJECT_NAME}"
+    GIT_BRANCH: "${CI_COMMIT_BRANCH}"
+    GIT_COMMIT_ID: "${CI_COMMIT_SHORT_SHA}"
+  needs: [ "Test--SonarQube source code scan:BlackWhite" ]
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - "**"
+    policy: pull
+  script:
+    - ls -alh
+    - cat sonar-project.properties
+    - |
+      if [ -f "iiidevops/sonarqube/SonarScan" ]; then
+        chmod +x ./iiidevops/sonarqube/SonarScan
+        ./iiidevops/sonarqube/SonarScan
+      else
+        /usr/bin/entrypoint.sh sonar-scanner
+      fi
+
+Test--SonarQube source code scan:BlackWhite:
+  stage: scan
+  image:
+    name: $SONAR_IMAGE:$SONAR_IMAGE_TAG
+    entrypoint: [ "" ]
+  variables:
+    SONAR_IMAGE: iiiorg/sonarqube-runner
+    SONAR_IMAGE_TAG: git-2.40.1-v3-dev
+  script:
+    - rm -rf .git
+    - black_white_list.sh
+    - setup.sh
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - "**"
+    policy: push
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: '$PLG_SONARQUBE == "false"'
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ $III_SONARQUBE'
+      when: on_success
+
+Test--SonarQube source code scan:
+  extends: .sonarqube-base
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: '$PLG_SONARQUBE == "false"'
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /.*\(store\)$/
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "asp_dot_net"
+      variables:
+        SONAR_IMAGE: $CHART_ASP_IMAGE
+        SONAR_IMAGE_TAG: $CHART_ASP_TAG
+      when: on_success
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "gradle"
+      variables:
+        SONAR_IMAGE: $CHART_GRADLE_IMAGE
+        SONAR_IMAGE_TAG: $CHART_GRADLE_TAG
+      when: on_success
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE && $CHART_TYPE == "maven"
+      variables:
+        SONAR_IMAGE: $CHART_MAVEN_IMAGE
+        SONAR_IMAGE_TAG: $CHART_MAVEN_TAG
+      when: on_success
+    - if: $CI_COMMIT_BRANCH =~ $III_SONARQUBE
+      when: on_success

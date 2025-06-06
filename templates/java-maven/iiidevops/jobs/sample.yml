@@ -1,0 +1,8 @@
+samplejob: # This job will be included gitlab ci by the local yaml
+  stage: userjobs # This job will be run on userjobs stage  
+  image: alpine:3.17 #This is the default image for this job, you are free to change it if need it.
+  before_script: [] # please leave this 'before_script' to prevent the uncertain corruption
+  script:
+    - echo "Running the sample jobs"
+  only:    # identify which branch will be triggered
+    - skip

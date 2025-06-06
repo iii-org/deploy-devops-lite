@@ -60,11 +60,11 @@ main() {
   for template_dir in templates/*; do
     if [[ -d "$template_dir" ]]; then
       if $DOCKER_WITHOUT_SUDO; then
-        find "$template_dir" -name .git -type d -prune \
+        sudo find "$template_dir" -name .git -type d -prune \
           -exec rm -rf {} \; \
           -exec echo -e "  -> removed \e[97m{}\e[0m" \;
       else
-        find "$template_dir" -name .git -type d -prune \
+        sudo find "$template_dir" -name .git -type d -prune \
           -exec sudo rm -rf {} \; \
           -exec echo -e "  -> removed \e[97m{}\e[0m" \;
       fi

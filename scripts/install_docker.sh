@@ -13,5 +13,4 @@ curl -s https://get.docker.com/ | bash
 
 INFO "🔃 Adding user to docker group..."
 sudo usermod -aG docker "$USER"
-newgrp docker
 INFO "✅ Docker installed successfully! Please re-run './run.sh' to continue installing."

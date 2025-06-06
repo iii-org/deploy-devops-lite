@@ -30,64 +30,58 @@ services:
       - "./dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
 
   api-base:
-    image: iiiorg/devops-fastapi:ce-1.0.0
+    image: iiiorg/devops-fastapi:ce-1.1.0
     restart: always
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
-      - ${DOCKER_SOCKET}:/var/run/docker.sock
+      - ${DOCKER_SOCKET}:/var/run/docker.sock:ro
     # We don't share depends_on with other services, because it's docker limit
     environment:
       DATABASE__DATABASE: develop-ce
-      DATABASE__PORT: ${III_DB_PORT}
+      DATABASE__PORT: 5432
       DATABASE__PASSWORD: ${III_DB_PASSWORD}
-      DATABASE__SERVER: ${IP_ADDR}
+      DATABASE__SERVER: iii-devops-lite-db
       DATABASE__USER: postgres
+      EMAIL_FROM_EMAIL: ""
+      EMAIL_FROM_NAME: ""
+      EMAIL_SMTP_HOST: ""
+      EMAIL_SMTP_PASSWORD: ""
+      EMAIL_SMTP_PORT: "587"
+      EMAIL_SMTP_TLS: "true"
+      EMAIL_SMTP_USER: ""
       FORWARDED_ALLOW_IPS: "172.18.0.0/16"
       GITLAB__ADMIN__PASSWORD: ${GITLAB_ROOT_PASSWORD}
       GITLAB__ADMIN__USERNAME: root
       GITLAB__ENABLED: "true"
       GITLAB__INIT_TOKEN: ${GITLAB_INIT_TOKEN}
       GITLAB__URL: ${GITLAB_URL}
-      PLUGINS: "true"
-      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", "http://${IP_ADDR}:10009", "http://localdev.sso.tw:9528", "http://localdev.sso.tw:9529",
-        "https://admin.socket.io", "https://devopsui-mono-v3-sso.ingress.dev7.iiidevops.org", "https://devopsui-mono-v3-lite.nyanako.com"]'
-      PROJECT__DOMAIN: ${IP_ADDR}
+      INIT__FIRSTNAME: admin
+      INIT__LASTNAME: 初始管理者
+      INIT__USERNAME: ${III_ADMIN_LOGIN}
+      INIT__EMAIL: ${III_ADMIN_EMAIL}
+      INIT__PASSWORD: ${III_ADMIN_PASSWORD}
+      LOG__LEVEL: DEBUG
+      PLUGINS__ENABLED: "true"
+      PROJECT__CORS_ORIGINS: '["http://${IP_ADDR}", "http://${IP_ADDR}:10009", "https://admin.socket.io"]'
       PROJECT__ENVIRONMENT: development
-      PROJECT__INIT__FIRSTNAME: admin
-      PROJECT__INIT__LASTNAME: 初始管理者
-      PROJECT__INIT__USERNAME: ${III_ADMIN_LOGIN}
-      PROJECT__INIT__EMAIL: ${III_ADMIN_EMAIL}
-      PROJECT__INIT__PASSWORD: ${III_ADMIN_PASSWORD}
-      PROJECT__LOG_LEVEL: DEBUG
-      PROJECT__NAME: DevOps API
+      PROJECT__FRONTEND_URL: http://${IP_ADDR}
       PROJECT__SECRET_KEY: ${III_SECRET_KEY}
-      PROJECT__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
-      PROJECT__TLS_ENABLED: "true"
+      PROJECT__TITLE: DevOps API
       PROJECT__TYPE: CE
-      PROJECT__WEBSOCKET__ADMIN: "true"
-      PROJECT__WEBSOCKET__PASSWORD: password
-      PROJECT__WEBSOCKET__USERNAME: admin
-      REDIS__HOST: ${IP_ADDR}
+      REDIS__HOST: redis
       REDIS__PASSWORD: ${III_REDIS_PASSWORD}
-      REDIS__PORT: "31852"
-      SMTP__FROM_EMAIL: ""
-      SMTP__FROM_NAME: ""
-      SMTP__HOST: ""
-      SMTP__PASSWORD: ""
-      SMTP__PORT: "587"
-      SMTP__RESET_TOKEN_EXPIRE_HOURS: "48"
-      SMTP__SSL: "false"
-      SMTP__TLS: "true"
-      SMTP__USER: ""
+      REDIS__PORT: 6379
+      SENTRY__ENABLED: "true"
+      SENTRY__SENTRY_DSN: https://c612982c1f917bfc982682d4ba5f8f16@sentry.iiidevops.org/14
       SONARQUBE__TOKEN: ${SONARQUBE_ADMIN_TOKEN}
       SONARQUBE__URL: ${SQ_URL}
-      UVICORN_HOST: 127.0.0.1
-      UVICORN_PORT: "8000"
-      UVICORN_RELOAD: "false"
+      WEBSOCKET__ADMIN: "false"
+      WEBSOCKET__PASSWORD: password
+      WEBSOCKET__USERNAME: admin
 
   gitlab:
     <<: *default-logging
-    image: gitlab/gitlab-ce:17.6.2-ce.0
+    image: gitlab/gitlab-ce:17.8.7-ce.0
     container_name: "gitlab"
     restart: always
     volumes:
@@ -100,12 +94,12 @@ services:
 
   runner:
     <<: *default-logging
-    image: gitlab/gitlab-runner:alpine-v17.6.0
+    image: gitlab/gitlab-runner:alpine-v17.8.5
     container_name: "gitlab-runner"
     restart: always
     volumes:
       - runner-config:/etc/gitlab-runner
-      - ${DOCKER_SOCKET}:/var/run/docker.sock
+      - ${DOCKER_SOCKET}:/var/run/docker.sock:ro
       - ${TEMPLATES_DIR}:/templates
 
   sonarqube-db:
@@ -132,42 +126,11 @@ services:
       SONAR_JDBC_PASSWORD: ${SQ_DB_PASSWORD}
       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
 
-  # redmine-db:
-  #   <<: *default-logging
-  #   image: postgres:12
-  #   container_name: "redmine-db"
-  #   restart: always
-  #   volumes:
-  #     - redmine-db-data:/var/lib/postgresql/data
-  #     - ${REDMINE_SQL}:/tmp/redmine.sql
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: ${REDMINE_DB_PASSWORD}
-  #     POSTGRES_DB: redmine_database
-
-  # redmine:
-  #   <<: *default-logging
-  #   image: redmine:4.2.10
-  #   container_name: "redmine"
-  #   restart: always
-  #   ports:
-  #     - "${REDMINE_PORT}:3000"
-  #   volumes:
-  #     - ${REDMINE_CONF}:/usr/src/redmine/config/configuration.yml
-  #     - redmine-files:/usr/src/redmine/files
-  #   environment:
-  #     REDMINE_DB_POSTGRES: redmine-db
-  #     REDMINE_DB_PASSWORD: ${REDMINE_DB_PASSWORD}
-  #     REDMINE_DB_DATABASE: redmine_database
-  #     REDMINE_SECRET_KEY_BASE: ${REDMINE_DB_PASSWORD}
-
   redis:
     <<: *default-logging
-    image: redis:7.4.0
+    image: redis:7.4
     container_name: "redis"
     restart: always
-    ports:
-      - "31852:6379"
     volumes:
       - ${REDIS_CONF}:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -217,12 +180,13 @@ services:
       - "${III_PORT}:8080"
     volumes:
       - ${III_ENV}:/usr/src/app/env/.env
-      - ${DOCKER_SOCKET}:/var/run/docker.sock
+      - ${DOCKER_SOCKET}:/var/run/docker.sock:ro
       - iii-devops-lite-log:/logs
+      - iii-devops-lite-file:/code/.attachments
 
   iii-devops-lite-ui:
     <<: *default-logging
-    image: iiiorg/devops-lite-ui:ce-1.0.0
+    image: iiiorg/devops-lite-ui:ce-1.1.0
     container_name: "iii-devops-lite-ui"
     restart: always
     environment:
@@ -230,7 +194,17 @@ services:
       API_WS_URL: http://iii-devops-lite-api:8080/
       CE_CUSTOM_TITLE: "III DevSecOps Community"
     healthcheck:
-      test: curl --fail http://localhost/prod-api/docs || exit 1
+      test: ["CMD-SHELL", "curl -f http://localhost/prod-api/docs || exit 1"]
       interval: 10s
       timeout: 1s
       retries: 5
+
+  iii-devops-lite-worker:
+    <<: *default-logging
+    extends:
+      service: api-base
+    container_name: "iii-devops-lite-worker"
+    restart: always
+    volumes:
+      - ${DOCKER_SOCKET}:/var/run/docker.sock:ro
+    command: ["/docker-entrypoint.sh", "worker"]
